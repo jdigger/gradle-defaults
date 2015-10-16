@@ -1,10 +1,25 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "http://dl.bintray.com/jmoore/java-lib"
+        }
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.mooregreatsoftware:gradle-defaults:1.0.0-rc.1'
+    }
+}
+
 plugins {
     id 'groovy'
     id 'maven'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.2'
-    id 'org.ajoberstar.defaults' version '0.5.3'
 }
+
+apply plugin: 'com.mooregreatsoftware.defaults'
 
 group = 'com.mooregreatsoftware'
 description = 'Plugin providing opinionated defaults for Gradle projects.'
