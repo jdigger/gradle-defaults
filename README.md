@@ -59,12 +59,25 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
 ## Configuration
 
 ```groovy
+buildscript {
+    repositories {
+        maven {
+            url "http://dl.bintray.com/jmoore/java-lib"
+        }
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.mooregreatsoftware:gradle-defaults:<version>'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'com.mooregreatsoftware.defaults'
 
 plugins {
 	id 'com.jfrog.bintray' version '<version>'
-	id 'org.ajoberstar.defaults' version '<version>'
 }
 
 group = 'my.group'
