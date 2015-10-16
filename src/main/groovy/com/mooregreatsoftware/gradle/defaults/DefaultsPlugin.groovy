@@ -261,7 +261,8 @@ class DefaultsPlugin implements Plugin<Project> {
             if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')) {
                 project.afterEvaluate {
                     def bintrayAttributes = [:]
-                    if (extension.bintrayLabels.contains('gradle')) {
+                    if (extension.bintrayLabels?.contains('gradle')) {
+                        project.logger.info "bintrayLabels does includes 'gradle' so generating 'gradle-plugins' attributes"
                         def pluginIds = project.fileTree(
                             dir: 'src/main/resources/META-INF/gradle-plugins',
                             include: '*.properties').collect { file -> file.name[0..(file.name.lastIndexOf('.') - 1)] }
@@ -269,6 +270,10 @@ class DefaultsPlugin implements Plugin<Project> {
                             "${it}:${project.group}:${project.name}"
                         }]
                     }
+                    else {
+                        project.logger.info "bintrayLabels does not include 'gradle' so not generating 'gradle-plugins' attributes"
+                    }
+                    project.logger.info "bintrayAttributes: ${bintrayAttributes}"
 
                     project.bintray {
                         user = project.bintrayUser
