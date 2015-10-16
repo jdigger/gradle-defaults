@@ -31,6 +31,8 @@ class DefaultsExtension {
     Set developers
     Set contributors
 
+    String compatibilityVersion = '1.7'
+
     String siteUrl
     String issuesUrl
     String vcsReadUrl

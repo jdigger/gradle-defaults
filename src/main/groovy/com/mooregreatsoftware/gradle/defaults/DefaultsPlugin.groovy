@@ -76,6 +76,7 @@ class DefaultsPlugin implements Plugin<Project> {
             project.plugins.apply('sonar-runner')
             project.plugins.apply('eclipse')
             project.plugins.apply('idea')
+            configureIdea(project, extension)
 
             Task sourcesJar = project.tasks.create('sourcesJar', Jar)
             sourcesJar.with {
@@ -92,6 +93,81 @@ class DefaultsPlugin implements Plugin<Project> {
             project.artifacts {
                 archives sourcesJar
                 archives javadocJar
+            }
+        }
+    }
+
+
+    private void configureIdea(Project project, DefaultsExtension extension) {
+        project.idea.project {
+            vcs = 'Git'
+            jdkName = '1.8'
+            languageLevel = extension.compatibilityVersion
+
+            ipr {
+                withXml { provider ->
+                    // Set Gradle home
+                    def gradleSettings = provider.asNode().appendNode('component', [name: 'GradleSettings'])
+                    gradleSettings.appendNode('option', [name: 'SDK_HOME', value: project.gradle.gradleHomeDir])
+
+                    def codeStyleNode = provider.node.component.find {
+                        it.@name == 'ProjectCodeStyleSettingsManager'
+                    }
+                    if (codeStyleNode == null) {
+                        codeStyleNode = provider.node.appendNode('component', [name: 'ProjectCodeStyleSettingsManager'])
+                    }
+                    codeStyleNode.replaceNode { node ->
+                        component(name: 'ProjectCodeStyleSettingsManager') {
+                            option(name: "PER_PROJECT_SETTINGS") {
+                                value {
+                                    option(name: "OTHER_INDENT_OPTIONS") {
+                                        value {
+                                            option(name: "INDENT_SIZE", value: "4")
+                                            option(name: "CONTINUATION_INDENT_SIZE", value: "4")
+                                            option(name: "TAB_SIZE", value: "4")
+                                            option(name: "USE_TAB_CHARACTER", value: "false")
+                                            option(name: "SMART_TABS", value: "false")
+                                            option(name: "LABEL_INDENT_SIZE", value: "0")
+                                            option(name: "LABEL_INDENT_ABSOLUTE", value: "false")
+                                            option(name: "USE_RELATIVE_INDENTS", value: "false")
+                                        }
+                                    }
+                                    option(name: "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND", value: "9999")
+                                    option(name: "NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND", value: "9999")
+                                    XML {
+                                        option(name: "XML_LEGACY_SETTINGS_IMPORTED", value: "true")
+                                    }
+
+                                    // this is needed in addition to the one below, for import settings
+                                    GroovyCodeStyleSettings {
+                                        option(name: "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND", value: "9999")
+                                        option(name: "NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND", value: "9999")
+                                    }
+
+                                    ['Groovy', 'JAVA', 'Scala'].each {
+                                        codeStyleSettings(language: it) {
+                                            option(name: "BLANK_LINES_AROUND_METHOD", value: "2")
+                                            //option(name: "BLANK_LINES_BEFORE_METHOD_BODY", value: "1")
+                                            option(name: "ELSE_ON_NEW_LINE", value: "true")
+                                            option(name: "CATCH_ON_NEW_LINE", value: "true")
+                                            option(name: "FINALLY_ON_NEW_LINE", value: "true")
+                                            option(name: "SPACE_AFTER_TYPE_CAST", value: "false")
+                                            option(name: "INDENT_SIZE", value: "2")
+                                            option(name: "TAB_SIZE", value: "4")
+
+                                            // both this level and 'indentOptions' are used
+                                            option(name: "CONTINUATION_INDENT_SIZE", value: "4")
+                                            indentOptions {
+                                                option(name: "CONTINUATION_INDENT_SIZE", value: "4")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            option(name: "USE_PER_PROJECT_SETTINGS", value: "true")
+                        }
+                    }
+                }
             }
         }
     }
