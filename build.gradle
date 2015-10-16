@@ -1,5 +1,6 @@
 plugins {
     id 'groovy'
+    id 'maven'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.2'
     id 'org.ajoberstar.defaults' version '0.5.3'
@@ -11,7 +12,7 @@ description = 'Plugin providing opinionated defaults for Gradle projects.'
 defaults {
     id = 'jdigger'
 
-    bintrayRepo = 'gradle-plugins'
+    bintrayRepo = 'java-lib'
     bintrayLabels = ['gradle']
 
     developers = [
@@ -27,6 +28,11 @@ sourceCompatibility = '1.7'
 repositories {
     jcenter()
 }
+
+//import org.ajoberstar.gradle.git.release.opinion.Strategies
+//release {
+//    defaultVersionStrategy = Strategies.SNAPSHOT
+//}
 
 dependencies {
     compile gradleApi()
