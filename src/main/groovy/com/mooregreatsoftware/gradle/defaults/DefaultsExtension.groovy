@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ajoberstar.gradle.defaults
+package com.mooregreatsoftware.gradle.defaults
 
 import org.gradle.api.Project
 
