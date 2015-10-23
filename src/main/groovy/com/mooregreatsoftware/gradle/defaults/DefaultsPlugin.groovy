@@ -15,6 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
+import groovy.transform.TypeChecked
 import nl.javadude.gradle.plugins.license.License
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Plugin
@@ -25,14 +26,16 @@ import org.gradle.api.tasks.bundling.Jar
 
 class DefaultsPlugin implements Plugin<Project> {
 
+    @TypeChecked
     void apply(Project project) {
         DefaultsExtension extension = project.extensions.create('defaults', DefaultsExtension, project)
+
         project.plugins.apply('org.ajoberstar.organize-imports')
 
         addGhPagesConfig(project, extension)
         addReleaseConfig(project, extension)
 
-        project.allprojects { prj ->
+        project.allprojects { Project prj ->
             addJavaConfig(prj, extension)
             addGroovyConfig(prj, extension)
             addScalaConfig(prj, extension)
@@ -45,6 +48,7 @@ class DefaultsPlugin implements Plugin<Project> {
 
 
     private void addGhPagesConfig(Project project, DefaultsExtension extension) {
+        project.logger.info "Applying plugin 'org.ajoberstar.github-pages'"
         project.plugins.apply('org.ajoberstar.github-pages')
 
         def addOutput = { task ->
@@ -53,16 +57,18 @@ class DefaultsPlugin implements Plugin<Project> {
             }
         }
 
-        project.allprojects { prj ->
-            prj.plugins.withId('java') { addOutput(prj.javadoc) }
-            prj.plugins.withId('groovy') { addOutput(prj.groovydoc) }
-            prj.plugins.withId('scala') { addOutput(prj.scaladoc) }
+        project.allprojects { Project prj ->
+            prj.plugins.withId('java') { addOutput(prj.tasks.getByName('javadoc')) }
+            prj.plugins.withId('groovy') { addOutput(prj.tasks.getByName('groovydoc')) }
+            prj.plugins.withId('scala') { addOutput(prj.tasks.getByName('scaladoc')) }
         }
 
         project.afterEvaluate {
-            project.githubPages {
+            project.logger.debug "Continuing configuring githubPages extension"
+            project.githubPages.with {
+                project.logger.debug "Using vcsWriteUrl as ${extension.vcsWriteUrl}"
                 repoUri = extension.vcsWriteUrl
-                pages {
+                pages.with {
                     from 'src/gh-pages'
                 }
             }
@@ -72,9 +78,6 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addJavaConfig(Project project, DefaultsExtension extension) {
         project.plugins.withId('java') {
-            project.plugins.apply('jacoco')
-            project.plugins.apply('sonar-runner')
-            project.plugins.apply('eclipse')
             project.plugins.apply('idea')
             configureIdea(project, extension)
 
@@ -397,4 +400,5 @@ class DefaultsPlugin implements Plugin<Project> {
             }
         }
     }
+
 }
