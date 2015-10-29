@@ -36,6 +36,7 @@ class DefaultsPlugin implements Plugin<Project> {
         addReleaseConfig(project, extension)
 
         project.allprojects { Project prj ->
+            prj.repositories.jcenter()
             addJavaConfig(prj, extension)
             addGroovyConfig(prj, extension)
             addScalaConfig(prj, extension)

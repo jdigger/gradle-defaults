@@ -12,6 +12,7 @@ Plugin providing opinionated defaults for Gradle builds.
 Currently, the defaults aren't terribly easy to override or pick and choose from. Please submit an issue if you find anything you would like to be more configurable.
 
 - Applies [`organize-imports`](https://github.com/ajoberstar/gradle-imports) plugin.
+- Adds the `jcenter()` repository.
 - Applies [`org.ajoberstar.github-pages`](https://github.com/ajoberstar/gradle-git) plugin. Configures to use:
     - Extension's `vcsWriteUrl`.
     - Publish content from `src/gh-pages`.
@@ -66,7 +67,6 @@ buildscript {
         maven {
             url "http://dl.bintray.com/jmoore/java-lib"
         }
-        jcenter()
     }
 
     dependencies {

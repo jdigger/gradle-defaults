@@ -62,6 +62,8 @@ class DefaultsPluginSpec extends Specification {
 
         project.apply plugin: DefaultsPlugin
 
+        project.repositories.jcenter()
+
         println "Applied plugin: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
         stopwatch.reset().start()
 
