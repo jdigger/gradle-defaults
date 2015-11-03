@@ -15,104 +15,60 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
-import com.google.common.base.Stopwatch
+import groovy.util.logging.Slf4j
+import nebula.test.IntegrationSpec
 import org.ajoberstar.grgit.Grgit
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.logging.StandardOutputListener
-import org.gradle.api.tasks.testing.TestOutputListener
-import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Specification
 
-import java.util.concurrent.TimeUnit
-
-class DefaultsPluginSpec extends Specification {
+@Slf4j
+class DefaultsPluginSpec extends IntegrationSpec {
 
     def "Apply"() {
-        Stopwatch stopwatch = Stopwatch.createStarted()
+        writeHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
-        def projDir = new File('./src/test/resources/projects/proj1').canonicalFile
+        buildFile << """
+            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: 'java'
+        """.stripIndent()
 
-        expect:
-        projDir.exists()
+        createGitRepo()
+        createLicenseHeader()
 
         when:
-        println "Started test: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
+        def result = runTasksSuccessfully('licenseFormat', 'classes')
 
-        Project project = ProjectBuilder.builder().withProjectDir(projDir).build()
+        then:
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
+        println result.standardOutput
+        result.wasExecuted(':classes')
+    }
 
-        project.gradle.useLogger(({ println "logging ${it}" } as StandardOutputListener) as TestOutputListener)
 
-        println "Built project: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
+    void createLicenseHeader() {
+        createFile("gradle/HEADER") << "THIS CAN BE USED FREELY"
+    }
 
-        Grgit git = Grgit.init(dir: project.projectDir)
 
-        println "Init git: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
+    void createGitRepo() {
+        Grgit git = Grgit.init(dir: projectDir)
         git.repository.jgit.commit().with {
             message = 'initial'
             it
         }.call()
-
-        println "first commit: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
-        project.apply plugin: DefaultsPlugin
-
-        project.repositories.jcenter()
-
-        println "Applied plugin: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
-        project.defaults {
-            vcsWriteUrl = 'git@github.com:jdigger/gradle-defaults.git'
-        }
-
-        println "Setup defaults: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
-        def task = project.tasks.getByPath(":tasks")
-        executeTask(task)
-
-        println "Called tasks: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
-        then:
-        true
-
-        cleanup:
-        println "Cleaning up: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.reset().start()
-
-        git?.close()
-        assert new File(projDir, '.git').deleteDir()
-        assert new File(projDir, 'userHome').deleteDir()
-
-        println "Finished: ${stopwatch.elapsed(TimeUnit.MILLISECONDS)}"
-        stopwatch.stop()
     }
 
 
-    private static void executeTask(Task task) {
-        task.dependsOn.each { dep ->
-            if (dep instanceof Task) {
-                executeTask((Task)dep)
-            }
-            else {
-                task.project.logger.info("Got dependency ${dep}")
-            }
-        }
-        executeTaskActions(task)
-    }
+    protected void writeHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
+        def javaFile = createFile(path, baseDir)
+        javaFile << """
+            package ${packageDotted};
 
-
-    private static void executeTaskActions(Task task) {
-        println "Executing ${task.name}"
-        task.project.logger.info "Executing ${task.name}"
-        task.actions.each { it.execute(task) }
+            public class HelloWorld {
+                public static void main(String[] args) {
+                    System.out.println("Hello Integration Test");
+                }
+            }
+        """.stripIndent()
     }
 
 }

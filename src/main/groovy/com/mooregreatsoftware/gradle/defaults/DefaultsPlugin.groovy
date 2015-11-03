@@ -210,18 +210,16 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addLicenseConfig(Project project, DefaultsExtension extension) {
         project.plugins.apply('license')
-        project.afterEvaluate {
-            project.license {
-                header = project.rootProject.file('gradle/HEADER')
-                strictCheck = true
-                useDefaultMappings = false
-                mapping 'groovy', 'SLASHSTAR_STYLE'
-                mapping 'java', 'SLASHSTAR_STYLE'
-                ext.year = extension.copyrightYears
-            }
-            project.tasks.withType(License) {
-                exclude '**/*.properties'
-            }
+        project.license {
+            header = project.rootProject.file('gradle/HEADER')
+            strictCheck = true
+            useDefaultMappings = false
+            mapping 'groovy', 'SLASHSTAR_STYLE'
+            mapping 'java', 'SLASHSTAR_STYLE'
+            ext.year = extension.copyrightYears
+        }
+        project.tasks.withType(License) {
+            exclude '**/*.properties'
         }
     }
 
