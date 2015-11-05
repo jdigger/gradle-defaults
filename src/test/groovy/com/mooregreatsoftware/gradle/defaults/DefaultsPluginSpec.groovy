@@ -32,7 +32,7 @@ class DefaultsPluginSpec extends IntegrationSpec {
             apply plugin: 'java'
 
             defaults {
-                compatibilityVersion = 1.6
+                compatibilityVersion = 1.7
             }
         """.stripIndent()
 
@@ -40,7 +40,7 @@ class DefaultsPluginSpec extends IntegrationSpec {
         createLicenseHeader()
 
         when:
-        def result = runTasksSuccessfully('licenseFormat', 'classes')
+        def result = runTasksSuccessfully('licenseFormat', 'build')
 
         then:
         println result.standardOutput

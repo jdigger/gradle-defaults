@@ -27,9 +27,14 @@ import org.gradle.api.tasks.compile.AbstractCompile
 
 @SuppressWarnings("GrMethodMayBeStatic")
 class DefaultsPlugin implements Plugin<Project> {
+    Grgit grgit
+    String userEmail
 
     @TypeChecked
     void apply(Project project) {
+        grgit = Grgit.open(project.file('.'))
+        userEmail = grgit.repository.jgit.repository.config.getString('user', null, 'email')
+
         DefaultsExtension extension = project.extensions.create('defaults', DefaultsExtension, project)
 
         project.plugins.apply('org.ajoberstar.organize-imports')
@@ -91,6 +96,17 @@ class DefaultsPlugin implements Plugin<Project> {
                 def compileJava = project.tasks.getByName('compileJava') as AbstractCompile
                 compileJava.sourceCompatibility = extension.compatibilityVersion
                 compileJava.targetCompatibility = extension.compatibilityVersion
+
+                project.tasks.jar {
+                    manifest {
+                        attributes 'Implementation-Title': project.description ?: project.name,
+                            'Implementation-Version': project.version,
+                            'Built-By': userEmail ?: 'moore.jim@gmail.com',
+                            'Built-Date': new Date(),
+                            'Built-JDK': System.getProperty('java.version') ?: '1.7',
+                            'Built-Gradle': project.gradle.gradleVersion
+                    }
+                }
             }
 
             Task sourcesJar = project.tasks.create('sourcesJar', Jar)
@@ -260,9 +276,7 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addReleaseConfig(Project project, DefaultsExtension extension) {
         project.plugins.apply('org.ajoberstar.release-opinion')
-        project.release {
-            grgit = Grgit.open(project.file('.'))
-        }
+        project.release.grgit = grgit
         def releaseTask = project.tasks.release
         releaseTask.dependsOn 'publishGhPages'
         project.allprojects { prj ->
