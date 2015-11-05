@@ -18,16 +18,22 @@ package com.mooregreatsoftware.gradle.defaults
 import groovy.util.logging.Slf4j
 import nebula.test.IntegrationSpec
 import org.ajoberstar.grgit.Grgit
+import org.gradle.api.logging.LogLevel
 
 @Slf4j
 class DefaultsPluginSpec extends IntegrationSpec {
 
     def "Apply"() {
+        logLevel = LogLevel.DEBUG
         writeHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            ${applyPlugin(DefaultsPlugin.class)}
             apply plugin: 'java'
+
+            defaults {
+                compatibilityVersion = 1.6
+            }
         """.stripIndent()
 
         createGitRepo()
@@ -37,8 +43,8 @@ class DefaultsPluginSpec extends IntegrationSpec {
         def result = runTasksSuccessfully('licenseFormat', 'classes')
 
         then:
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         println result.standardOutput
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         result.wasExecuted(':classes')
     }
 

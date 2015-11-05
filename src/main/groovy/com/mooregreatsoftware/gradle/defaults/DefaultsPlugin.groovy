@@ -23,7 +23,9 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.AbstractCompile
 
+@SuppressWarnings("GrMethodMayBeStatic")
 class DefaultsPlugin implements Plugin<Project> {
 
     @TypeChecked
@@ -79,8 +81,17 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addJavaConfig(Project project, DefaultsExtension extension) {
         project.plugins.withId('java') {
+            project.logger.debug "Configuring the 'java' plugin"
+
             project.plugins.apply('idea')
             configureIdea(project, extension)
+
+            project.afterEvaluate {
+                project.logger.debug "Setting Java source and target compatibility to ${extension.compatibilityVersion}"
+                def compileJava = project.tasks.getByName('compileJava') as AbstractCompile
+                compileJava.sourceCompatibility = extension.compatibilityVersion
+                compileJava.targetCompatibility = extension.compatibilityVersion
+            }
 
             Task sourcesJar = project.tasks.create('sourcesJar', Jar)
             sourcesJar.with {
@@ -103,10 +114,11 @@ class DefaultsPlugin implements Plugin<Project> {
 
 
     private void configureIdea(Project project, DefaultsExtension extension) {
+        project.logger.info "Configuring the 'idea' plugin"
+
         project.idea.project {
             vcs = 'Git'
             jdkName = '1.8'
-            languageLevel = extension.compatibilityVersion
 
             ipr {
                 withXml { provider ->
@@ -173,12 +185,25 @@ class DefaultsPlugin implements Plugin<Project> {
                     }
                 }
             }
+
+            project.afterEvaluate {
+                project.idea.project.languageLevel = extension.compatibilityVersion
+            }
         }
     }
 
 
     private void addGroovyConfig(Project project, DefaultsExtension extension) {
         project.plugins.withId('groovy') {
+            project.logger.debug "Configuring the 'groovy' plugin"
+
+            project.afterEvaluate {
+                project.logger.debug "Setting Groovy source and target compatibility to ${extension.compatibilityVersion}"
+                def compileGroovy = project.tasks.getByName('compileGroovy') as AbstractCompile
+                compileGroovy.sourceCompatibility = extension.compatibilityVersion
+                compileGroovy.targetCompatibility = extension.compatibilityVersion
+            }
+
             Task groovydocJar = project.tasks.create('groovydocJar', Jar)
             groovydocJar.with {
                 classifier = 'groovydoc'
@@ -195,6 +220,13 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addScalaConfig(Project project, DefaultsExtension extension) {
         project.plugins.withId('scala') {
+            project.afterEvaluate {
+                project.logger.debug "Setting Scala source and target compatibility to ${extension.compatibilityVersion}"
+                def compileScala = project.tasks.getByName('compileScala') as AbstractCompile
+                compileScala.sourceCompatibility = extension.compatibilityVersion
+                compileScala.targetCompatibility = extension.compatibilityVersion
+            }
+
             Task scaladocJar = project.tasks.create('scaladocJar', Jar)
             scaladocJar.with {
                 classifier = 'scaladoc'
@@ -216,7 +248,9 @@ class DefaultsPlugin implements Plugin<Project> {
             useDefaultMappings = false
             mapping 'groovy', 'SLASHSTAR_STYLE'
             mapping 'java', 'SLASHSTAR_STYLE'
-            ext.year = extension.copyrightYears
+        }
+        project.afterEvaluate {
+            project.ext.year = extension.copyrightYears
         }
         project.tasks.withType(License) {
             exclude '**/*.properties'
@@ -242,16 +276,17 @@ class DefaultsPlugin implements Plugin<Project> {
     }
 
 
+    @TypeChecked
     private void addOrderingRules(Project project, DefaultsExtension extension) {
         def clean = project.tasks['clean']
-        project.tasks.all { task ->
+        project.tasks.all { Task task ->
             if (task != clean) {
                 task.shouldRunAfter clean
             }
         }
 
         def build = project.tasks['build']
-        project.tasks.all { task ->
+        project.tasks.all { Task task ->
             if (task.group == 'publishing') {
                 task.shouldRunAfter build
             }
@@ -261,73 +296,75 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addMavenPublishingConfig(Project project, DefaultsExtension extension) {
         project.plugins.withId('maven-publish') {
-            project.publishing {
-                publications {
-                    main(MavenPublication) {
-                        project.plugins.withId('java') {
-                            from project.components.java
-                            artifact project.sourcesJar
-                            artifact project.javadocJar
-                        }
+            project.afterEvaluate {
+                project.publishing {
+                    publications {
+                        main(MavenPublication) {
+                            project.plugins.withId('java') {
+                                from project.components.java
+                                artifact project.sourcesJar
+                                artifact project.javadocJar
+                            }
 
-                        project.plugins.withId('groovy') {
-                            artifact project.groovydocJar
-                        }
+                            project.plugins.withId('groovy') {
+                                artifact project.groovydocJar
+                            }
 
-                        project.plugins.withId('scala') {
-                            artifact project.scaladocJar
-                        }
+                            project.plugins.withId('scala') {
+                                artifact project.scaladocJar
+                            }
 
-                        pom.withXml {
-                            asNode().with {
-                                appendNode('name', project.name)
-                                appendNode('description', project.description)
-                                appendNode('url', extension.siteUrl)
-                                if (extension.orgName) {
-                                    appendNode('organization').with {
-                                        appendNode('name', extension.orgName)
-                                        appendNode('url', extension.orgUrl)
-                                    }
-                                }
-                                appendNode('licenses').with {
-                                    appendNode('license').with {
-                                        appendNode('name', extension.licenseName)
-                                        appendNode('url', extension.licenseUrl)
-                                    }
-                                }
-                                if (extension.developers) {
-                                    appendNode('developers').with { node ->
-                                        extension.developers.each { developer ->
-                                            node.appendNode('developer').with {
-                                                appendNode('id', developer.id)
-                                                appendNode('name', developer.name)
-                                                appendNode('email', developer.email)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (extension.contributors) {
-                                    appendNode('contributors').with { node ->
-                                        extension.contributors.each { contributor ->
-                                            node.appendNode('contributor').with {
-                                                appendNode('id', contributor.id)
-                                                appendNode('name', contributor.name)
-                                                appendNode('email', contributor.email)
-                                            }
-                                        }
-                                    }
-                                }
-                                appendNode('scm').with {
-                                    appendNode('connection', "scm:git:${extension.vcsReadUrl}")
-                                    appendNode('developerConnection', "scm:git:${extension.vcsWriteUrl}")
+                            pom.withXml {
+                                asNode().with {
+                                    appendNode('name', project.name)
+                                    appendNode('description', project.description)
                                     appendNode('url', extension.siteUrl)
+                                    if (extension.orgName) {
+                                        appendNode('organization').with {
+                                            appendNode('name', extension.orgName)
+                                            appendNode('url', extension.orgUrl)
+                                        }
+                                    }
+                                    appendNode('licenses').with {
+                                        appendNode('license').with {
+                                            appendNode('name', extension.licenseName)
+                                            appendNode('url', extension.licenseUrl)
+                                        }
+                                    }
+                                    if (extension.developers) {
+                                        appendNode('developers').with { node ->
+                                            extension.developers.each { developer ->
+                                                node.appendNode('developer').with {
+                                                    appendNode('id', developer.id)
+                                                    appendNode('name', developer.name)
+                                                    appendNode('email', developer.email)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (extension.contributors) {
+                                        appendNode('contributors').with { node ->
+                                            extension.contributors.each { contributor ->
+                                                node.appendNode('contributor').with {
+                                                    appendNode('id', contributor.id)
+                                                    appendNode('name', contributor.name)
+                                                    appendNode('email', contributor.email)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    appendNode('scm').with {
+                                        appendNode('connection', "scm:git:${extension.vcsReadUrl}")
+                                        appendNode('developerConnection', "scm:git:${extension.vcsWriteUrl}")
+                                        appendNode('url', extension.siteUrl)
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                repositories {
-                    mavenLocal()
+                    repositories {
+                        mavenLocal()
+                    }
                 }
             }
         }

@@ -25,12 +25,15 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
         - Code formatting set to reasonable/consistent standards
     - Configure `org.ajoberstar.github-pages` to deploy `docs/javadoc`.
     - Add tasks and artifacts for a `-sources.jar` and `-javadoc.jar`.
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
 - If `groovy` plugin applied:
     - Configure `org.ajoberstar.github-pages` to deploy `docs/groovydoc`
     - Adds tasks and artifacts for `-groovydoc.jar`.
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
 - If `scala` plugin applied:
     - Configure `org.ajoberstar.github-pages` to deploy `docs/scaladoc`.
     - Add tasks and artifacts for `-scaladoc.jar`.
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
 - Applies [`license`](https://github.com/hierynomus/license-gradle-plugin) plugin.
     - Uses license header from `gradle/HEADER`
         - Substitutes extensions' `copyrightYears` for `${year}` in header.
