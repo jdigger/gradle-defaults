@@ -124,17 +124,4 @@ defaults {
 
 ## Release Notes
 
-### v1.0.0
-
-- First release after forking from https://github.com/ajoberstar/gradle-defaults
-
-### v0.5.0
-
-- Automatically configures the Bintray plugins `mavenCentralSync` with the
-following project properties:
-    - `sonatypeUsername`
-    - `sonatypePassword`
-
-### v0.4.0
-
-- Initial release after refactoring from `gradle-ajoberstar`.
+See [the Releases page](../../releases)
