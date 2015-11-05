@@ -267,6 +267,7 @@ class DefaultsPlugin implements Plugin<Project> {
         }
         project.afterEvaluate {
             project.ext.year = extension.copyrightYears
+            project.license.ext.year = extension.copyrightYears
         }
         project.tasks.withType(License) {
             exclude '**/*.properties'
