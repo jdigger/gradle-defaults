@@ -48,7 +48,7 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
 - Configures ordering rules for tasks:
     - All tasks should run after `clean`.
     - All tasks in the `publishing` group should run after `build`.
-- If `maven-publish` applied:
+- Applies the `maven-publish` plugin:
     - Configure the `main` publication to include any of the following that exist:
         - `.jar`
         - `-sources.jar`
