@@ -47,7 +47,7 @@ class DefaultsExtension {
 
     DefaultsExtension(Project project) {
         project.afterEvaluate {
-            this.bintrayPkg = bintrayPkg ?: "${project.group}:${project.name}"
+            this.bintrayPkg = bintrayPkg ?: "${project.name}"
 
             this.siteUrl = siteUrl ?: "https://github.com/${id}/${project.name}"
             this.issuesUrl = issuesUrl ?: "${siteUrl}/issues"
