@@ -266,7 +266,6 @@ class DefaultsPlugin implements Plugin<Project> {
             mapping 'java', 'SLASHSTAR_STYLE'
         }
         project.afterEvaluate {
-            project.ext.year = extension.copyrightYears
             project.license.ext.year = extension.copyrightYears
         }
         project.tasks.withType(License) {
@@ -293,17 +292,19 @@ class DefaultsPlugin implements Plugin<Project> {
 
     @TypeChecked
     private void addOrderingRules(Project project, DefaultsExtension extension) {
-        def clean = project.tasks['clean']
-        project.tasks.all { Task task ->
-            if (task != clean) {
-                task.shouldRunAfter clean
+        project.plugins.withId('org.gradle.base') {
+            def clean = project.tasks['clean']
+            project.tasks.all { Task task ->
+                if (task != clean) {
+                    task.shouldRunAfter clean
+                }
             }
-        }
 
-        def build = project.tasks['build']
-        project.tasks.all { Task task ->
-            if (task.group == 'publishing') {
-                task.shouldRunAfter build
+            def build = project.tasks['build']
+            project.tasks.all { Task task ->
+                if (task.group == 'publishing') {
+                    task.shouldRunAfter build
+                }
             }
         }
     }
