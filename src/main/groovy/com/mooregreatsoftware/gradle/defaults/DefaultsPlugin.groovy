@@ -30,6 +30,7 @@ class DefaultsPlugin implements Plugin<Project> {
     Grgit grgit
     String userEmail
 
+
     @TypeChecked
     void apply(Project project) {
         grgit = Grgit.open(project.file('.'))
@@ -43,6 +44,11 @@ class DefaultsPlugin implements Plugin<Project> {
         addReleaseConfig(project, extension)
 
         project.allprojects { Project prj ->
+            if (prj == prj.rootProject) {
+                // apply to the root regardless
+                prj.plugins.apply('idea')
+                configureIdea(prj, extension)
+            }
             prj.repositories.jcenter()
             addJavaConfig(prj, extension)
             addGroovyConfig(prj, extension)
@@ -130,9 +136,10 @@ class DefaultsPlugin implements Plugin<Project> {
 
 
     private void configureIdea(Project project, DefaultsExtension extension) {
-        project.logger.info "Configuring the 'idea' plugin"
-
+        // everything below this is only at the (top-level) "Project" level, not the "Module" level
         if (project != project.rootProject) return
+
+        project.logger.info "Configuring the 'idea' plugin"
 
         project.idea.project {
             vcs = 'Git'
