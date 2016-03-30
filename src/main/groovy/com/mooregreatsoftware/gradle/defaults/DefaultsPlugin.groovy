@@ -132,6 +132,8 @@ class DefaultsPlugin implements Plugin<Project> {
     private void configureIdea(Project project, DefaultsExtension extension) {
         project.logger.info "Configuring the 'idea' plugin"
 
+        if (project != project.rootProject) return
+
         project.idea.project {
             vcs = 'Git'
             jdkName = '1.8'
