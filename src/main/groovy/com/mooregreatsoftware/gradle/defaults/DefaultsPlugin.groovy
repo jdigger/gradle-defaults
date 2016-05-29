@@ -321,74 +321,77 @@ class DefaultsPlugin implements Plugin<Project> {
 
     private void addMavenPublishingConfig(Project project, DefaultsExtension extension) {
         project.plugins.apply('maven-publish')
+
+        project.publishing {
+            publications {
+                main(MavenPublication)
+            }
+            repositories {
+                mavenLocal()
+            }
+        }
+
         project.afterEvaluate {
-            project.publishing {
-                publications {
-                    main(MavenPublication) {
-                        project.plugins.withId('java') {
-                            from project.components.java
-                            artifact project.sourcesJar
-                            artifact project.javadocJar
-                        }
+            project.publishing.publications.main {
+                project.plugins.withId('java') {
+                    from project.components.java
+                    artifact project.sourcesJar
+                    artifact project.javadocJar
+                }
 
-                        project.plugins.withId('groovy') {
-                            artifact project.groovydocJar
-                        }
+                project.plugins.withId('groovy') {
+                    artifact project.groovydocJar
+                }
 
-                        project.plugins.withId('scala') {
-                            artifact project.scaladocJar
-                        }
+                project.plugins.withId('scala') {
+                    artifact project.scaladocJar
+                }
 
-                        pom.withXml {
-                            asNode().with {
-                                appendNode('name', project.name)
-                                appendNode('description', project.description)
-                                appendNode('url', extension.siteUrl)
-                                if (extension.orgName) {
-                                    appendNode('organization').with {
-                                        appendNode('name', extension.orgName)
-                                        appendNode('url', extension.orgUrl)
+                pom.withXml {
+                    asNode().with {
+                        appendNode('name', project.name)
+                        appendNode('description', project.description)
+                        appendNode('url', extension.siteUrl)
+                        if (extension.orgName) {
+                            appendNode('organization').with {
+                                appendNode('name', extension.orgName)
+                                appendNode('url', extension.orgUrl)
+                            }
+                        }
+                        appendNode('licenses').with {
+                            appendNode('license').with {
+                                appendNode('name', extension.licenseName)
+                                appendNode('url', extension.licenseUrl)
+                            }
+                        }
+                        if (extension.developers) {
+                            appendNode('developers').with { node ->
+                                extension.developers.each { developer ->
+                                    node.appendNode('developer').with {
+                                        appendNode('id', developer.id)
+                                        appendNode('name', developer.name)
+                                        appendNode('email', developer.email)
                                     }
-                                }
-                                appendNode('licenses').with {
-                                    appendNode('license').with {
-                                        appendNode('name', extension.licenseName)
-                                        appendNode('url', extension.licenseUrl)
-                                    }
-                                }
-                                if (extension.developers) {
-                                    appendNode('developers').with { node ->
-                                        extension.developers.each { developer ->
-                                            node.appendNode('developer').with {
-                                                appendNode('id', developer.id)
-                                                appendNode('name', developer.name)
-                                                appendNode('email', developer.email)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (extension.contributors) {
-                                    appendNode('contributors').with { node ->
-                                        extension.contributors.each { contributor ->
-                                            node.appendNode('contributor').with {
-                                                appendNode('id', contributor.id)
-                                                appendNode('name', contributor.name)
-                                                appendNode('email', contributor.email)
-                                            }
-                                        }
-                                    }
-                                }
-                                appendNode('scm').with {
-                                    appendNode('connection', "scm:git:${extension.vcsReadUrl}")
-                                    appendNode('developerConnection', "scm:git:${extension.vcsWriteUrl}")
-                                    appendNode('url', extension.siteUrl)
                                 }
                             }
                         }
+                        if (extension.contributors) {
+                            appendNode('contributors').with { node ->
+                                extension.contributors.each { contributor ->
+                                    node.appendNode('contributor').with {
+                                        appendNode('id', contributor.id)
+                                        appendNode('name', contributor.name)
+                                        appendNode('email', contributor.email)
+                                    }
+                                }
+                            }
+                        }
+                        appendNode('scm').with {
+                            appendNode('connection', "scm:git:${extension.vcsReadUrl}")
+                            appendNode('developerConnection', "scm:git:${extension.vcsWriteUrl}")
+                            appendNode('url', extension.siteUrl)
+                        }
                     }
-                }
-                repositories {
-                    mavenLocal()
                 }
             }
         }
