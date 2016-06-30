@@ -25,22 +25,22 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
         - Code formatting set to reasonable/consistent standards
     - Configure `org.ajoberstar.github-pages` to deploy `docs/javadoc`.
     - Add tasks and artifacts for a `-sources.jar` and `-javadoc.jar`.
-    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.8)
     - Configures the JAR MANIFEST.MF to include
         - Implementation-Title = {project.description ?: project.name}
         - Implementation-Version = {project.version}
         - Built-By = {userEmail as known to git's `user.email` configuration}
         - Built-Date = {now}
-        - Built-JDK = {System.getProperty('java.version') ?: '1.7'}
+        - Built-JDK = {System.getProperty('java.version') ?: '1.8'}
         - Built-Gradle = {Gradle version being used}
 - If `groovy` plugin applied:
     - Configure `org.ajoberstar.github-pages` to deploy `docs/groovydoc`
     - Adds tasks and artifacts for `-groovydoc.jar`.
-    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.8)
 - If `scala` plugin applied:
     - Configure `org.ajoberstar.github-pages` to deploy `docs/scaladoc`.
     - Add tasks and artifacts for `-scaladoc.jar`.
-    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.7)
+    - Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults to 1.8)
 - Applies [`license`](https://github.com/hierynomus/license-gradle-plugin) plugin.
     - Uses license header from `gradle/HEADER`
         - Substitutes extensions' `copyrightYears` for `${year}` in header.
@@ -102,7 +102,7 @@ defaults {
     orgName = 'friendly name of org'
     orgUrl = 'website of org'
 
-    compatibilityVersion = 1.7
+    compatibilityVersion = 1.8
 
     bintrayRepo = 'my repo'
     bintrayLabels = ['label1', 'label2']

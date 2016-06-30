@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.URIish
 import org.gradle.api.logging.LogLevel
 
-class DefaultsPluginSpec extends IntegrationSpec {
+abstract class AbstractConfigSpec extends IntegrationSpec {
     @TempDirectory(clean = false, baseDir = 'build/git-bare')
     protected File remoteOrigin
 
@@ -31,7 +31,7 @@ class DefaultsPluginSpec extends IntegrationSpec {
 
     @CompileStatic
     def setup() {
-        // logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.DEBUG
 
         git = Git.init().setDirectory(projectDir).call()
         createFile(".gitignore", projectDir) << """
@@ -45,88 +45,14 @@ class DefaultsPluginSpec extends IntegrationSpec {
     }
 
 
-    def "build"() {
-        logLevel = LogLevel.DEBUG
-        writeHelloWorld('com.mooregreatsoftware.gradle.defaults')
-
-        buildFile << """
-            ${applyPlugin(DefaultsPlugin.class)}
-            apply plugin: 'java'
-
-            defaults {
-                compatibilityVersion = 1.7
-            }
-        """.stripIndent()
-
-        createLicenseHeader()
-
-        when:
-        def result = runTasksSuccessfully('licenseFormat', 'build')
-
-        then:
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        result.wasExecuted(':classes')
-
-        cleanup:
-        println result.standardOutput
-        println result.standardError
-    }
-
-
-    def "release"() {
-        writeHelloWorld('com.mooregreatsoftware.gradle.defaults')
-
-        buildFile << """
-            plugins {
-                id 'com.jfrog.bintray' version '1.4'
-            }
-            apply plugin: 'java'
-
-            group = 'com.mooregreatsoftware.gradle.defaults'
-            description = 'Nice Gradle defaults'
-
-            bintray {
-                pkg {
-                    licenses = ['Apache-2.0']
-                    attributes = ['plat': ['jvm']]
-                }
-            }
-
-            ${applyPlugin(DefaultsPlugin.class)}
-            defaults {
-                compatibilityVersion = 1.7
-                orgName = "testing org"
-            }
-        """.stripIndent()
-
-        createLicenseHeader()
-
-        git.add().addFilepattern(".").call()
-        git.commit().setMessage("the files").call()
-
-        when:
-        def result = runTasks('licenseFormat', 'generatePomFileForMainPublication', 'release',
-            '-x', 'bintrayUpload', '-x', 'prepareGhPages', '-Prelease.scope=patch', '-Prelease.stage=final')
-
-        then:
-        result.failure == null
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        result.wasExecuted(':classes')
-
-        cleanup:
-        println result.standardOutput
-        println result.standardError
-    }
-
-
     @CompileStatic
     void createLicenseHeader() {
-        createFile("gradle/HEADER") << "THIS CAN BE USED FREELY"
+        createFile("gradle/HEADER") << 'Copyright ${year} the original author or authors.\nTHIS CAN BE USED FREELY'
     }
 
 
     @CompileStatic
-    protected void writeHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+    protected File writeJavaHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
         def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
         def javaFile = createFile(path, baseDir)
         javaFile << """
@@ -138,6 +64,7 @@ class DefaultsPluginSpec extends IntegrationSpec {
                 }
             }
         """.stripIndent()
+        return javaFile
     }
 
 
