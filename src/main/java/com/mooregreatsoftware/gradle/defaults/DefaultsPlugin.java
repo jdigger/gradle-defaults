@@ -21,6 +21,7 @@ import com.mooregreatsoftware.gradle.defaults.config.GroovyConfig;
 import com.mooregreatsoftware.gradle.defaults.config.IntellijConfig;
 import com.mooregreatsoftware.gradle.defaults.config.JavaConfig;
 import com.mooregreatsoftware.gradle.defaults.config.LicenseConfig;
+import com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration;
 import com.mooregreatsoftware.gradle.defaults.config.MavenPublishingConfig;
 import com.mooregreatsoftware.gradle.defaults.config.ReleaseConfig;
 import com.mooregreatsoftware.gradle.defaults.config.ScalaConfig;
@@ -36,7 +37,6 @@ import org.gradle.api.plugins.ExtraPropertiesExtension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 @SuppressWarnings({"GrMethodMayBeStatic", "WeakerAccess"})
 public class DefaultsPlugin implements Plugin<Project> {
@@ -71,6 +71,7 @@ public class DefaultsPlugin implements Plugin<Project> {
             new LicenseConfig(prj).config(extension::getCopyrightYears);
             new MavenPublishingConfig(prj, extension).config();
             new BintrayConfig(prj, extension).config();
+            new LombokConfiguration(prj).config(extension::getLobokVersion);
             addOrderingRules(prj);
         });
     }

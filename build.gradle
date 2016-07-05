@@ -34,8 +34,7 @@ defaults {
     bintrayLabels = ['gradle', 'plugin']
 
     developers = [
-        [id: 'jmoore', name: 'Jim Moore', email: 'moore.jim@gmail.com'],
-        [id: 'ajoberstar', name: 'Andrew Oberstar', email: 'andrew@ajoberstar.org']
+        [id: 'jmoore', name: 'Jim Moore', email: 'moore.jim@gmail.com']
     ]
 
     copyrightYears = '2014-2016'

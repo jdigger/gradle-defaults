@@ -33,7 +33,7 @@ public class DefaultsExtension {
     private boolean bintrayToCentral = false;
     private Set<Map> developers;
     private Set<Map> contributors;
-    private String compatibilityVersion = "1.7";
+    private String compatibilityVersion = "1.8";
     private String siteUrl;
     private String issuesUrl;
     private String vcsReadUrl;
@@ -42,6 +42,7 @@ public class DefaultsExtension {
     private String licenseName;
     private String licenseUrl;
     private String copyrightYears;
+    private String lobokVersion = "1.16.8";
 
 
     public DefaultsExtension(final Project project) {
@@ -243,5 +244,14 @@ public class DefaultsExtension {
         this.copyrightYears = copyrightYears;
     }
 
+
+    public String getLobokVersion() {
+        return lobokVersion;
+    }
+
+
+    public void setLobokVersion(String lobokVersion) {
+        this.lobokVersion = lobokVersion;
+    }
 
 }

@@ -13,6 +13,8 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
 
 - Applies [`organize-imports`](https://github.com/ajoberstar/gradle-imports) plugin.
 - Adds the `jcenter()` repository.
+- Adds support for [Lombok](https://projectlombok.org/) for Java projects. Configures to use:
+    - Extension's `lombokVersion`. Defaults to "1.16.8".
 - Applies [`org.ajoberstar.github-pages`](https://github.com/ajoberstar/gradle-git) plugin. Configures to use:
     - Extension's `vcsWriteUrl`.
     - Publish content from `src/gh-pages`.
