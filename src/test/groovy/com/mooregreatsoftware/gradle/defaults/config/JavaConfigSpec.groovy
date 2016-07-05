@@ -28,6 +28,7 @@ class JavaConfigSpec extends AbstractConfigSpec {
             apply plugin: 'java'
 
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()
@@ -38,9 +39,10 @@ class JavaConfigSpec extends AbstractConfigSpec {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
 
         when:
-        def result = runTasksSuccessfully('assemble')
+        def result = runTasks('assemble')
 
         then:
+        result.success
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorld.class')
         [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {

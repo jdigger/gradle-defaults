@@ -31,6 +31,7 @@ class DefaultsPluginIntSpec extends AbstractConfigSpec {
             apply plugin: 'java'
 
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.7
                 copyrightYears = '2014-2015'
             }
@@ -39,9 +40,10 @@ class DefaultsPluginIntSpec extends AbstractConfigSpec {
         createLicenseHeader()
 
         when:
-        def result = runTasksSuccessfully('licenseFormat', 'build', 'idea')
+        def result = runTasks('licenseFormat', 'build', 'idea')
 
         then:
+        result.success
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         result.wasExecuted(':classes')
 
@@ -73,6 +75,7 @@ class DefaultsPluginIntSpec extends AbstractConfigSpec {
 
             ${applyPlugin(DefaultsPlugin)}
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.7
                 orgName = "testing org"
             }
@@ -88,7 +91,7 @@ class DefaultsPluginIntSpec extends AbstractConfigSpec {
             '-x', 'bintrayUpload', '-x', 'prepareGhPages', '-Prelease.scope=patch', '-Prelease.stage=final')
 
         then:
-        result.failure == null
+        result.success
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         result.wasExecuted(':classes')
 

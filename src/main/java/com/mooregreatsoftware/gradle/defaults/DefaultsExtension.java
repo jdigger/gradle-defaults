@@ -15,6 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import java.util.Map;
@@ -24,6 +25,8 @@ import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class DefaultsExtension {
+    private final Project project;
+
     private String id;
     private String orgName;
     private String orgUrl;
@@ -38,29 +41,22 @@ public class DefaultsExtension {
     private String issuesUrl;
     private String vcsReadUrl;
     private String vcsWriteUrl;
-    private String licenseKey;
-    private String licenseName;
-    private String licenseUrl;
+    private String licenseKey = "Apache-2.0";
+    private String licenseName = "The Apache Software License, Version 2.0";
+    private String licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0";
     private String copyrightYears;
     private String lobokVersion = "1.16.8";
 
 
     public DefaultsExtension(final Project project) {
-        // TODO change to default values and/or in getters
-        project.afterEvaluate(prj -> {
-            bintrayPkg = opt(bintrayPkg).orElse(project.getName());
-            siteUrl = opt(siteUrl).orElseGet(() -> "https://github.com/" + id + "/" + project.getName());
-            issuesUrl = opt(issuesUrl).orElseGet(() -> siteUrl + "/issues");
-            vcsReadUrl = opt(vcsReadUrl).orElseGet(() -> siteUrl + ".git");
-            vcsWriteUrl = opt(vcsWriteUrl).orElseGet(() -> "git@github.com:" + id + "/" + project.getName() + ".git");
-            licenseKey = opt(licenseKey).orElse("Apache-2.0");
-            licenseName = opt(licenseName).orElse("The Apache Software License, Version 2.0");
-            licenseUrl = opt(licenseUrl).orElse("http://www.apache.org/licenses/LICENSE-2.0");
-        });
+        this.project = project;
     }
 
 
     public String getId() {
+        if (this.id == null) {
+            throw new IllegalStateException("\"id\" is not set for " + DefaultsExtension.class.getName());
+        }
         return id;
     }
 
@@ -101,7 +97,7 @@ public class DefaultsExtension {
 
 
     public String getBintrayPkg() {
-        return bintrayPkg;
+        return opt(bintrayPkg).orElse(project.getName());
     }
 
 
@@ -166,7 +162,7 @@ public class DefaultsExtension {
 
 
     public String getSiteUrl() {
-        return siteUrl;
+        return opt(siteUrl).orElseGet(() -> "https://github.com/" + getId() + "/" + project.getName());
     }
 
 
@@ -176,7 +172,7 @@ public class DefaultsExtension {
 
 
     public String getIssuesUrl() {
-        return issuesUrl;
+        return opt(issuesUrl).orElseGet(() -> getSiteUrl() + "/issues");
     }
 
 
@@ -186,7 +182,7 @@ public class DefaultsExtension {
 
 
     public String getVcsReadUrl() {
-        return vcsReadUrl;
+        return opt(vcsReadUrl).orElseGet(() -> getSiteUrl() + ".git");
     }
 
 
@@ -196,7 +192,7 @@ public class DefaultsExtension {
 
 
     public String getVcsWriteUrl() {
-        return vcsWriteUrl;
+        return opt(vcsWriteUrl).orElseGet(() -> "git@github.com:" + getId() + "/" + project.getName() + ".git");
     }
 
 

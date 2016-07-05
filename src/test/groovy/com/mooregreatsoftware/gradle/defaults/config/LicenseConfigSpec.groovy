@@ -28,6 +28,7 @@ class LicenseConfigSpec extends AbstractConfigSpec {
             apply plugin: 'java'
 
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.7
                 copyrightYears = '2014-2016'
             }
@@ -45,9 +46,10 @@ class LicenseConfigSpec extends AbstractConfigSpec {
         subSourceFile.readLines().find( { it.contains("Copyright ") }) == null
 
         when:
-        def result = runTasksSuccessfully('licenseFormat')
+        def result = runTasks('licenseFormat')
 
         then:
+        result.success
         sourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
         subSourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
 

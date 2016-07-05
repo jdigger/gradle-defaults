@@ -22,6 +22,8 @@ import org.gradle.api.file.CopySpec;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.TaskContainer;
 
+import java.util.function.Supplier;
+
 @SuppressWarnings("WeakerAccess")
 public class GhPagesConfig extends AbstractConfig {
 
@@ -30,7 +32,7 @@ public class GhPagesConfig extends AbstractConfig {
     }
 
 
-    public void config(String vcsWriteUrl) {
+    public void config(Supplier<String> vcsWriteUrlSupplier) {
         info("Applying plugin 'org.ajoberstar.github-pages'");
         plugins().apply("org.ajoberstar.github-pages");
 
@@ -47,7 +49,7 @@ public class GhPagesConfig extends AbstractConfig {
         project.afterEvaluate(prj -> {
             debug("Continuing configuring githubPages extension");
             GithubPagesPluginExtension gheExt = githubPages();
-            gheExt.setRepoUri(vcsWriteUrl);
+            gheExt.setRepoUri(vcsWriteUrlSupplier.get());
             gheExt.getPages().from("src/gh-pages");
         });
     }

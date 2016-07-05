@@ -28,6 +28,7 @@ class IntellijConfigSpec extends AbstractConfigSpec {
             apply plugin: 'java'
 
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()
@@ -35,9 +36,10 @@ class IntellijConfigSpec extends AbstractConfigSpec {
         addSubproject("submod")
 
         when:
-        def result = runTasksSuccessfully('idea')
+        def result = runTasks('idea')
 
         then:
+        result.success
         fileExists("${moduleName}.ipr")
         result.wasExecuted(':ideaProject')
 

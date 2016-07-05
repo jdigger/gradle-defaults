@@ -58,7 +58,7 @@ public class DefaultsPlugin implements Plugin<Project> {
         project.getPlugins().apply("org.ajoberstar.organize-imports");
 
         if (grgit != null) {
-            new GhPagesConfig(project).config(extension.getVcsWriteUrl());
+            new GhPagesConfig(project).config(extension::getVcsWriteUrl);
             new ReleaseConfig(project, grgit).config();
         }
 

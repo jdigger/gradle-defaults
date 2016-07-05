@@ -29,6 +29,7 @@ class LombokConfigSpec extends AbstractConfigSpec {
             apply plugin: 'java'
 
             defaults {
+                id = "tester"
                 compatibilityVersion = 1.8
             }
         """.stripIndent()

@@ -47,10 +47,9 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
         Publication mainPub = publishing.getPublications().findByName(PUBLICATION_NAME);
         if (mainPub == null) {
-            final MavenPublication pub = publishing.getPublications().create(PUBLICATION_NAME, MavenPublication.class);
-            publishing.getRepositories().mavenLocal();
-
             project.afterEvaluate(prj -> {
+                final MavenPublication pub = publishing.getPublications().create(PUBLICATION_NAME, MavenPublication.class);
+                publishing.getRepositories().mavenLocal();
                 plugins().withId("java", plugin -> {
                     pub.from(project.getComponents().getByName("java"));
                     pub.artifact(tasks().getByName("sourcesJar"));
@@ -62,7 +61,10 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
                 pub.pom(pom ->
                     pom.withXml(xmlProvider -> {
-                            Node rootNode = xmlProvider.asNode();
+                        if (project.getGroup() == null || project.getGroup().toString().trim().isEmpty())
+                            throw new IllegalStateException("There is no group set on the project");
+
+                        Node rootNode = xmlProvider.asNode();
                             rootNode.appendNode("name", name());
                             rootNode.appendNode("description", project.getDescription());
                             rootNode.appendNode("url", extension.getSiteUrl());
