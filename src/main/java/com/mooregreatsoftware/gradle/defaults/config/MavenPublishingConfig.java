@@ -16,7 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
-import com.mooregreatsoftware.gradle.defaults.XmlUtils;
+import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
 import groovy.util.Node;
 import org.gradle.api.Project;
 import org.gradle.api.publish.Publication;
@@ -26,8 +26,8 @@ import org.gradle.api.publish.maven.MavenPublication;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.mooregreatsoftware.gradle.defaults.XmlUtils.createNode;
-import static com.mooregreatsoftware.gradle.defaults.XmlUtils.n;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings("WeakerAccess")
@@ -61,10 +61,10 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
                 pub.pom(pom ->
                     pom.withXml(xmlProvider -> {
-                        if (project.getGroup() == null || project.getGroup().toString().trim().isEmpty())
-                            throw new IllegalStateException("There is no group set on the project");
+                            if (project.getGroup() == null || project.getGroup().toString().trim().isEmpty())
+                                throw new IllegalStateException("There is no group set on the project");
 
-                        Node rootNode = xmlProvider.asNode();
+                            Node rootNode = xmlProvider.asNode();
                             rootNode.appendNode("name", name());
                             rootNode.appendNode("description", project.getDescription());
                             rootNode.appendNode("url", extension.getSiteUrl());
@@ -83,7 +83,7 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
                             );
 
                             if (extension.getDevelopers() != null && !extension.getDevelopers().isEmpty()) {
-                                List<XmlUtils.NodeBuilder> devNodes = extension.getDevelopers().stream().
+                                List<NodeBuilder> devNodes = extension.getDevelopers().stream().
                                     map(m -> n("developer", asList(
                                         n("id", (String)m.get("id")),
                                         n("name", (String)m.get("name")),
@@ -94,7 +94,7 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
                             }
 
                             if (extension.getContributors() != null && !extension.getContributors().isEmpty()) {
-                                List<XmlUtils.NodeBuilder> devNodes = extension.getContributors().stream().
+                                List<NodeBuilder> devNodes = extension.getContributors().stream().
                                     map(m -> n("contributor", asList(
                                         n("id", (String)m.get("id")),
                                         n("name", (String)m.get("name")),

@@ -15,7 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
-import com.mooregreatsoftware.gradle.defaults.XmlUtils;
+import com.mooregreatsoftware.gradle.defaults.xml.XmlUtils;
 import groovy.util.Node;
 import groovy.util.NodeList;
 import org.gradle.api.Project;
@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.mooregreatsoftware.gradle.defaults.XmlUtils.createNode;
-import static com.mooregreatsoftware.gradle.defaults.XmlUtils.n;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings("WeakerAccess")
@@ -104,7 +104,7 @@ public class IntellijConfig extends AbstractConfig {
                 n("option", nv("CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND", "9999")),
                 n("option", nv("NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND", "9999"))
             ))
-        ).forEach(child -> createNode(perProjSettings, child.name, child.attrs, child.children));
+        ).forEach(child -> createNode(perProjSettings, child.name(), child.attrs(), child.children()));
 
         asList("Groovy", "JAVA", "Scala").forEach(lang ->
             createNode(perProjSettings, "codeStyleSettings", m("language", lang), asList(

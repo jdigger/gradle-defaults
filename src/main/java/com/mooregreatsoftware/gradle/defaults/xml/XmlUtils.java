@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle.defaults;
+package com.mooregreatsoftware.gradle.defaults.xml;
 
 import groovy.util.Node;
 import groovy.util.NodeList;
+import lombok.val;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +39,17 @@ public class XmlUtils {
     }
 
 
+    public static Node getOrCreate(Node parent, String elementName, Supplier<Node> nodeCreator) {
+        @SuppressWarnings("unchecked") final Stream<Node> stream = parent.children().stream();
+        return stream.
+            filter(n -> n.name().equals(elementName)).
+            findAny().
+            orElseGet(nodeCreator);
+    }
+
+
     private static boolean attributeMatches(Node node, String attrName, String attrValue) {
-        String attr = (String)node.attributes().get(attrName);
+        val attr = (String)node.attributes().get(attrName);
         return attr != null && attr.equalsIgnoreCase(attrValue);
     }
 
@@ -71,6 +81,11 @@ public class XmlUtils {
 
     public static NodeBuilder n(String name, Map attrs, NodeBuilder child) {
         return new NodeBuilder(name, attrs, null, singletonList(child));
+    }
+
+
+    public static NodeBuilder n(String name, Map attrs, List<NodeBuilder> children) {
+        return new NodeBuilder(name, attrs, null, children);
     }
 
 
@@ -108,27 +123,21 @@ public class XmlUtils {
         if (parent == null) throw new IllegalArgumentException("parent == null");
         if (nodeName == null) throw new IllegalArgumentException("nodeName == null");
         if (children == null) throw new IllegalArgumentException("children == null");
-        final Node node = textVal == null ?
+        val node = textVal == null ?
             parent.appendNode(nodeName, attrs) :
             parent.appendNode(nodeName, attrs, textVal);
-        children.forEach(child -> createNode(node, child.name, child.attrs, child.textVal, child.children));
+        children.forEach(child ->
+            createNode(node, child.name(), child.attrs(), child.textVal(), child.children())
+        );
         return node;
     }
 
 
-    public static class NodeBuilder {
-        public final String name;
-        public final Map attrs;
-        public final String textVal;
-        public final List<NodeBuilder> children;
-
-
-        NodeBuilder(String name, Map attrs, String textVal, List<NodeBuilder> children) {
-            this.name = name;
-            this.attrs = attrs;
-            this.textVal = textVal;
-            this.children = children;
-        }
+    /**
+     * Alias for creating a {@link Collections#singletonMap(Object, Object)}
+     */
+    public static Map<String, String> m(String key, String value) {
+        return Collections.singletonMap(key, value);
     }
 
 }
