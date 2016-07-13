@@ -15,14 +15,23 @@
  */
 package com.mooregreatsoftware.gradle.defaults;
 
+import com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration;
+import com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.gradle.api.Project;
 
 import java.util.Map;
 import java.util.Set;
 
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
+import static lombok.AccessLevel.NONE;
 
-@SuppressWarnings({"unused", "WeakerAccess"})
+@Data
+@Accessors(fluent = false)
+@SuppressWarnings("DefaultAnnotationParam")
 public class DefaultsExtension {
     private final Project project;
 
@@ -44,7 +53,16 @@ public class DefaultsExtension {
     private String licenseName = "The Apache Software License, Version 2.0";
     private String licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0";
     private String copyrightYears;
-    private String lobokVersion = "1.16.8";
+    private String lombokVersion = LombokConfiguration.DEFAULT_LOMBOK_VERSION;
+    private String checkerFrameworkVersion = CheckerFrameworkConfiguration.DEFAULT_CHECKER_VERSION;
+
+    @Setter(NONE)
+    @Getter(NONE)
+    private int _useLombok = -1;
+
+    @Setter(NONE)
+    @Getter(NONE)
+    private int _useCheckerFramework = -1;
 
 
     public DefaultsExtension(final Project project) {
@@ -60,113 +78,8 @@ public class DefaultsExtension {
     }
 
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-
-    public String getOrgName() {
-        return orgName;
-    }
-
-
-    public void setOrgName(String orgName) {
-        this.orgName = orgName;
-    }
-
-
-    public String getOrgUrl() {
-        return orgUrl;
-    }
-
-
-    public void setOrgUrl(String orgUrl) {
-        this.orgUrl = orgUrl;
-    }
-
-
-    public String getBintrayRepo() {
-        return bintrayRepo;
-    }
-
-
-    public void setBintrayRepo(String bintrayRepo) {
-        this.bintrayRepo = bintrayRepo;
-    }
-
-
-    public String getBintrayPkg() {
-        return opt(bintrayPkg).orElse(project.getName());
-    }
-
-
-    public void setBintrayPkg(String bintrayPkg) {
-        this.bintrayPkg = bintrayPkg;
-    }
-
-
-    public Set<String> getBintrayLabels() {
-        return bintrayLabels;
-    }
-
-
-    public void setBintrayLabels(Set<String> bintrayLabels) {
-        this.bintrayLabels = bintrayLabels;
-    }
-
-
-    public boolean getBintrayToCentral() {
-        return bintrayToCentral;
-    }
-
-
-    public boolean isBintrayToCentral() {
-        return bintrayToCentral;
-    }
-
-
-    public void setBintrayToCentral(boolean bintrayToCentral) {
-        this.bintrayToCentral = bintrayToCentral;
-    }
-
-
-    public Set<Map> getDevelopers() {
-        return developers;
-    }
-
-
-    public void setDevelopers(Set<Map> developers) {
-        this.developers = developers;
-    }
-
-
-    public Set<Map> getContributors() {
-        return contributors;
-    }
-
-
-    public void setContributors(Set<Map> contributors) {
-        this.contributors = contributors;
-    }
-
-
-    public String getCompatibilityVersion() {
-        return compatibilityVersion;
-    }
-
-
-    public void setCompatibilityVersion(String compatibilityVersion) {
-        this.compatibilityVersion = compatibilityVersion;
-    }
-
-
     public String getSiteUrl() {
         return opt(siteUrl).orElseGet(() -> "https://github.com/" + getId() + "/" + project.getName());
-    }
-
-
-    public void setSiteUrl(String siteUrl) {
-        this.siteUrl = siteUrl;
     }
 
 
@@ -175,18 +88,8 @@ public class DefaultsExtension {
     }
 
 
-    public void setIssuesUrl(String issuesUrl) {
-        this.issuesUrl = issuesUrl;
-    }
-
-
     public String getVcsReadUrl() {
         return opt(vcsReadUrl).orElseGet(() -> getSiteUrl() + ".git");
-    }
-
-
-    public void setVcsReadUrl(String vcsReadUrl) {
-        this.vcsReadUrl = vcsReadUrl;
     }
 
 
@@ -195,58 +98,10 @@ public class DefaultsExtension {
     }
 
 
-    public void setVcsWriteUrl(String vcsWriteUrl) {
-        this.vcsWriteUrl = vcsWriteUrl;
-    }
-
-
-    public String getLicenseKey() {
-        return licenseKey;
-    }
-
-
-    public void setLicenseKey(String licenseKey) {
-        this.licenseKey = licenseKey;
-    }
-
-
-    public String getLicenseName() {
-        return licenseName;
-    }
-
-
-    public void setLicenseName(String licenseName) {
-        this.licenseName = licenseName;
-    }
-
-
-    public String getLicenseUrl() {
-        return licenseUrl;
-    }
-
-
-    public void setLicenseUrl(String licenseUrl) {
-        this.licenseUrl = licenseUrl;
-    }
-
-
-    public String getCopyrightYears() {
-        return copyrightYears;
-    }
-
-
-    public void setCopyrightYears(String copyrightYears) {
-        this.copyrightYears = copyrightYears;
-    }
-
-
-    public String getLobokVersion() {
-        return lobokVersion;
-    }
-
-
-    public void setLobokVersion(String lobokVersion) {
-        this.lobokVersion = lobokVersion;
+    public boolean getUseLombok() {
+        return (_useLombok > -1) ?
+            (_useLombok == 1) :
+            ProjectUtils.hasJavaSource(project);
     }
 
 }

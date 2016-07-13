@@ -41,7 +41,7 @@ class LombokConfigIntSpec extends AbstractConfigIntSpec {
 
         then:
         result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/LombokHelloWorld.class')
 
         cleanup:
         println result?.standardOutput
@@ -51,18 +51,18 @@ class LombokConfigIntSpec extends AbstractConfigIntSpec {
 
     @CompileStatic
     protected File writeLombokHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
-        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
+        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/LombokHelloWorld.java'
         def javaFile = createFile(path, baseDir)
         javaFile << """
         package ${packageDotted};
 
         @lombok.Value
-        public class HelloWorld {
+        public class LombokHelloWorld {
             String aVal;
 
             public static void main(String[] args) {
                 lombok.val aStr = "Hello, Lombok test";
-                new HelloWorld(aStr);
+                new LombokHelloWorld(aStr);
             }
         }
         """.stripIndent()

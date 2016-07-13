@@ -15,15 +15,38 @@
  */
 package com.mooregreatsoftware.gradle.defaults.xml;
 
+import com.mooregreatsoftware.gradle.defaults.Utils;
 import lombok.Value;
+import lombok.val;
 
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Comparator.nullsFirst;
+import static java.util.Objects.compare;
+
 @Value
-public class NodeBuilder {
+public class NodeBuilder implements Comparable {
     String name;
-    Map attrs;
+    Map<String, Comparable> attrs;
     String textVal;
     List<NodeBuilder> children;
+
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Object o) {
+        if (this == o) return 0;
+
+        val other = (NodeBuilder)o;
+
+        val nameComp = this.name.compareToIgnoreCase((other.name()));
+        if (nameComp != 0) return nameComp;
+
+        val textValComp = compare(textVal, other.textVal(), nullsFirst(String::compareToIgnoreCase));
+        if (textValComp != 0) return textValComp;
+
+        return Utils.compareMaps(attrs, other.attrs());
+    }
+
 }

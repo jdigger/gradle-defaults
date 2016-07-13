@@ -50,9 +50,9 @@ class JavaConfigIntSpec extends AbstractConfigIntSpec {
         [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {
             assert result.wasExecuted(it)
         }
-        result.standardOutput.readLines().find({
-            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
-        })
+//        result.standardOutput.readLines().find({
+//            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
+//        })
 
         cleanup:
         println result?.standardOutput

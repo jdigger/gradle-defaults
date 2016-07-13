@@ -32,6 +32,7 @@ public abstract class AbstractConfig {
 
     public AbstractConfig(Project project) {
         this.project = project;
+        project.getExtensions().add(this.getClass().getName(), this);
     }
 
 

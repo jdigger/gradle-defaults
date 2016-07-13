@@ -15,6 +15,8 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import com.mooregreatsoftware.gradle.defaults.ProjectUtils;
+import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
 import com.mooregreatsoftware.gradle.defaults.xml.XmlUtils;
 import groovy.util.Node;
 import groovy.util.NodeList;
@@ -24,15 +26,21 @@ import org.gradle.api.XmlProvider;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
 import org.gradle.plugins.ide.idea.model.IdeaProject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.PATH_SEPARATOR;
+import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.bootClasspath;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.findByAttribute;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.m;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("WeakerAccess")
 public class IntellijConfig extends AbstractConfig {
@@ -82,11 +90,6 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
-    public static IdeaProject ideaProject(Project project) {
-        return ideaModel(project).getProject();
-    }
-
-
     public String getLanguageVersion() {
         return compatibilityVersionSupplier.get();
     }
@@ -98,16 +101,80 @@ public class IntellijConfig extends AbstractConfig {
         addGradleHome(rootNode);
 
         setupCodeStyle(rootNode);
+        setupCompiler(rootNode);
+    }
+
+
+    public void setupCompiler(Node rootNode) {
+        val componentNodes = IntellijConfig.componentNodes(rootNode);
+
+        val compilerConfiguration = findByAttribute(componentNodes, "name", "CompilerConfiguration",
+            () -> rootNode.appendNode("component", m("name", "CompilerConfiguration"))
+        );
+
+        val annotationProcessing = XmlUtils.getOrCreate(compilerConfiguration, "annotationProcessing",
+            () -> compilerConfiguration.appendNode("annotationProcessing")
+        );
+
+        val profile = createProfileNode(annotationProcessing);
+
+        if (!bootClasspath(project).isEmpty()) {
+            val javacSettings = findByAttribute(componentNodes, "name", "JavacSettings",
+                () -> rootNode.appendNode("component", m("name", "JavacSettings"))
+            );
+            javacSettings.appendNode("option", nv("ADDITIONAL_OPTIONS_STRING", "-Xbootclasspath/p:" +
+                bootClasspath(project).stream().
+                    map(File::getAbsolutePath).
+                    sorted().
+                    collect(joining(PATH_SEPARATOR))));
+        }
+
+
+        ProjectUtils.allJavaProjects(project).
+            forEach(prj -> profile.appendNode("module", m("name", prj.getName())));
+    }
+
+
+    private Node createProfileNode(Node annotationProcessing) {
+        val profileAttrs = new HashMap<String, String>();
+        profileAttrs.put("default", "true");
+        profileAttrs.put("name", "AnnotationProcessors");
+        profileAttrs.put("enabled", "true");
+
+        val configurationFilesAsNodeBuilders = JavaConfig.annotationProcessorLibFiles(project).stream().
+            map(IntellijConfig::fileEntry).
+            sorted().
+            collect(toList());
+
+        val processorClassnames = JavaConfig.annotationProcessorClassNames(project);
+        val profileChildren = processorClassnames.stream().
+            sorted().
+            map(cn -> n("processor", m("name", cn))).
+            collect(toList());
+        profileChildren.add(n("processorPath", m("useClasspath", "false"),
+            configurationFilesAsNodeBuilders));
+
+        JavaConfig.annotationProcessorOptions(project).stream().
+            sorted().
+            map(o -> n("option", nv(o.name(), o.value()))).
+            forEach(profileChildren::add);
+
+        return createNode(annotationProcessing, "profile", profileAttrs, profileChildren);
+    }
+
+
+    private static NodeBuilder fileEntry(File file) {
+        return n("entry", m("name", file.getAbsolutePath()));
     }
 
 
     private static void setupCodeStyle(Node rootNode) {
         val codeStyleNode = codeStyleNode(rootNode);
-        codeStyleNode.setValue(new ArrayList<>());// remove any previous children
+        codeStyleNode.setValue(new ArrayList<>()); // remove any previous children
 
         codeStyleNode.appendNode("option", nv("USE_PER_PROJECT_SETTINGS", "true"));
 
-        @SuppressWarnings("OptionalGetWithoutIsPresent") final Node perProjSettings =
+        @SuppressWarnings("OptionalGetWithoutIsPresent") val perProjSettings =
             (Node)createNode(codeStyleNode, "option", m("name", "PER_PROJECT_SETTINGS"), n("value")).
                 children().stream().findFirst().get();
 
@@ -183,7 +250,7 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
-    public static Map<String, String> nv(String name, String value) {
+    private static Map<String, String> nv(String name, String value) {
         val map = new HashMap<String, String>();
         map.put("name", name);
         map.put("value", value);

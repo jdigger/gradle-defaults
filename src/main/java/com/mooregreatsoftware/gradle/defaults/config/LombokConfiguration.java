@@ -15,144 +15,72 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
-import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
-import com.mooregreatsoftware.gradle.defaults.xml.XmlUtils;
+import com.mooregreatsoftware.gradle.defaults.ProjectUtils;
 import lombok.val;
 import org.gradle.api.Project;
-import org.gradle.api.XmlProvider;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.plugins.ide.idea.IdeaPlugin;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import static com.mooregreatsoftware.gradle.defaults.config.IntellijConfig.ideaProject;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.findByAttribute;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.m;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
-public class LombokConfiguration {
-    private static final String LOMBOK_CONFIGURATION_NAME = "lombokArtifacts";
-    private static final String LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor";
+@SuppressWarnings("WeakerAccess")
+public class LombokConfiguration extends AnnotationProcessorConfiguration {
+    public static final String DEFAULT_LOMBOK_VERSION = "1.16.8";
+
+    protected static final String LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor";
 
 
-    private LombokConfiguration() {
+    protected LombokConfiguration(Project project, Supplier<String> lombokVersionSupplier) {
+        super(project, lombokVersionSupplier);
     }
 
 
     public static LombokConfiguration create(Project project, Supplier<String> lombokVersionSupplier) {
-        val lombokConfig = new LombokConfiguration();
+        val lombokConfig = new LombokConfiguration(project, lombokVersionSupplier);
 
-        configJavaPlugin(project, lombokVersionSupplier);
-        configIdeaPlugin(project);
+        lombokConfig.configure();
 
         return lombokConfig;
     }
 
 
-    private static void configJavaPlugin(Project project, Supplier<String> lombokVersionSupplier) {
-        project.getPlugins().withType(JavaPlugin.class, plugin -> {
-            addProcessorToJavacTask(project);
-            project.afterEvaluate(prj -> addDependencies(prj, lombokVersionSupplier));
-        });
+    @Override
+    protected Collection<String> myProcessorClassNames() {
+        return singletonList(LOMBOK_LAUNCH_ANNOTATION_PROCESSOR);
     }
 
 
-    private static void configIdeaPlugin(Project project) {
-        project.getPlugins().withType(IdeaPlugin.class, plugin -> configIdeaProject(project));
-    }
-
-
-    private static void configIdeaProject(Project project) {
-        val ideaProject = ideaProject(project);
-        if (ideaProject != null) {
-            val ipr = ideaProject.getIpr();
-            ipr.withXml(provider -> customizeProjectXml(provider, project));
-        }
-    }
-
-
-    private static void customizeProjectXml(XmlProvider provider, Project project) {
-        val rootNode = provider.asNode();
-
-        val componentNodes = IntellijConfig.componentNodes(rootNode);
-
-        val compilerConfiguration = findByAttribute(componentNodes, "name", "CompilerConfiguration",
-            () -> rootNode.appendNode("component", m("name", "CompilerConfiguration"))
-        );
-
-        val annotationProcessing = XmlUtils.getOrCreate(compilerConfiguration, "annotationProcessing",
-            () -> compilerConfiguration.appendNode("annotationProcessing")
-        );
-        val profileAttrs = new HashMap<String, String>();
-        profileAttrs.put("default", "true");
-        profileAttrs.put("name", "Lombok");
-        profileAttrs.put("enabled", "true");
-        val profile = XmlUtils.createNode(annotationProcessing, "profile", profileAttrs, asList(
-            n("processor", m("name", LOMBOK_LAUNCH_ANNOTATION_PROCESSOR)),
-            n("processorPath", m("useClasspath", "false"),
-                lombokConfiguration(project).getFiles().stream().
-                    map(LombokConfiguration::fileEntry).
-                    collect(Collectors.toList()))
-        ));
-
-        project.getAllprojects().stream().
-            filter(prj -> prj.getPlugins().hasPlugin(JavaPlugin.class)).
-            forEach(prj -> profile.appendNode("module", m("name", prj.getName())));
-    }
-
-
-    private static NodeBuilder fileEntry(File file) {
-        return n("entry", m("name", file.getAbsolutePath()));
-    }
-
-
-    private static void addProcessorToJavacTask(Project project) {
-        project.getTasks().withType(JavaCompile.class, jcTask ->
-            jcTask.getOptions().
-                setCompilerArgs(asList("-processor", LOMBOK_LAUNCH_ANNOTATION_PROCESSOR))
+    private Configuration processLibConf() {
+        return ProjectUtils.getConfiguration(project, "lombok.processor.lib.conf", deps ->
+            deps.add(lombokDependency())
         );
     }
 
 
-    private static void addDependencies(Project project, Supplier<String> lombokVersionSupplier) {
-        val lombokVersion = lombokVersionSupplier.get();
-        val lombokDep = new DefaultExternalModuleDependency("org.projectlombok", "lombok", lombokVersion);
-
-        createLombokConfiguration(project, lombokDep);
-        addLombokCompileOnlyDependency(project, lombokDep);
+    @Override
+    protected Collection<File> myProcessorLibFiles() {
+        return processLibConf().getFiles();
     }
 
 
-    private static void addLombokCompileOnlyDependency(Project project, Dependency lombokDep) {
-        project.getConfigurations().
-            getByName(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME).
-            getDependencies().
-            add(lombokDep);
+    public File processorLibraryFile() {
+        return processLibConf().getSingleFile();
     }
 
 
-    private static Configuration lombokConfiguration(Project project) {
-        return project.getConfigurations().findByName(LOMBOK_CONFIGURATION_NAME);
+    @Override
+    protected void addCompileOnlyDependencies() {
+        addCompileOnlyDependency(project, lombokDependency());
     }
 
 
-    private static Configuration createLombokConfiguration(Project project, Dependency lombokDep) {
-        final Configuration configuration = project.getConfigurations().
-            create(LOMBOK_CONFIGURATION_NAME).
-            setVisible(false).
-            setDescription("Lombok classes");
-        configuration.
-            getDependencies().
-            add(lombokDep);
-        return configuration;
+    private Dependency lombokDependency() {
+        return new DefaultExternalModuleDependency("org.projectlombok", "lombok", versionSupplier.get());
     }
 
 }

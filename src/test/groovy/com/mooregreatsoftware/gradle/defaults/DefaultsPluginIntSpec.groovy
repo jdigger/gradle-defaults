@@ -56,7 +56,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
 
 
     def "release"() {
-        logLevel = LogLevel.INFO
+        logLevel = LogLevel.DEBUG
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """

@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults;
 
 import com.mooregreatsoftware.gradle.defaults.config.BintrayConfig;
+import com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration;
 import com.mooregreatsoftware.gradle.defaults.config.GhPagesConfig;
 import com.mooregreatsoftware.gradle.defaults.config.GroovyConfig;
 import com.mooregreatsoftware.gradle.defaults.config.IntellijConfig;
@@ -31,6 +32,7 @@ import org.eclipse.jgit.api.Git;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.publish.plugins.PublishingPlugin;
 
 import java.io.IOException;
@@ -73,8 +75,28 @@ public class DefaultsPlugin implements Plugin<Project> {
         new LicenseConfig(prj).config(extension::getCopyrightYears);
         new MavenPublishingConfig(prj, extension).config();
         new BintrayConfig(prj, extension).config();
-        LombokConfiguration.create(prj, extension::getLobokVersion);
+        configLombok(prj, extension);
+        CheckerFrameworkConfiguration.create(prj, extension::getCheckerFrameworkVersion);
         addOrderingRules(prj);
+    }
+
+
+    private void configLombok(Project prj, DefaultsExtension extension) {
+        if (prj.getPlugins().findPlugin(JavaBasePlugin.class) != null) {
+            potentialConfigureLombok(prj, extension);
+        }
+        else {
+            prj.afterEvaluate(p -> potentialConfigureLombok(p, extension));
+        }
+    }
+
+
+    private static void potentialConfigureLombok(Project prj, DefaultsExtension extension) {
+        // TODO Move to LombokConfiguration.create
+        if (extension.getUseLombok())
+            LombokConfiguration.create(prj, extension::getLombokVersion);
+        else
+            prj.getLogger().info("Not configuring Lombok for " + prj.getName());
     }
 
 

@@ -15,25 +15,41 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import com.mooregreatsoftware.gradle.defaults.Utils;
+import lombok.Value;
 import lombok.val;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.api.tasks.compile.JavaCompile;
 
+import java.io.File;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsPlugin.userEmail;
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
+import static com.mooregreatsoftware.gradle.defaults.Utils.setFromExt;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME;
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME;
 
 @SuppressWarnings("WeakerAccess")
 public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
+    public static final String PATH_SEPARATOR = System.getProperty("path.separator");
+
     public static final String SOURCES_JAR_TASK_NAME = "sourcesJar";
 
     private Jar sourcesJarTask;
@@ -53,10 +69,16 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     protected void configLanguage() {
         super.configLanguage();
 
-        project.afterEvaluate(prj -> {
-            setManifestAttributes();
-        });
+        project.afterEvaluate(prj -> setManifestAttributes());
+
+        project.getTasks().withType(JavaCompile.class, this::configureJavac);
     }
+
+
+    private Task configureJavac(JavaCompile jcTask) {
+        return jcTask.doFirst(new ConfigCompilerAction());
+    }
+
 
     public Jar sourcesJarTask() {
         if (sourcesJarTask == null) {
@@ -129,4 +151,171 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     protected String compileTaskName() {
         return COMPILE_JAVA_TASK_NAME;
     }
+
+
+    public static Collection<File> annotationProcessorLibFiles(Project project) {
+        return registerAnnotationProcessorLibFiles(project, emptyList());
+    }
+
+
+    public static Collection<File> registerAnnotationProcessorLibFiles(Project project, Collection<File> files) {
+        return setFromExt(project, "annotationProcessorConf.processorLibFiles", files);
+    }
+
+
+    public static Collection<String> annotationProcessorClassNames(Project project) {
+        return registerAnnotationProcessorClassnames(project, emptyList());
+    }
+
+
+    public static Collection<String> registerAnnotationProcessorClassnames(Project project,
+                                                                           Collection<String> classnames) {
+        return setFromExt(project, "annotationProcessorConf.processorClassnames", classnames);
+    }
+
+
+    public static Collection<File> bootClasspath(Project project) {
+        return registerBootClasspath(project, emptyList());
+    }
+
+
+    public static Collection<File> registerBootClasspath(Project project,
+                                                         Collection<File> files) {
+        return setFromExt(project, "javac.bootClasspathFiles", files);
+    }
+
+
+    public static Collection<Option> annotationProcessorOptions(Project project) {
+        return registerAnnotationProcessorOptions(project, emptyList());
+    }
+
+
+    @Value
+    public static class Option implements Comparable<Option> {
+        String name;
+        String value;
+
+
+        @Override
+        public int compareTo(Option o) {
+            val nameComp = name.compareTo(o.name());
+            return nameComp != 0 ? nameComp : value.compareTo(o.value());
+        }
+    }
+
+
+    /**
+     * Register annotation processor arguments. Do not include the "-A". (e.g., instead of "-Awarn" use "warn")
+     */
+    public static Collection<Option> registerAnnotationProcessorOptions(Project project, Collection<Option> options) {
+        return setFromExt(project, "annotationProcessorConf.annotationProcessorOptions",
+            options.stream().
+                map(JavaConfig::stripLeadingDashA).
+                collect(toList())
+        );
+    }
+
+
+    private static Option stripLeadingDashA(Option o) {
+        return (o.name().startsWith("-A")) ? new Option(o.name().substring(2), o.value()) : o;
+    }
+
+
+    public static Collection<String> javacOptions(Project project) {
+        return registerJavacOptions(project, emptyList());
+    }
+
+
+    /**
+     * Register "raw" javac arguments.
+     */
+    public static Collection<String> registerJavacOptions(Project project, Collection<String> options) {
+        return setFromExt(project, "javac.otherOtions",
+            options.stream().map(s -> (s.startsWith("-A")) ? s.substring(2) : s).collect(toList()));
+    }
+
+
+    protected List<String> createJavacArgs() {
+        val compilerArgs = new ArrayList<String>();
+
+        addProcessor(compilerArgs);
+        addProcessorPath(compilerArgs);
+        addAnnotationProcessorOptions(compilerArgs);
+        registerJavacOptions(project, singletonList("-Xlint:unchecked"));
+        addOtherCompilerArgs(compilerArgs);
+        addBootClasspath(compilerArgs);
+
+        return compilerArgs;
+    }
+
+
+    private void addBootClasspath(List<String> compilerArgs) {
+        if (!bootClasspath(project).isEmpty()) {
+            compilerArgs.add("-Xbootclasspath/p:" +
+                bootClasspath(project).stream().
+                    map(File::getAbsolutePath).
+                    sorted().
+                    collect(joining(PATH_SEPARATOR)));
+        }
+    }
+
+
+    private void addProcessor(List<String> compilerArgs) {
+        compilerArgs.add("-processor");
+        compilerArgs.add(annotationProcessorClassNames(project).stream().sorted().collect(joining(",")));
+    }
+
+
+    private void addProcessorPath(List<String> compilerArgs) {
+        compilerArgs.add("-processorpath");
+        compilerArgs.add(
+            annotationProcessorLibFiles(project).stream().
+                map(File::getAbsolutePath).
+                sorted().
+                collect(joining(PATH_SEPARATOR))
+        );
+    }
+
+
+    private void addAnnotationProcessorOptions(List<String> compilerArgs) {
+        annotationProcessorOptions(project).stream().
+            sorted().
+            map(arg -> "-A" + arg.name() + "=" + arg.value()).
+            forEach(compilerArgs::add);
+    }
+
+
+    private void addOtherCompilerArgs(List<String> compilerArgs) {
+        javacOptions(project).stream().
+            sorted().
+            forEach(compilerArgs::add);
+    }
+
+
+    protected class ConfigCompilerAction implements Action<Task> {
+
+        public ConfigCompilerAction() {
+        }
+
+
+        @Override
+        public void execute(Task javaCompileTask) {
+            val compilerArgs = createJavacArgs();
+            val options = ((JavaCompile)javaCompileTask).getOptions();
+
+            if (Utils.isBuggyJavac()) {
+                val checkerConf = (CheckerFrameworkConfiguration)project.getExtensions().findByName(CheckerFrameworkConfiguration.class.getName());
+                if (checkerConf != null) {
+                    options.setFork(true);
+                    options.getForkOptions().setJvmArgs(
+                        singletonList("-Xbootclasspath/p:" + checkerConf.compilerLibraryFile().getAbsolutePath())
+                    );
+                }
+            }
+
+            options.setCompilerArgs(compilerArgs);
+        }
+
+    }
+
 }
