@@ -16,36 +16,40 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import org.gradle.api.Project;
-import org.gradle.api.tasks.bundling.Jar;
-import org.gradle.api.tasks.compile.AbstractCompile;
+import org.gradle.api.plugins.GroovyPlugin;
 
 import java.util.function.Supplier;
 
-public class GroovyConfig extends AbstractConfig {
-    public GroovyConfig(Project project) {
-        super(project);
+import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME;
+
+@SuppressWarnings("WeakerAccess")
+public class GroovyConfig extends AbstractLanguageConfig<GroovyPlugin> {
+
+    protected GroovyConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
+        super(project, compatibilityVersionSupplier);
     }
 
 
-    public void config(Supplier<String> compatibilityVersionSupplier) {
-        plugins().withId("groovy", plugin -> {
-            debug("Configuring the 'groovy' plugin");
-
-            project.afterEvaluate(prj -> {
-                String compatibilityVersion = compatibilityVersionSupplier.get();
-                debug("Setting Groovy source and target compatibility to " + compatibilityVersion);
-                AbstractCompile compileGroovy = (AbstractCompile)tasks().getByName("compileGroovy");
-                compileGroovy.setSourceCompatibility(compatibilityVersion);
-                compileGroovy.setTargetCompatibility(compatibilityVersion);
-            });
-
-            Jar groovydocJar = tasks().create("groovydocJar", Jar.class);
-            groovydocJar.setClassifier("groovydoc");
-            groovydocJar.from(tasks().getByName("groovydoc").getOutputs().getFiles());
-
-            artifacts().add("archives", groovydocJar);
-        });
+    public static GroovyConfig create(Project project, Supplier<String> compatibilityVersionSupplier) {
+        return (GroovyConfig)new GroovyConfig(project, compatibilityVersionSupplier).config();
     }
 
+
+    @Override
+    protected Class<GroovyPlugin> pluginClass() {
+        return GroovyPlugin.class;
+    }
+
+
+    @Override
+    protected String compileTaskName() {
+        return "compileGroovy";
+    }
+
+
+    @Override
+    protected String docTaskName() {
+        return GROOVYDOC_TASK_NAME;
+    }
 
 }

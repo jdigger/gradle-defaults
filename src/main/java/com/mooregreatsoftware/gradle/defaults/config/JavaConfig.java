@@ -15,12 +15,13 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import lombok.val;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.bundling.Jar;
-import org.gradle.api.tasks.compile.AbstractCompile;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,69 +29,104 @@ import java.util.function.Supplier;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsPlugin.userEmail;
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME;
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME;
 
 @SuppressWarnings("WeakerAccess")
-public class JavaConfig extends AbstractConfig {
+public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
+    public static final String SOURCES_JAR_TASK_NAME = "sourcesJar";
 
-    public JavaConfig(Project project) {
-        super(project);
+    private Jar sourcesJarTask;
+
+
+    protected JavaConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
+        super(project, compatibilityVersionSupplier);
     }
 
 
-    public void config(Supplier<String> compatibilityVersionSupplier) {
-        plugins().withId("java", plugin -> {
-            debug("Configuring the 'java' plugin");
+    public static JavaConfig create(Project prj, Supplier<String> compatibilityVersionSupplier) {
+        return (JavaConfig)new JavaConfig(prj, compatibilityVersionSupplier).config();
+    }
 
-            project.afterEvaluate(prj -> {
-                setCompileCompatibility(compatibilityVersionSupplier.get());
-                setManifestAttributes();
-            });
 
-            sourcesJar();
-            javadocJar();
+    @Override
+    protected void configLanguage() {
+        super.configLanguage();
+
+        project.afterEvaluate(prj -> {
+            setManifestAttributes();
         });
     }
 
-
-    private void genJar(String taskName, String classifier, FileCollection files) {
-        Jar javadocJar = tasks().create(taskName, Jar.class);
-        javadocJar.setClassifier(classifier);
-        javadocJar.from(files);
-        artifacts().add("archives", javadocJar);
+    public Jar sourcesJarTask() {
+        if (sourcesJarTask == null) {
+            sourcesJarTask = createSourcesJarTask();
+        }
+        return sourcesJarTask;
     }
 
 
-    private void sourcesJar() {
-        genJar("sourcesJar", "sources", sourceSets().findByName("main").getAllSource());
+    private Jar createSourcesJarTask() {
+        val sourceJarTask = tasks().create(SOURCES_JAR_TASK_NAME, Jar.class);
+        sourceJarTask.setClassifier("sources");
+        sourceJarTask.from((FileCollection)sourceSets().findByName("main").getAllSource());
+        return sourceJarTask;
     }
 
 
-    private void javadocJar() {
-        genJar("javadocJar", "javadoc", tasks().findByName("javadoc").getOutputs().getFiles());
+    @Override
+    public void registerArtifacts(MavenPublication publication) {
+        super.registerArtifacts(publication);
+
+        publication.artifact(sourcesJarTask());
+        artifacts().add("archives", sourcesJarTask());
     }
 
 
     private void setManifestAttributes() {
         debug("Setting MANIFEST.MF attributes");
-        final Jar jar = (Jar)tasks().findByName("jar");
-        final Map<String, Serializable> map = new HashMap<>();
-        map.put("Implementation-Title", description());
-        map.put("Implementation-Version", version());
-        map.put("Built-By", userEmail(project));
-        map.put("Built-Date", Instant.now());
-        final String javaVersion = opt(System.getProperty("java.version")).orElse("1.8");
-        map.put("Built-JDK", javaVersion);
-        map.put("Built-Gradle", gradle().getGradleVersion());
-
-        jar.getManifest().attributes(map);
+        configureManifestAttributes(jarTask());
     }
 
 
-    private void setCompileCompatibility(String compatibilityVersion) {
-        debug("Setting Java source and target compatibility to " + compatibilityVersion);
-        final AbstractCompile compileJava = (AbstractCompile)tasks().getByName("compileJava");
-        compileJava.setSourceCompatibility(compatibilityVersion);
-        compileJava.setTargetCompatibility(compatibilityVersion);
+    protected void configureManifestAttributes(Jar jarTask) {
+        val attrs = manifestAttributes();
+
+        jarTask.getManifest().attributes(attrs);
     }
 
+
+    protected Map<String, String> manifestAttributes() {
+        val attrs = new HashMap<String, String>();
+        attrs.put("Implementation-Title", description());
+        attrs.put("Implementation-Version", version());
+        attrs.put("Built-By", builtBy());
+        attrs.put("Built-Date", Instant.now().toString());
+        attrs.put("Built-JDK", opt(System.getProperty("java.version")).orElse("1.8"));
+        attrs.put("Built-Gradle", gradle().getGradleVersion());
+        return attrs;
+    }
+
+
+    protected String builtBy() {
+        return userEmail(project);
+    }
+
+
+    @Override
+    protected String docTaskName() {
+        return JAVADOC_TASK_NAME;
+    }
+
+
+    @Override
+    protected Class<JavaPlugin> pluginClass() {
+        return JavaPlugin.class;
+    }
+
+
+    @Override
+    protected String compileTaskName() {
+        return COMPILE_JAVA_TASK_NAME;
+    }
 }

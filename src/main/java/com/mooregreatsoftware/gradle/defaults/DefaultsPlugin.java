@@ -63,8 +63,8 @@ public class DefaultsPlugin implements Plugin<Project> {
         project.allprojects(prj -> {
             prj.getRepositories().jcenter();
             new IntellijConfig(prj).config(extension::getCompatibilityVersion);
-            new JavaConfig(prj).config(extension::getCompatibilityVersion);
-            new GroovyConfig(prj).config(extension::getCompatibilityVersion);
+            JavaConfig.create(prj, extension::getCompatibilityVersion);
+            GroovyConfig.create(prj, extension::getCompatibilityVersion);
             new ScalaConfig(prj).config(extension::getCompatibilityVersion);
             new LicenseConfig(prj).config(extension::getCopyrightYears);
             new MavenPublishingConfig(prj, extension).config();

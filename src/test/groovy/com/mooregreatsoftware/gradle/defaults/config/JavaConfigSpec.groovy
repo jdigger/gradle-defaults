@@ -15,48 +15,74 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
-import com.mooregreatsoftware.gradle.defaults.AbstractConfigIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
+import nebula.test.ProjectSpec
+import org.eclipse.jgit.api.Git
+import org.gradle.api.internal.project.AbstractProject
+import org.gradle.api.internal.project.DefaultProject
+import org.gradle.api.plugins.JavaPlugin
 
-class JavaConfigSpec extends AbstractConfigIntSpec {
+class JavaConfigSpec extends ProjectSpec {
 
-    def "build"() {
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
-        buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'java'
+    def setup() {
+        project.plugins.apply(JavaPlugin)
+        project.setGroup("com.mooregreatsoftware.gradle.defaults")
+    }
 
-            group = "com.mooregreatsoftware.gradle.defaults"
 
-            defaults {
-                id = "tester"
-                compatibilityVersion = 1.7
-            }
-        """.stripIndent()
-
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
+    def "defaults"() {
+        def javaConfig = JavaConfig.create(project, { "1.8" })
 
         when:
-        def result = runTasks('assemble')
+        evaluateProject()
 
         then:
-        result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorld.class')
-        [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {
-            assert result.wasExecuted(it)
-        }
-        result.standardOutput.readLines().find({
-            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
-        })
+        javaConfig.compileTask().targetCompatibility == "1.8"
+        javaConfig.jarTask().manifest.attributes.get("Built-By") == "unknown@unknown"
+        javaConfig.docJarTask().name == "javadocJar"
 
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
+        and:
+        def artifacts = project.configurations.getByName("archives").allArtifacts
+        artifacts.every { it.type == "jar" }
+        artifacts.collect { it.classifier } as Set == ["", "sources", "javadoc"] as Set
+    }
+
+
+    def "with git setup"() {
+        def git = Git.init().setDirectory(projectDir).call()
+        def gitConfig = git.repository.config
+        gitConfig.setString("user", null, "email", "tester@test.com")
+        gitConfig.save()
+
+        def javaConfig = JavaConfig.create(project, { "1.6" })
+
+        when:
+        evaluateProject()
+
+        then:
+        javaConfig.compileTask().targetCompatibility == "1.6"
+        javaConfig.jarTask().manifest.attributes.get("Built-By") == "tester@test.com"
+    }
+
+
+    def "custom built by"() {
+        def javaConfig = new JavaConfig(project, { "1.7" }) {
+            protected String builtBy() {
+                return "Fooble Booble"
+            }
+        }.config() as JavaConfig
+
+        when:
+        evaluateProject()
+
+        then:
+        javaConfig.compileTask().targetCompatibility == "1.7"
+        javaConfig.jarTask().manifest.attributes.get("Built-By") == "Fooble Booble"
+    }
+
+
+    AbstractProject evaluateProject() {
+        return ((DefaultProject)project).evaluate()
     }
 
 }
