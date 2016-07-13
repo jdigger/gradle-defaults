@@ -18,62 +18,91 @@ package com.mooregreatsoftware.gradle.defaults.config;
 import com.mooregreatsoftware.gradle.defaults.xml.XmlUtils;
 import groovy.util.Node;
 import groovy.util.NodeList;
+import lombok.val;
 import org.gradle.api.Project;
+import org.gradle.api.XmlProvider;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
 import org.gradle.plugins.ide.idea.model.IdeaProject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
+import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.m;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings("WeakerAccess")
 public class IntellijConfig extends AbstractConfig {
+    private final Supplier<String> compatibilityVersionSupplier;
 
-    public IntellijConfig(Project project) {
+
+    protected IntellijConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
         super(project);
+        this.compatibilityVersionSupplier = compatibilityVersionSupplier;
     }
 
 
-    public void config(Supplier<String> compatibilityVersionSupplier) {
+    public static IntellijConfig create(Project project, Supplier<String> compatibilityVersionSupplier) {
+        return new IntellijConfig(project, compatibilityVersionSupplier).config();
+    }
+
+
+    protected IntellijConfig config() {
         plugins().apply("idea");
 
         // everything below this is only at the (top-level) "Project" level, not the "Module" level
-        if (!isRootProject(project)) return;
+        if (!isRootProject(project)) return this;
 
         info("Configuring the 'idea' plugin");
 
-        IdeaModel ideaModel = ideaModel();
-        final IdeaProject ideaProject = ideaModel.getProject();
+        val ideaProject = ideaProject();
         ideaProject.setVcs("Git");
 
-        ideaProject.getIpr().withXml(provider -> {
-            final Node rootNode = provider.asNode();
+        ideaProject.getIpr().withXml(this::customizeProjectXml);
 
-            addGradleHome(rootNode);
+        project.afterEvaluate(prj -> configLanguageVersion());
 
-            setupCodeStyle(rootNode);
-        });
+        return this;
+    }
 
-        project.afterEvaluate(prj -> {
-            String compatibilityVersion = compatibilityVersionSupplier.get();
-            ideaProject.setJdkName(compatibilityVersion);
-            ideaProject.setLanguageLevel(compatibilityVersion);
-        });
+
+    private void configLanguageVersion() {
+        val ideaProject = ideaProject();
+        val compatibilityVersion = getLanguageVersion();
+        ideaProject.setJdkName(compatibilityVersion);
+        ideaProject.setLanguageLevel(compatibilityVersion);
+    }
+
+
+    public IdeaProject ideaProject() {
+        return ideaModel().getProject();
+    }
+
+
+    public static IdeaProject ideaProject(Project project) {
+        return ideaModel(project).getProject();
+    }
+
+
+    public String getLanguageVersion() {
+        return compatibilityVersionSupplier.get();
+    }
+
+
+    private void customizeProjectXml(XmlProvider provider) {
+        val rootNode = provider.asNode();
+
+        addGradleHome(rootNode);
+
+        setupCodeStyle(rootNode);
     }
 
 
     private static void setupCodeStyle(Node rootNode) {
-        NodeList componentNodes = (NodeList)rootNode.get("component");
-
-        Node codeStyleNode = XmlUtils.findByAttribute(componentNodes, "name", "ProjectCodeStyleSettingsManager",
-            () -> rootNode.appendNode("component", m("name", "ProjectCodeStyleSettingsManager"))
-        );
+        val codeStyleNode = codeStyleNode(rootNode);
         codeStyleNode.setValue(new ArrayList<>());// remove any previous children
 
         codeStyleNode.appendNode("option", nv("USE_PER_PROJECT_SETTINGS", "true"));
@@ -123,6 +152,20 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
+    public static Node codeStyleNode(Node rootNode) {
+        val componentNodes = componentNodes(rootNode);
+
+        return XmlUtils.findByAttribute(componentNodes, "name", "ProjectCodeStyleSettingsManager",
+            () -> rootNode.appendNode("component", m("name", "ProjectCodeStyleSettingsManager"))
+        );
+    }
+
+
+    public static NodeList componentNodes(Node rootNode) {
+        return (NodeList)rootNode.get("component");
+    }
+
+
     private void addGradleHome(Node rootNode) {
         createNode(rootNode, "component", m("name", "GradleSettings"),
             n("option", nv("SDK_HOME", gradle().getGradleHomeDir().toString()))
@@ -131,17 +174,17 @@ public class IntellijConfig extends AbstractConfig {
 
 
     public IdeaModel ideaModel() {
+        return ideaModel(project);
+    }
+
+
+    public static IdeaModel ideaModel(Project project) {
         return project.getExtensions().findByType(IdeaModel.class);
     }
 
 
-    private static Map<String, String> m(String key, String value) {
-        return Collections.singletonMap(key, value);
-    }
-
-
-    private static Map<String, String> nv(String name, String value) {
-        Map<String, String> map = new HashMap<>();
+    public static Map<String, String> nv(String name, String value) {
+        val map = new HashMap<String, String>();
         map.put("name", name);
         map.put("value", value);
         return map;

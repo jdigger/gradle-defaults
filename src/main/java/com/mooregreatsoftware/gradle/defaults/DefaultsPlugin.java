@@ -66,14 +66,14 @@ public class DefaultsPlugin implements Plugin<Project> {
 
     private void configProject(Project prj, DefaultsExtension extension) {
         prj.getRepositories().jcenter();
-        new IntellijConfig(prj).config(extension::getCompatibilityVersion);
+        IntellijConfig.create(prj, extension::getCompatibilityVersion);
         JavaConfig.create(prj, extension::getCompatibilityVersion);
         GroovyConfig.create(prj, extension::getCompatibilityVersion);
         new ScalaConfig(prj).config(extension::getCompatibilityVersion);
         new LicenseConfig(prj).config(extension::getCopyrightYears);
         new MavenPublishingConfig(prj, extension).config();
         new BintrayConfig(prj, extension).config();
-        new LombokConfiguration(prj).config(extension::getLobokVersion);
+        LombokConfiguration.create(prj, extension::getLobokVersion);
         addOrderingRules(prj);
     }
 
