@@ -15,56 +15,49 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
-import com.mooregreatsoftware.gradle.defaults.AbstractConfigSpec
+import com.mooregreatsoftware.gradle.defaults.AbstractConfigIntSpec
 import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
-import groovy.transform.CompileStatic
 
-class LombokConfigSpec extends AbstractConfigSpec {
+class LicenseConfigIntSpec extends AbstractConfigIntSpec {
 
-    def "build"() {
-        writeLombokHelloWorld('com.mooregreatsoftware.gradle.defaults')
+    def "licenseFormat"() {
+        def sourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
             ${applyPlugin(DefaultsPlugin)}
             apply plugin: 'java'
 
+            group = "com.mooregreatsoftware.gradle.defaults"
+
             defaults {
                 id = "tester"
-                compatibilityVersion = 1.8
+                compatibilityVersion = 1.7
+                copyrightYears = '2014-2016'
             }
         """.stripIndent()
 
+        def subprojDir = addSubproject("submod", """
+            apply plugin: 'java'
+        """.stripIndent())
+        def subSourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
+
+        createLicenseHeader()
+
+        expect:
+        sourceFile.readLines().find( { it.contains("Copyright ") }) == null
+        subSourceFile.readLines().find( { it.contains("Copyright ") }) == null
+
         when:
-        def result = runTasks('classes')
+        def result = runTasks('licenseFormat')
 
         then:
         result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
+        sourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
+        subSourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
 
         cleanup:
         println result?.standardOutput
         println result?.standardError
-    }
-
-
-    @CompileStatic
-    protected File writeLombokHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
-        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
-        def javaFile = createFile(path, baseDir)
-        javaFile << """
-        package ${packageDotted};
-
-        @lombok.Value
-        public class HelloWorld {
-            String aVal;
-
-            public static void main(String[] args) {
-                lombok.val aStr = "Hello, Lombok test";
-                new HelloWorld(aStr);
-            }
-        }
-        """.stripIndent()
-        return javaFile
     }
 
 }

@@ -27,4 +27,12 @@ public class Utils {
         return Optional.ofNullable(val).filter(s -> !s.isEmpty());
     }
 
+
+    /**
+     * Returns true if the given string is non-null and has at least one non-whitespace character; false otherwise.
+     */
+    public static boolean isNotEmpty(String str) {
+        return !(str == null || str.trim().isEmpty());
+    }
+
 }

@@ -15,14 +15,20 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import lombok.val;
 import org.ajoberstar.gradle.git.ghpages.GithubPagesPluginExtension;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.CopySpec;
-import org.gradle.api.plugins.PluginContainer;
-import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.plugins.GroovyPlugin;
+import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.scala.ScalaPlugin;
 
 import java.util.function.Supplier;
+
+import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME;
+import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME;
+import static org.gradle.api.plugins.scala.ScalaPlugin.SCALA_DOC_TASK_NAME;
 
 @SuppressWarnings("WeakerAccess")
 public class GhPagesConfig extends AbstractConfig {
@@ -36,31 +42,32 @@ public class GhPagesConfig extends AbstractConfig {
         info("Applying plugin 'org.ajoberstar.github-pages'");
         plugins().apply("org.ajoberstar.github-pages");
 
-        project.allprojects(prj -> {
-            final PluginContainer prjPlugins = prj.getPlugins();
-            final TaskContainer prjTasks = prj.getTasks();
+        project.allprojects(this::associateDocTasks);
 
-            // associate the "*doc" tasks of the different languages with the gh-pages output
-            prjPlugins.withId("java", p -> addOutput(prjTasks.getByName("javadoc")));
-            prjPlugins.withId("groovy", p -> addOutput(prjTasks.getByName("groovydoc")));
-            prjPlugins.withId("scala", p -> addOutput(prjTasks.getByName("scaladoc")));
-        });
+        githubPages().getPages().from("src/gh-pages");
 
         project.afterEvaluate(prj -> {
             debug("Continuing configuring githubPages extension");
-            GithubPagesPluginExtension gheExt = githubPages();
-            gheExt.setRepoUri(vcsWriteUrlSupplier.get());
-            gheExt.getPages().from("src/gh-pages");
+            githubPages().setRepoUri(vcsWriteUrlSupplier.get());
         });
     }
 
 
+    private void associateDocTasks(Project prj) {
+        val prjPlugins = prj.getPlugins();
+        val prjTasks = prj.getTasks();
+
+        // associate the "*doc" tasks of the different languages with the gh-pages output
+        prjPlugins.withType(JavaPlugin.class, p -> addOutput(prjTasks.getByName(JAVADOC_TASK_NAME)));
+        prjPlugins.withType(GroovyPlugin.class, p -> addOutput(prjTasks.getByName(GROOVYDOC_TASK_NAME)));
+        prjPlugins.withType(ScalaPlugin.class, p -> addOutput(prjTasks.getByName(SCALA_DOC_TASK_NAME)));
+    }
+
+
     private CopySpec addOutput(final Task task) {
-        CopySpec pages = githubPages().getPages();
-
-        CopySpec from = pages.from(task.getOutputs().getFiles());
-
-        String replace = ("docs" + task.getPath()).replace(":", "/");
+        val pages = githubPages().getPages();
+        val from = pages.from(task.getOutputs().getFiles());
+        val replace = ("docs" + task.getPath().replace(":", "/"));
 
         return from.into(replace);
     }

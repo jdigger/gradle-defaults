@@ -15,17 +15,19 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
-import com.mooregreatsoftware.gradle.defaults.AbstractConfigSpec
+import com.mooregreatsoftware.gradle.defaults.AbstractConfigIntSpec
 import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
-class IntellijConfigSpec extends AbstractConfigSpec {
+class JavaConfigIntSpec extends AbstractConfigIntSpec {
 
     def "build"() {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin.class)}
+            ${applyPlugin(DefaultsPlugin)}
             apply plugin: 'java'
+
+            group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
                 id = "tester"
@@ -33,22 +35,24 @@ class IntellijConfigSpec extends AbstractConfigSpec {
             }
         """.stripIndent()
 
-        addSubproject("submod")
+        def subprojDir = addSubproject("submod", """
+            apply plugin: 'java'
+        """.stripIndent())
+        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
 
         when:
-        def result = runTasks('idea')
+        def result = runTasks('assemble')
 
         then:
         result.success
-        fileExists("${moduleName}.ipr")
-        result.wasExecuted(':ideaProject')
-
-        when:
-        def xml = new XmlParser(false, false).parse(new File(projectDir, "${moduleName}.ipr"))
-
-        then:
-        xml.component.find { it.@name == "GradleSettings" } != null
-        xml.component.'**'.find { it.@name == "OTHER_INDENT_OPTIONS" } != null
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
+        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorld.class')
+        [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {
+            assert result.wasExecuted(it)
+        }
+        result.standardOutput.readLines().find({
+            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
+        })
 
         cleanup:
         println result?.standardOutput

@@ -17,44 +17,56 @@ package com.mooregreatsoftware.gradle.defaults.config
 
 import com.mooregreatsoftware.gradle.defaults.AbstractConfigIntSpec
 import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
+import groovy.transform.CompileStatic
 
-class JavaConfigSpec extends AbstractConfigIntSpec {
+class LombokConfigIntSpec extends AbstractConfigIntSpec {
 
     def "build"() {
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
+        writeLombokHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
             ${applyPlugin(DefaultsPlugin)}
             apply plugin: 'java'
 
+            group = "com.mooregreatsoftware.gradle.defaults"
+
             defaults {
                 id = "tester"
-                compatibilityVersion = 1.7
+                compatibilityVersion = 1.8
             }
         """.stripIndent()
 
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
         when:
-        def result = runTasks('assemble')
+        def result = runTasks('classes')
 
         then:
         result.success
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorld.class')
-        [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {
-            assert result.wasExecuted(it)
-        }
-        result.standardOutput.readLines().find({
-            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
-        })
 
         cleanup:
         println result?.standardOutput
         println result?.standardError
+    }
+
+
+    @CompileStatic
+    protected File writeLombokHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
+        def javaFile = createFile(path, baseDir)
+        javaFile << """
+        package ${packageDotted};
+
+        @lombok.Value
+        public class HelloWorld {
+            String aVal;
+
+            public static void main(String[] args) {
+                lombok.val aStr = "Hello, Lombok test";
+                new HelloWorld(aStr);
+            }
+        }
+        """.stripIndent()
+        return javaFile
     }
 
 }

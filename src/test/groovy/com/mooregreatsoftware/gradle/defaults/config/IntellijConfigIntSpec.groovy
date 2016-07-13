@@ -15,43 +15,41 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
-import com.mooregreatsoftware.gradle.defaults.AbstractConfigSpec
+import com.mooregreatsoftware.gradle.defaults.AbstractConfigIntSpec
 import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
-class LicenseConfigSpec extends AbstractConfigSpec {
+class IntellijConfigIntSpec extends AbstractConfigIntSpec {
 
-    def "licenseFormat"() {
-        def sourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
+    def "build"() {
+        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            ${applyPlugin(DefaultsPlugin.class)}
             apply plugin: 'java'
 
+            group = "com.mooregreatsoftware.gradle.defaults"
             defaults {
                 id = "tester"
                 compatibilityVersion = 1.7
-                copyrightYears = '2014-2016'
             }
         """.stripIndent()
 
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        def subSourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
-        createLicenseHeader()
-
-        expect:
-        sourceFile.readLines().find( { it.contains("Copyright ") }) == null
-        subSourceFile.readLines().find( { it.contains("Copyright ") }) == null
+        addSubproject("submod")
 
         when:
-        def result = runTasks('licenseFormat')
+        def result = runTasks('idea')
 
         then:
         result.success
-        sourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
-        subSourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
+        fileExists("${moduleName}.ipr")
+        result.wasExecuted(':ideaProject')
+
+        when:
+        def xml = new XmlParser(false, false).parse(new File(projectDir, "${moduleName}.ipr"))
+
+        then:
+        xml.component.find { it.@name == "GradleSettings" } != null
+        xml.component.'**'.find { it.@name == "OTHER_INDENT_OPTIONS" } != null
 
         cleanup:
         println result?.standardOutput

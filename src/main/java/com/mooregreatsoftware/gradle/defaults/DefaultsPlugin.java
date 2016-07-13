@@ -25,16 +25,14 @@ import com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration;
 import com.mooregreatsoftware.gradle.defaults.config.MavenPublishingConfig;
 import com.mooregreatsoftware.gradle.defaults.config.ReleaseConfig;
 import com.mooregreatsoftware.gradle.defaults.config.ScalaConfig;
+import lombok.val;
 import org.ajoberstar.grgit.Grgit;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
+import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.publish.plugins.PublishingPlugin;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -51,9 +49,9 @@ public class DefaultsPlugin implements Plugin<Project> {
             return;
         }
 
-        final Grgit grgit = createGrgit(project);
+        val grgit = createGrgit(project);
 
-        DefaultsExtension extension = project.getExtensions().create("defaults", DefaultsExtension.class, project);
+        val extension = project.getExtensions().create("defaults", DefaultsExtension.class, project);
 
         project.getPlugins().apply("org.ajoberstar.organize-imports");
 
@@ -88,32 +86,41 @@ public class DefaultsPlugin implements Plugin<Project> {
     }
 
 
-    private void addOrderingRules(final Project project) {
-        project.getPlugins().withId("org.gradle.base", plugin -> {
-            final Task clean = project.getTasks().getAt("clean");
-            project.getTasks().forEach(task -> {
-                if (!task.equals(clean)) {
-                    task.shouldRunAfter(clean);
-                }
-            });
+    private static void addOrderingRules(final Project project) {
+        project.getPlugins().withType(BasePlugin.class, plugin -> {
+            allTasksShouldRunAfterClean(project);
+            publishingTasksShouldRunAfterBuild(project);
+        });
+    }
 
-            final Task build = project.getTasks().getAt("build");
-            project.getTasks().forEach(task -> {
-                if (Objects.equals(task.getGroup(), "publishing")) {
-                    task.shouldRunAfter(build);
-                }
-            });
+
+    private static void allTasksShouldRunAfterClean(Project project) {
+        val clean = project.getTasks().getByName(BasePlugin.CLEAN_TASK_NAME);
+        project.getTasks().forEach(task -> {
+            if (!task.equals(clean)) {
+                task.shouldRunAfter(clean);
+            }
+        });
+    }
+
+
+    private static void publishingTasksShouldRunAfterBuild(Project project) {
+        val build = project.getTasks().getByName(BasePlugin.BUILD_GROUP);
+        project.getTasks().forEach(task -> {
+            if (Objects.equals(task.getGroup(), PublishingPlugin.PUBLISH_TASK_GROUP)) {
+                task.shouldRunAfter(build);
+            }
         });
     }
 
 
     public static String userEmail(Project project) {
-        final ExtraPropertiesExtension rootExt = project.getRootProject().getExtensions().getExtraProperties();
+        val rootExt = project.getRootProject().getExtensions().getExtraProperties();
         if (rootExt.has(EMAIL_CACHE_KEY)) {
             return (String)rootExt.get(EMAIL_CACHE_KEY);
         }
 
-        final String userEmail = detectUserEmail(project);
+        val userEmail = detectUserEmail(project);
         rootExt.set(EMAIL_CACHE_KEY, userEmail);
         return userEmail;
     }
@@ -121,11 +128,11 @@ public class DefaultsPlugin implements Plugin<Project> {
 
     private static String detectUserEmail(Project project) {
         try {
-            final File rootDir = project.getRootDir();
-            final Git git = Git.open(rootDir);
-            final Repository repository = git.getRepository();
-            final StoredConfig config = repository.getConfig();
-            final String userEmail = config.getString("user", null, "email");
+            val rootDir = project.getRootDir();
+            val git = Git.open(rootDir);
+            val repository = git.getRepository();
+            val config = repository.getConfig();
+            val userEmail = config.getString("user", null, "email");
             if (userEmail == null || userEmail.trim().isEmpty()) {
                 project.getLogger().warn("The git repository's \"user.email\" configuration is null, " +
                     "so using \"" + DEFAULT_USER_EMAIL + "\" instead");

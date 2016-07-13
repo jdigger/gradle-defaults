@@ -20,7 +20,7 @@ import org.gradle.api.logging.LogLevel
 import spock.lang.Subject
 
 @Subject(DefaultsPlugin)
-class DefaultsPluginIntSpec extends AbstractConfigSpec {
+class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
 
     def "build"() {
         logLevel = LogLevel.DEBUG
@@ -29,6 +29,8 @@ class DefaultsPluginIntSpec extends AbstractConfigSpec {
         buildFile << """
             ${applyPlugin(DefaultsPlugin)}
             apply plugin: 'java'
+
+            group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
                 id = "tester"

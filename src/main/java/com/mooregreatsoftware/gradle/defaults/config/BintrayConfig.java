@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import com.jfrog.bintray.gradle.BintrayExtension;
+import com.jfrog.bintray.gradle.BintrayPlugin;
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileTree;
@@ -36,7 +37,7 @@ public class BintrayConfig extends AbstractConfigWithExtension {
 
 
     public void config() {
-        plugins().withId("com.jfrog.bintray", plugin -> {
+        plugins().withType(BintrayPlugin.class, plugin -> {
             if (project.hasProperty("bintrayUser") && project.hasProperty("bintrayKey")) {
                 project.afterEvaluate(prj -> {
                     Map<String, Object> bintrayAttributes = new HashMap<>();

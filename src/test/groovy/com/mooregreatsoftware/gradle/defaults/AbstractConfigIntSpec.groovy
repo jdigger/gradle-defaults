@@ -22,7 +22,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.URIish
 import org.gradle.api.logging.LogLevel
 
-abstract class AbstractConfigSpec extends IntegrationSpec {
+abstract class AbstractConfigIntSpec extends IntegrationSpec {
     @TempDirectory(clean = false, baseDir = 'build/git-bare')
     protected File remoteOrigin
 

@@ -15,7 +15,6 @@
  */
 package com.mooregreatsoftware.gradle.defaults;
 
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import java.util.Map;
@@ -55,7 +54,7 @@ public class DefaultsExtension {
 
     public String getId() {
         if (this.id == null) {
-            throw new IllegalStateException("\"id\" is not set for " + DefaultsExtension.class.getName());
+            throw new IllegalStateException("\"id\" is not set for " + DefaultsExtension.class.getName() + " on " + this.project.getName());
         }
         return id;
     }

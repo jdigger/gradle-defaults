@@ -45,8 +45,19 @@ public abstract class AbstractConfig {
     }
 
 
+    protected void debug(String format, String... msgArgs) {
+        project.getLogger().debug(format, (Object[])msgArgs);
+    }
+
+
+
     protected void info(String msg) {
-        project.getLogger().debug(msg);
+        project.getLogger().info(msg);
+    }
+
+
+    protected void info(String format, String... msgArgs) {
+        project.getLogger().info(format, (Object[])msgArgs);
     }
 
 
