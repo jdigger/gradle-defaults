@@ -15,16 +15,18 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import com.google.common.io.Files;
 import com.jfrog.bintray.gradle.BintrayExtension;
 import com.jfrog.bintray.gradle.BintrayPlugin;
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
+import lombok.val;
 import org.gradle.api.Project;
-import org.gradle.api.file.ConfigurableFileTree;
 
+import java.io.File;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.Optional.ofNullable;
@@ -39,66 +41,101 @@ public class BintrayConfig extends AbstractConfigWithExtension {
     public void config() {
         plugins().withType(BintrayPlugin.class, plugin -> {
             if (project.hasProperty("bintrayUser") && project.hasProperty("bintrayKey")) {
-                project.afterEvaluate(prj -> {
-                    Map<String, Object> bintrayAttributes = new HashMap<>();
-                    if (ofNullable(extension.getBintrayLabels()).filter(lbls -> lbls.contains("gradle")).isPresent()) {
-                        info("bintrayLabels does includes 'gradle' so generating 'gradle-plugins' attributes");
-                        Map<String, String> fileTreeConf = new HashMap<>();
-                        fileTreeConf.put("dir", "src/main/resources/META-INF/gradle-plugins");
-                        fileTreeConf.put("include", "*.properties");
-                        final ConfigurableFileTree files = project.fileTree(fileTreeConf);
-                        List<String> pluginIds = StreamSupport.stream(files.spliterator(), false).
-                            map(file -> file.getName().substring(0, (file.getName().lastIndexOf(".") - 1))).
-                            collect(Collectors.toList());
-                        List<String> pluginIdStrs = pluginIds.stream().map(pid ->
-                            pid + ":" + String.valueOf(project.getGroup()) + ":" + name()
-                        ).collect(Collectors.toList());
-                        bintrayAttributes.put("gradle-plugin", pluginIdStrs);
-                    }
-                    else {
-                        info("bintrayLabels does not include 'gradle' so not generating 'gradle-plugins' attributes");
-                    }
-
-                    info("bintrayAttributes: " + bintrayAttributes);
-
-                    BintrayExtension bintray = project.getConvention().getByType(BintrayExtension.class);
-
-                    bintray.setUser((String)project.property("bintrayUser"));
-                    bintray.setKey((String)project.property("bintrayKey"));
-
-                    bintray.setPublications("main");
-                    bintray.setPublish(true);
-
-                    BintrayExtension.PackageConfig pkgConfig = bintray.getPkg();
-
-                    if (extension.getOrgName() != null) pkgConfig.setUserOrg(extension.getId());
-
-                    pkgConfig.setRepo(extension.getBintrayRepo());
-                    pkgConfig.setName(extension.getBintrayPkg());
-                    pkgConfig.setDesc(project.getDescription());
-                    pkgConfig.setWebsiteUrl(extension.getSiteUrl());
-                    pkgConfig.setIssueTrackerUrl(extension.getIssuesUrl());
-                    pkgConfig.setVcsUrl(extension.getVcsReadUrl());
-                    pkgConfig.setLicenses(extension.getLicenseKey());
-                    final String[] bintrayLabels = ofNullable(extension.getBintrayLabels()).
-                        map(set -> set.toArray(new String[set.size()])).
-                        orElse(new String[0]);
-                    pkgConfig.setLabels(bintrayLabels);
-                    pkgConfig.setPublicDownloadNumbers(true);
-
-                    BintrayExtension.VersionConfig version = pkgConfig.getVersion();
-
-                    version.setVcsTag("v" + String.valueOf(project.getVersion()));
-                    version.setAttributes(bintrayAttributes);
-
-                    BintrayExtension.GpgConfig gpg = version.getGpg();
-                    gpg.setSign(true);
-                    if (project.hasProperty("gpgPassphrase")) {
-                        gpg.setPassphrase((String)project.property("gpgPassphrase"));
-                    }
-                });
+                project.afterEvaluate(prj -> configBintray());
             }
         });
+    }
+
+
+    private void configBintray() {
+        val bintray = bintrayExtension(project);
+
+        bintray.setUser((String)project.property("bintrayUser"));
+        bintray.setKey((String)project.property("bintrayKey"));
+
+        bintray.setPublications("main");
+        bintray.setPublish(true);
+
+        val pkgConfig = bintray.getPkg();
+
+        if (extension.getOrgName() != null) pkgConfig.setUserOrg(extension.getId());
+
+        pkgConfig.setRepo(extension.getBintrayRepo());
+        pkgConfig.setName(extension.getBintrayPkg());
+        pkgConfig.setDesc(project.getDescription());
+        pkgConfig.setWebsiteUrl(extension.getSiteUrl());
+        pkgConfig.setIssueTrackerUrl(extension.getIssuesUrl());
+        pkgConfig.setVcsUrl(extension.getVcsReadUrl());
+        pkgConfig.setLicenses(extension.getLicenseKey());
+        val bintrayLabels = toStringArray(extension.getBintrayLabels());
+        pkgConfig.setLabels(bintrayLabels);
+        pkgConfig.setPublicDownloadNumbers(true);
+
+        val bintrayPkgVersion = pkgConfig.getVersion();
+
+        bintrayPkgVersion.setVcsTag("v" + project.getVersion());
+        bintrayPkgVersion.setAttributes(bintrayAttributes());
+
+        val gpg = bintrayPkgVersion.getGpg();
+        gpg.setSign(true);
+        if (project.hasProperty("gpgPassphrase")) {
+            gpg.setPassphrase((String)project.property("gpgPassphrase"));
+        }
+    }
+
+
+    private static String[] toStringArray(Set<String> labels) {
+        return ofNullable(labels).
+            map(set -> set.toArray(new String[set.size()])).
+            orElse(new String[0]);
+    }
+
+
+    private HashMap<String, Object> bintrayAttributes() {
+        val bintrayAttributes = new HashMap<String, Object>();
+        if (ofNullable(extension.getBintrayLabels()).filter(lbl -> lbl.contains("gradle")).isPresent()) {
+            info("bintrayLabels does includes 'gradle' so generating 'gradle-plugins' attribute");
+            val filesTree = gradlePluginPropertyFiles(project);
+            val pluginIdBintrayAttributeValues = filesToPluginIds(filesTree).
+                map(this::pluginIdToBintrayAttributeValue).
+                collect(Collectors.toList());
+            bintrayAttributes.put("gradle-plugins", pluginIdBintrayAttributeValues);
+        }
+        else {
+            info("bintrayLabels does not include 'gradle' so not generating 'gradle-plugins' attribute");
+        }
+
+        info("bintrayAttributes: " + bintrayAttributes);
+        return bintrayAttributes;
+    }
+
+
+    private String pluginIdToBintrayAttributeValue(String pluginId) {
+        return pluginId + ":" + project.getGroup() + ":" + name();
+    }
+
+
+    private static Stream<String> filesToPluginIds(Iterable<File> filesTree) {
+        return StreamSupport.stream(filesTree.spliterator(), false).
+            map(BintrayConfig::filenameNoExtension);
+    }
+
+
+    private static String filenameNoExtension(File file) {
+        return Files.getNameWithoutExtension(file.getName());
+    }
+
+
+    private static Iterable<File> gradlePluginPropertyFiles(Project project) {
+        val fileTreeConf = new HashMap<String, String>();
+        fileTreeConf.put("dir", "src/main/resources/META-INF/gradle-plugins");
+        fileTreeConf.put("include", "*.properties");
+        return project.fileTree(fileTreeConf);
+    }
+
+
+    public static BintrayExtension bintrayExtension(Project project) {
+        return project.getConvention().getByType(BintrayExtension.class);
     }
 
 }
