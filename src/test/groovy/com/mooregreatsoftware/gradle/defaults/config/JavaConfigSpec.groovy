@@ -27,6 +27,8 @@ class JavaConfigSpec extends AbstractConfigIntSpec {
             ${applyPlugin(DefaultsPlugin)}
             apply plugin: 'java'
 
+            group = "com.mooregreatsoftware.gradle.defaults"
+
             defaults {
                 id = "tester"
                 compatibilityVersion = 1.7
