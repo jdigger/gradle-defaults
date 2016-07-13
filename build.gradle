@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.mooregreatsoftware:gradle-defaults:1.0.6'
+        classpath 'com.mooregreatsoftware:gradle-defaults:2.1.0'
     }
 }
 
