@@ -169,7 +169,6 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
         if (extension.getDevelopers() != null && !extension.getDevelopers().isEmpty()) {
             val devNodes = extension.getDevelopers().stream().
                 map(m -> n("contributor", asList(
-                    n("id", (String)m.get("id")),
                     n("name", (String)m.get("name")),
                     n("email", (String)m.get("email")))
                 )).
