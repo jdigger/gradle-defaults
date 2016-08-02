@@ -15,6 +15,10 @@ Currently, the defaults aren't terribly easy to override or pick and choose from
 * Adds the `jcenter()` repository.
 * Adds support for https://projectlombok.org/[Lombok] for Java projects. Configures to use:
 ** Extension's `lombokVersion`. Defaults to "1.16.8".
+** Both compiling from Gradle and IntelliJ IDEA project configuration support the annotation processing.
+* Adds support for http://types.cs.washington.edu/checker-framework/[Checker Framework] for Java projects. Configures to use:
+** Extension's `checkerFrameworkVersion`. Defaults to "2.0.1".
+** Both compiling from Gradle and IntelliJ IDEA project configuration support the annotation processing.
 * Applies https://github.com/ajoberstar/gradle-git[`org.ajoberstar.github-pages`] plugin. Configures to use:
 ** Extension's `vcsWriteUrl`.
 ** Publish content from `src/gh-pages`.
@@ -128,3 +132,11 @@ defaults {
 == Release Notes
 
 See link:../../releases[the Releases page]
+
+== Development
+
+=== Releasing
+
+`./gradlew release -Prelease.scope=patch -Prelease.stage=final`
+
+See https://github.com/ajoberstar/gradle-git/wiki/Release%20Plugins%201.x[the release plugin documentation]
