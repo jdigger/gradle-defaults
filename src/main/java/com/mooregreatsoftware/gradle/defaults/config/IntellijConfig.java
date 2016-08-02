@@ -35,7 +35,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.PATH_SEPARATOR;
-import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.bootClasspath;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.findByAttribute;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.m;
@@ -54,12 +53,13 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
-    public static IntellijConfig create(Project project, Supplier<String> compatibilityVersionSupplier) {
-        return new IntellijConfig(project, compatibilityVersionSupplier).config();
+    public static IntellijConfig create(Project project, Supplier<String> compatibilityVersionSupplier,
+                                        JavaConfig javaConfig) {
+        return new IntellijConfig(project, compatibilityVersionSupplier).config(javaConfig);
     }
 
 
-    protected IntellijConfig config() {
+    protected IntellijConfig config(JavaConfig javaConfig) {
         plugins().apply("idea");
 
         // everything below this is only at the (top-level) "Project" level, not the "Module" level
@@ -70,7 +70,7 @@ public class IntellijConfig extends AbstractConfig {
         val ideaProject = ideaProject();
         ideaProject.setVcs("Git");
 
-        ideaProject.getIpr().withXml(this::customizeProjectXml);
+        ideaProject.getIpr().withXml(provider -> customizeProjectXml(provider, javaConfig));
 
         project.afterEvaluate(prj -> configLanguageVersion());
 
@@ -96,17 +96,17 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
-    private void customizeProjectXml(XmlProvider provider) {
+    private void customizeProjectXml(XmlProvider provider, JavaConfig javaConfig) {
         val rootNode = provider.asNode();
 
         addGradleHome(rootNode);
 
         setupCodeStyle(rootNode);
-        setupCompiler(rootNode);
+        setupCompiler(rootNode, javaConfig);
     }
 
 
-    public void setupCompiler(Node rootNode) {
+    public void setupCompiler(Node rootNode, JavaConfig javaConfig) {
         val componentNodes = IntellijConfig.componentNodes(rootNode);
 
         val compilerConfiguration = findByAttribute(componentNodes, "name", "CompilerConfiguration",
@@ -117,14 +117,15 @@ public class IntellijConfig extends AbstractConfig {
             () -> compilerConfiguration.appendNode("annotationProcessing")
         );
 
-        val profile = createProfileNode(annotationProcessing);
+        val profile = createProfileNode(annotationProcessing, javaConfig);
 
-        if (!bootClasspath(project).isEmpty()) {
+        val bootClasspath = javaConfig.bootClasspath();
+        if (bootClasspath.iterator().hasNext()) {
             val javacSettings = findByAttribute(componentNodes, "name", "JavacSettings",
                 () -> rootNode.appendNode("component", m("name", "JavacSettings"))
             );
             javacSettings.appendNode("option", nv("ADDITIONAL_OPTIONS_STRING", "-Xbootclasspath/p:" +
-                bootClasspath(project).stream().
+                bootClasspath.stream().
                     map(File::getAbsolutePath).
                     sorted().
                     collect(joining(PATH_SEPARATOR))));
@@ -137,26 +138,25 @@ public class IntellijConfig extends AbstractConfig {
 
 
     @SuppressWarnings("Convert2MethodRef")
-    private Node createProfileNode(Node annotationProcessing) {
+    private Node createProfileNode(Node annotationProcessing, JavaConfig javaConfig) {
         val profileAttrs = new HashMap<String, String>();
         profileAttrs.put("default", "true");
         profileAttrs.put("name", "AnnotationProcessors");
         profileAttrs.put("enabled", "true");
 
-        val configurationFilesAsNodeBuilders = JavaConfig.annotationProcessorLibFiles(project).stream().
+        val configurationFilesAsNodeBuilders = javaConfig.annotationProcessorLibFiles().stream().
             map(IntellijConfig::fileEntry).
             sorted().
             collect(Collectors.<@NonNull NodeBuilder>toList());
 
-        val processorClassnames = JavaConfig.annotationProcessorClassNames(project);
-        val profileChildren = processorClassnames.stream().
+        val profileChildren = javaConfig.annotationProcessorClassNames().stream().
             sorted().
             map(cn -> n("processor", m("name", cn))).
             collect(Collectors.<@NonNull NodeBuilder>toList());
         profileChildren.add(n("processorPath", m("useClasspath", "false"),
             configurationFilesAsNodeBuilders));
 
-        JavaConfig.annotationProcessorOptions(project).stream().
+        javaConfig.annotationProcessorOptions().stream().
             sorted().
             map(o -> n("option", nv(o.name(), o.value()))).
             forEach(e -> profileChildren.add(e));

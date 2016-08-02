@@ -70,33 +70,33 @@ public class DefaultsPlugin implements Plugin<Project> {
 
     private void configProject(Project prj, DefaultsExtension extension) {
         prj.getRepositories().jcenter();
-        IntellijConfig.create(prj, extension::getCompatibilityVersion);
-        JavaConfig.create(prj, extension::getCompatibilityVersion);
+        val javConfig = JavaConfig.create(prj, extension::getCompatibilityVersion);
+        IntellijConfig.create(prj, extension::getCompatibilityVersion, javConfig);
         GroovyConfig.create(prj, extension::getCompatibilityVersion);
         new ScalaConfig(prj).config(extension::getCompatibilityVersion);
         new LicenseConfig(prj).config(extension::getCopyrightYears);
         new MavenPublishingConfig(prj, extension).config();
         new BintrayConfig(prj, extension).config();
-        configLombok(prj, extension);
-        CheckerFrameworkConfiguration.create(prj, extension::getCheckerFrameworkVersion);
+        configLombok(prj, extension, javConfig);
+        CheckerFrameworkConfiguration.create(prj, extension::getCheckerFrameworkVersion, javConfig);
         addOrderingRules(prj);
     }
 
 
-    private void configLombok(Project prj, DefaultsExtension extension) {
+    private void configLombok(Project prj, DefaultsExtension extension, JavaConfig javaConfig) {
         if (prj.getPlugins().findPlugin(JavaBasePlugin.class) != null) {
-            potentialConfigureLombok(prj, extension);
+            potentialConfigureLombok(prj, extension, javaConfig);
         }
         else {
-            prj.afterEvaluate(p -> potentialConfigureLombok(p, extension));
+            prj.afterEvaluate(p -> potentialConfigureLombok(p, extension, javaConfig));
         }
     }
 
 
-    private static void potentialConfigureLombok(Project prj, DefaultsExtension extension) {
+    private static void potentialConfigureLombok(Project prj, DefaultsExtension extension, JavaConfig javaConfig) {
         // TODO Move to LombokConfiguration.create
         if (extension.getUseLombok())
-            LombokConfiguration.create(prj, extension::getLombokVersion);
+            LombokConfiguration.create(prj, extension::getLombokVersion, javaConfig);
         else
             prj.getLogger().info("Not configuring Lombok for " + prj.getName());
     }

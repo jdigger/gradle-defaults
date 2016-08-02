@@ -19,7 +19,6 @@ import lombok.Value;
 import lombok.val;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.gradle.api.Project;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -27,13 +26,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 @SuppressWarnings({"WeakerAccess", "RedundantCast"})
@@ -52,70 +47,6 @@ public class Utils {
      */
     public static boolean isNotEmpty(@Nullable String str) {
         return !(str == null || str.trim().isEmpty());
-    }
-
-
-    /**
-     * Gets a value from the project's "extra properties", creating and/or transforming it.
-     * <p>
-     * If the key does not currently exist in "extra properties", the <code>creator</code> is called to create a new
-     * instance.
-     * <p>
-     * Regardless of if the value was found or newly created, the <code>transformer</code> is always called upon it
-     * and the result put back into "extra properties" before being returned from this method. Therefore it is
-     * important that <em><code>transformer</code> is idempotent</em>.
-     *
-     * @param project     the project containing the "extra properties"
-     * @param keyName     the property name
-     * @param transformer the IDEMPOTENT value transformer
-     * @param creator     the supplier of new value instances
-     * @param <T>         the type of the value
-     * @see #setFromExt(Project, String, Supplier)
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T fromExt(Project project, String keyName, Function<T, T> transformer, Supplier<T> creator) {
-        val ext = project.getExtensions().getExtraProperties();
-        val value = (@NonNull T)transformer.apply(ext.has(keyName) ? (T)ext.get(keyName) : creator.get());
-        ext.set(keyName, value);
-        return value;
-    }
-
-
-    /**
-     * Gets a {@link Set} of values from the project's "extra properties", ensuring that the values in
-     * <code>itemsToAddSupplier</code> are a part of it.
-     *
-     * @param project            the project containing the "extra properties"
-     * @param keyName            the property name
-     * @param itemsToAddSupplier the {@link Supplier} of values to make sure are in the {@link Set}
-     * @param <T>                the type of the values
-     * @see #fromExt(Project, String, Function, Supplier)
-     */
-    @SuppressWarnings("Convert2MethodRef")
-    public static <T> Set<T> setFromExt(Project project, String keyName, Supplier<Collection<T>> itemsToAddSupplier) {
-        return fromExt(project, keyName, set -> {
-            set.addAll(itemsToAddSupplier.get());
-            return set;
-        }, () -> new HashSet<T>());
-    }
-
-
-    /**
-     * Gets a {@link Set} of values from the project's "extra properties", ensuring that the values in
-     * <code>itemsToAddSupplier</code> are a part of it.
-     *
-     * @param project    the project containing the "extra properties"
-     * @param keyName    the property name
-     * @param itemsToAdd the values to make sure are in the {@link Set}
-     * @param <T>        the type of the values
-     * @see #fromExt(Project, String, Function, Supplier)
-     */
-    @SuppressWarnings("Convert2MethodRef")
-    public static <T> Set<T> setFromExt(Project project, String keyName, Collection<T> itemsToAdd) {
-        return fromExt(project, keyName, set -> {
-            set.addAll(itemsToAdd);
-            return set;
-        }, () -> new HashSet<T>());
     }
 
 

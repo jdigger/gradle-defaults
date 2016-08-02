@@ -15,6 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config;
 
+import com.mooregreatsoftware.gradle.defaults.StreamableIterable;
 import com.mooregreatsoftware.gradle.defaults.Utils;
 import lombok.Value;
 import lombok.val;
@@ -26,6 +27,7 @@ import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -34,15 +36,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsPlugin.userEmail;
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
-import static com.mooregreatsoftware.gradle.defaults.Utils.setFromExt;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME;
@@ -57,6 +59,12 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     @MonotonicNonNull
     private Jar sourcesJarTask;
 
+    private final Set<File> processorLibFiles = new HashSet<>();
+    private final Set<File> bootClasspath = new HashSet<>();
+    private final Set<Option> annotationProcessorOptions = new HashSet<>();
+    private final Set<String> annotationProcessorClassNames = new HashSet<>();
+    private final Set<String> javacOptions = new HashSet<>();
+
 
     protected JavaConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
         super(project, compatibilityVersionSupplier);
@@ -64,7 +72,18 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
 
 
     public static JavaConfig create(Project prj, Supplier<String> compatibilityVersionSupplier) {
-        return (JavaConfig)new JavaConfig(prj, compatibilityVersionSupplier).config();
+        return javaConfig(prj).
+            orElseGet(() -> (JavaConfig)new JavaConfig(prj, compatibilityVersionSupplier).config());
+    }
+
+
+    /**
+     * Returns the JavaConfig stored in the given Project, if it exists.
+     *
+     * @param project the project containting the JavaConfig
+     */
+    public static Optional<JavaConfig> javaConfig(Project project) {
+        return Optional.ofNullable((JavaConfig)project.getExtensions().findByName(JavaConfig.class.getName()));
     }
 
 
@@ -72,9 +91,10 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     protected void configLanguage() {
         super.configLanguage();
 
-        project.afterEvaluate(prj -> setManifestAttributes());
+        project.afterEvaluate(prj -> setManifestAttributes()); // TODO doFirst for task
 
-        project.getTasks().withType(JavaCompile.class, this::configureJavac);
+        final TaskContainer tasks = project.getTasks(); // TODO FIX
+        tasks.withType(JavaCompile.class, this::configureJavac);
     }
 
 
@@ -156,40 +176,156 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     }
 
 
-    public static Collection<File> annotationProcessorLibFiles(Project project) {
-        return registerAnnotationProcessorLibFiles(project, emptyList());
+    public StreamableIterable<File> annotationProcessorLibFiles() {
+        return StreamableIterable.of(this.processorLibFiles);
     }
 
 
-    public static Collection<File> registerAnnotationProcessorLibFiles(Project project, Collection<File> files) {
-        return setFromExt(project, "annotationProcessorConf.processorLibFiles", files);
+    public void registerAnnotationProcessorLibFiles(Collection<File> files) {
+        processorLibFiles.addAll(files);
     }
 
 
-    public static Collection<String> annotationProcessorClassNames(Project project) {
-        return registerAnnotationProcessorClassnames(project, emptyList());
+    public StreamableIterable<String> annotationProcessorClassNames() {
+        return StreamableIterable.of(this.annotationProcessorClassNames);
     }
 
 
-    public static Collection<String> registerAnnotationProcessorClassnames(Project project,
-                                                                           Collection<String> classnames) {
-        return setFromExt(project, "annotationProcessorConf.processorClassnames", classnames);
+    public void registerAnnotationProcessorClassnames(Collection<String> classnames) {
+        this.annotationProcessorClassNames.addAll(classnames);
     }
 
 
-    public static Collection<File> bootClasspath(Project project) {
-        return registerBootClasspath(project, emptyList());
+    public StreamableIterable<File> bootClasspath() {
+        return StreamableIterable.of(this.bootClasspath);
     }
 
 
-    public static Collection<File> registerBootClasspath(Project project,
-                                                         Collection<File> files) {
-        return setFromExt(project, "javac.bootClasspathFiles", files);
+    public void registerBootClasspath(Collection<File> files) {
+        this.bootClasspath.addAll(files);
     }
 
 
-    public static Collection<Option> annotationProcessorOptions(Project project) {
-        return registerAnnotationProcessorOptions(project, emptyList());
+    public StreamableIterable<Option> annotationProcessorOptions() {
+        return StreamableIterable.of(this.annotationProcessorOptions);
+    }
+
+
+    /**
+     * Register annotation processor arguments. Do not include the "-A". (e.g., instead of "-Awarn" use "warn")
+     */
+    @SuppressWarnings("Convert2MethodRef")
+    public void registerAnnotationProcessorOptions(Collection<Option> options) {
+        options.stream().
+            map(JavaConfig::stripLeadingDashA).
+            forEach(e -> this.annotationProcessorOptions.add(e));
+    }
+
+
+    private static Option stripLeadingDashA(Option o) {
+        return (o.name().startsWith("-A")) ? new Option(o.name().substring(2), o.value()) : o;
+    }
+
+
+    public StreamableIterable<String> javacOptions() {
+        return StreamableIterable.of(this.javacOptions);
+    }
+
+
+    /**
+     * Register "raw" javac arguments.
+     */
+    public void registerJavacOptions(Collection<String> options) {
+        this.javacOptions.addAll(options);
+    }
+
+
+    protected List<String> createJavacArgs() {
+        val compilerArgs = new ArrayList<String>();
+
+        addProcessor(compilerArgs);
+        addProcessorPath(compilerArgs);
+        addAnnotationProcessorOptions(compilerArgs);
+        registerJavacOptions(singletonList("-Xlint:unchecked"));
+        addOtherCompilerArgs(compilerArgs);
+        addBootClasspath(compilerArgs);
+
+        return compilerArgs;
+    }
+
+
+    private void addBootClasspath(List<String> compilerArgs) {
+        if (bootClasspath().iterator().hasNext()) {
+            compilerArgs.add("-Xbootclasspath/p:" +
+                bootClasspath().stream().
+                    map(File::getAbsolutePath).
+                    sorted().
+                    collect(joining(PATH_SEPARATOR)));
+        }
+    }
+
+
+    private void addProcessor(List<String> compilerArgs) {
+        compilerArgs.add("-processor");
+        compilerArgs.add(annotationProcessorClassNames().stream().
+            sorted().collect(joining(",")));
+    }
+
+
+    private void addProcessorPath(List<String> compilerArgs) {
+        compilerArgs.add("-processorpath");
+        compilerArgs.add(
+            annotationProcessorLibFiles().stream().
+                map(File::getAbsolutePath).
+                sorted().
+                collect(joining(PATH_SEPARATOR))
+        );
+    }
+
+
+    @SuppressWarnings("Convert2MethodRef")
+    private void addAnnotationProcessorOptions(List<String> compilerArgs) {
+        annotationProcessorOptions().stream().
+            sorted().
+            map(arg -> "-A" + arg.name() + "=" + arg.value()).
+            forEach(e -> compilerArgs.add(e));
+    }
+
+
+    @SuppressWarnings("Convert2MethodRef")
+    private void addOtherCompilerArgs(List<String> compilerArgs) {
+        javacOptions().stream().
+            sorted().
+            forEach(e -> compilerArgs.add(e));
+    }
+
+    // **********************************************************************
+    //
+    // HELPER CLASSES
+    //
+    // **********************************************************************
+
+    protected class ConfigCompilerAction implements Action<Task> {
+
+        @Override
+        public void execute(Task javaCompileTask) {
+            val compilerArgs = createJavacArgs();
+            val options = ((JavaCompile)javaCompileTask).getOptions();
+
+            if (Utils.isBuggyJavac()) {
+                val extensions = project.getExtensions();
+                val checkerConf = (CheckerFrameworkConfiguration)extensions.findByName(CheckerFrameworkConfiguration.class.getName());
+                if (checkerConf != null) {
+                    options.setFork(true);
+                    options.getForkOptions().setJvmArgs(
+                        singletonList("-Xbootclasspath/p:" + checkerConf.compilerLibraryFile().getAbsolutePath())
+                    );
+                }
+            }
+
+            options.setCompilerArgs(compilerArgs);
+        }
+
     }
 
 
@@ -204,122 +340,6 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
             val nameComp = name.compareTo(o.name());
             return nameComp != 0 ? nameComp : value.compareTo(o.value());
         }
-    }
-
-
-    /**
-     * Register annotation processor arguments. Do not include the "-A". (e.g., instead of "-Awarn" use "warn")
-     */
-    public static Collection<Option> registerAnnotationProcessorOptions(Project project, Collection<Option> options) {
-        return setFromExt(project, "annotationProcessorConf.annotationProcessorOptions",
-            options.stream().
-                map(JavaConfig::stripLeadingDashA).
-                collect(Collectors.<@NonNull Option>toList())
-        );
-    }
-
-
-    private static Option stripLeadingDashA(Option o) {
-        return (o.name().startsWith("-A")) ? new Option(o.name().substring(2), o.value()) : o;
-    }
-
-
-    public static Collection<String> javacOptions(Project project) {
-        return registerJavacOptions(project, emptyList());
-    }
-
-
-    /**
-     * Register "raw" javac arguments.
-     */
-    public static Collection<String> registerJavacOptions(Project project, Collection<String> options) {
-        return setFromExt(project, "javac.otherOptions", options);
-    }
-
-
-    protected List<String> createJavacArgs() {
-        val compilerArgs = new ArrayList<String>();
-
-        addProcessor(compilerArgs);
-        addProcessorPath(compilerArgs);
-        addAnnotationProcessorOptions(compilerArgs);
-        registerJavacOptions(project, singletonList("-Xlint:unchecked"));
-        addOtherCompilerArgs(compilerArgs);
-        addBootClasspath(compilerArgs);
-
-        return compilerArgs;
-    }
-
-
-    private void addBootClasspath(List<String> compilerArgs) {
-        if (!bootClasspath(project).isEmpty()) {
-            compilerArgs.add("-Xbootclasspath/p:" +
-                bootClasspath(project).stream().
-                    map(File::getAbsolutePath).
-                    sorted().
-                    collect(joining(PATH_SEPARATOR)));
-        }
-    }
-
-
-    private void addProcessor(List<String> compilerArgs) {
-        compilerArgs.add("-processor");
-        compilerArgs.add(annotationProcessorClassNames(project).stream().sorted().collect(joining(",")));
-    }
-
-
-    private void addProcessorPath(List<String> compilerArgs) {
-        compilerArgs.add("-processorpath");
-        compilerArgs.add(
-            annotationProcessorLibFiles(project).stream().
-                map(File::getAbsolutePath).
-                sorted().
-                collect(joining(PATH_SEPARATOR))
-        );
-    }
-
-
-    @SuppressWarnings("Convert2MethodRef")
-    private void addAnnotationProcessorOptions(List<String> compilerArgs) {
-        annotationProcessorOptions(project).stream().
-            sorted().
-            map(arg -> "-A" + arg.name() + "=" + arg.value()).
-            forEach(e -> compilerArgs.add(e));
-    }
-
-
-    @SuppressWarnings("Convert2MethodRef")
-    private void addOtherCompilerArgs(List<String> compilerArgs) {
-        javacOptions(project).stream().
-            sorted().
-            forEach(e -> compilerArgs.add(e));
-    }
-
-
-    protected class ConfigCompilerAction implements Action<Task> {
-
-        public ConfigCompilerAction() {
-        }
-
-
-        @Override
-        public void execute(Task javaCompileTask) {
-            val compilerArgs = createJavacArgs();
-            val options = ((JavaCompile)javaCompileTask).getOptions();
-
-            if (Utils.isBuggyJavac()) {
-                val checkerConf = (CheckerFrameworkConfiguration)project.getExtensions().findByName(CheckerFrameworkConfiguration.class.getName());
-                if (checkerConf != null) {
-                    options.setFork(true);
-                    options.getForkOptions().setJvmArgs(
-                        singletonList("-Xbootclasspath/p:" + checkerConf.compilerLibraryFile().getAbsolutePath())
-                    );
-                }
-            }
-
-            options.setCompilerArgs(compilerArgs);
-        }
-
     }
 
 }

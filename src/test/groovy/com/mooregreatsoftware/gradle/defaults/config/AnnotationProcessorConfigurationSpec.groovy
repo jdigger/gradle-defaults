@@ -77,8 +77,9 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
         when:
         def rootNode = new Node(null, "project")
-        def intellijConfig = IntellijConfig.create(project, { "1.8" })
-        intellijConfig.setupCompiler(rootNode)
+        def javaConfig = JavaConfig.javaConfig(project).get()
+        def intellijConfig = IntellijConfig.create(project, { "1.8" }, javaConfig)
+        intellijConfig.setupCompiler(rootNode, javaConfig)
         def annotationProcessing = rootNode.component.find {
             it.@name == "CompilerConfiguration"
         }.annotationProcessing[0]
@@ -131,6 +132,7 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
     void verifyProcessorClasspath(Node profile) {
         assert profile.processorPath.size() == 1
+        assert profile.processorPath.entry[0] != null
         assert profile.processorPath.entry[0]["@name"] == processorJarLocation()
     }
 

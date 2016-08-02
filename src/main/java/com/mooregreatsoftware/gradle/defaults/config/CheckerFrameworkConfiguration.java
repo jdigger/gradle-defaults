@@ -55,38 +55,39 @@ public class CheckerFrameworkConfiguration extends AnnotationProcessorConfigurat
      * @param checkerVersionSupplier a {@link Supplier} of the version of Checker Framework to use
      * @see #DEFAULT_CHECKER_VERSION
      */
-    public static CheckerFrameworkConfiguration create(Project project, Supplier<String> checkerVersionSupplier) {
+    public static CheckerFrameworkConfiguration create(Project project, Supplier<String> checkerVersionSupplier,
+                                                       JavaConfig javaConfig) {
         val checkerConfiguration = new CheckerFrameworkConfiguration(project, checkerVersionSupplier);
 
-        checkerConfiguration.configure();
+        checkerConfiguration.configure(javaConfig);
 
         return checkerConfiguration;
     }
 
 
     @Override
-    protected void registerWithJavac() {
-        super.registerWithJavac();
+    protected void registerWithJavac(JavaConfig javaConfig) {
+        super.registerWithJavac(javaConfig);
 
         // "skipUses=javaslang"
         // remove warns to turn the checks into errors
-        JavaConfig.registerAnnotationProcessorOptions(project,
+        javaConfig.registerAnnotationProcessorOptions(
             asList(new Option("warns", "true"), new Option("lint", "-cast:unsafe")));
 
-        JavaConfig.registerBootClasspath(project, bootClasspathFiles());
+        javaConfig.registerBootClasspath(bootClasspathFiles());
     }
 
 
     private Set<File> bootClasspathFiles() {
-        return ProjectUtils.getConfiguration(project, "checkerframework.bootclasspath.lib.conf", deps ->
-            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "jdk8", versionSupplier.get()))
+        return ProjectUtils.getConfiguration("checkerframework.bootclasspath.lib.conf", deps ->
+            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "jdk8", versionSupplier.get())), project.getConfigurations()
         ).getFiles();
     }
 
 
     private Configuration processLibConf() {
-        return ProjectUtils.getConfiguration(project, "checkerframework.processor.lib.conf", deps ->
-            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "checker", versionSupplier.get()))
+        return ProjectUtils.getConfiguration("checkerframework.processor.lib.conf", deps ->
+            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "checker", versionSupplier.get())), project.getConfigurations()
         );
     }
 
@@ -97,8 +98,8 @@ public class CheckerFrameworkConfiguration extends AnnotationProcessorConfigurat
 
 
     public File compilerLibraryFile() {
-        return ProjectUtils.getConfiguration(project, "checkerframework.compiler.lib.conf", deps ->
-            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "compiler", versionSupplier.get()))
+        return ProjectUtils.getConfiguration("checkerframework.compiler.lib.conf", deps ->
+            deps.add(new DefaultExternalModuleDependency("org.checkerframework", "compiler", versionSupplier.get())), project.getConfigurations()
         ).getSingleFile();
     }
 

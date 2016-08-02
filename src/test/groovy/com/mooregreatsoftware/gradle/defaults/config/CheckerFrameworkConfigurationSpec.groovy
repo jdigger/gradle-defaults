@@ -15,6 +15,8 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
+import groovy.transform.CompileStatic
+
 import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.CHECKERFRAMEWORK_NULLNESS_CHECKER
 import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.DEFAULT_CHECKER_VERSION
 import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.PATH_SEPARATOR
@@ -30,6 +32,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
 
     @Override
+    @CompileStatic
     List<String> dependencies() {
         [
             "org.checkerframework:checker:${version}",
@@ -41,18 +44,21 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
 
     @Override
+    @CompileStatic
     public AnnotationProcessorConfiguration createConf() {
-        CheckerFrameworkConfiguration.create(project, { version })
+        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.create(project, { "1.8" }))
     }
 
 
     @Override
+    @CompileStatic
     String processorJarLocation() {
         "${mavenRepoPath}/org/checkerframework/checker/${version}/checker-${version}.jar"
     }
 
 
     @Override
+    @CompileStatic
     String processorClassname() {
         CHECKERFRAMEWORK_NULLNESS_CHECKER
     }
@@ -62,16 +68,19 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
 
         @Override
+        @CompileStatic
         public AnnotationProcessorConfiguration createConf() {
-            CheckerFrameworkConfiguration.create(project, { version })
-            LombokConfiguration.create(project, { LombokConfiguration.DEFAULT_LOMBOK_VERSION })
+            def javaConfig = JavaConfig.create(project, { "1.8" })
+            CheckerFrameworkConfiguration.create(project, { version }, javaConfig)
+            LombokConfiguration.create(project, { LombokConfiguration.DEFAULT_LOMBOK_VERSION }, javaConfig)
         }
 
 
         @Override
+        @CompileStatic
         List<String> dependencies() {
             def deps = super.dependencies()
-            deps.add("org.projectlombok:lombok:${LombokConfiguration.DEFAULT_LOMBOK_VERSION}")
+            deps.add("org.projectlombok:lombok:${LombokConfiguration.DEFAULT_LOMBOK_VERSION}".toString())
             return deps
         }
 
@@ -83,6 +92,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
 
         @Override
+        @CompileStatic
         String processorJarLocation() {
             return project.extensions.getByType(CheckerFrameworkConfiguration).processorLibraryFile().absolutePath +
                 PATH_SEPARATOR +
@@ -112,6 +122,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
 
         @Override
+        @CompileStatic
         String processorClassname() {
             LOMBOK_LAUNCH_ANNOTATION_PROCESSOR + "," + CHECKERFRAMEWORK_NULLNESS_CHECKER
         }

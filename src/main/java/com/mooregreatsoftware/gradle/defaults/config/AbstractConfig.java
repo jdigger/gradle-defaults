@@ -20,6 +20,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -95,6 +96,11 @@ public abstract class AbstractConfig {
 
     protected String name() {
         return project.getName();
+    }
+
+
+    protected ExtraPropertiesExtension ext() {
+        return project.getExtensions().getExtraProperties();
     }
 
 

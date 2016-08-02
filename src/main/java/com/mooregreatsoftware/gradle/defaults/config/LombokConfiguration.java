@@ -32,7 +32,7 @@ import static java.util.Collections.singletonList;
 public class LombokConfiguration extends AnnotationProcessorConfiguration {
     public static final String DEFAULT_LOMBOK_VERSION = "1.16.8";
 
-    protected static final String LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor";
+    public static final String LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor";
 
 
     protected LombokConfiguration(Project project, Supplier<String> lombokVersionSupplier) {
@@ -40,10 +40,11 @@ public class LombokConfiguration extends AnnotationProcessorConfiguration {
     }
 
 
-    public static LombokConfiguration create(Project project, Supplier<String> lombokVersionSupplier) {
+    public static LombokConfiguration create(Project project, Supplier<String> lombokVersionSupplier,
+                                             JavaConfig javaConfig) {
         val lombokConfig = new LombokConfiguration(project, lombokVersionSupplier);
 
-        lombokConfig.configure();
+        lombokConfig.configure(javaConfig);
 
         return lombokConfig;
     }
@@ -56,8 +57,8 @@ public class LombokConfiguration extends AnnotationProcessorConfiguration {
 
 
     private Configuration processLibConf() {
-        return ProjectUtils.getConfiguration(project, "lombok.processor.lib.conf", deps ->
-            deps.add(lombokDependency())
+        return ProjectUtils.getConfiguration("lombok.processor.lib.conf", deps ->
+            deps.add(lombokDependency()), project.getConfigurations()
         );
     }
 

@@ -20,13 +20,16 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,10 +56,10 @@ public class ProjectUtils {
     public static boolean hasJavaSource(Project project) {
         try {
             if (hasJavaPlugin(project)) {
-                return hasJavaSourceWithJavaPlugin(project);
+                return hasJavaSourceWithJavaPlugin(project.getConvention());
             }
             else {
-                final boolean foundJavaFile = hasJavaSourceWithoutJavaPlugin(project);
+                final boolean foundJavaFile = hasJavaSourceWithoutJavaPlugin(project.getProjectDir());
                 if (foundJavaFile) {
                     project.getLogger().warn("Found Java source files in a standard source directory, " +
                         "but the Java plugin has not been applied");
@@ -84,8 +87,7 @@ public class ProjectUtils {
 
 
     @SuppressWarnings("SimplifiableIfStatement")
-    private static boolean hasJavaSourceWithoutJavaPlugin(Project project) throws IOException {
-        val projectDir = project.getProjectDir();
+    private static boolean hasJavaSourceWithoutJavaPlugin(File projectDir) throws IOException {
         val srcMain = projectDir.toPath().resolve("src").resolve("main");
         if (Files.exists(srcMain) && Files.isDirectory(srcMain)) {
             return pathHasAFile(srcMain.resolve("java"), ProjectUtils::isJavaFile) ||
@@ -122,8 +124,8 @@ public class ProjectUtils {
 
 
     @SuppressWarnings("RedundantCast")
-    private static boolean hasJavaSourceWithJavaPlugin(Project project) {
-        return (@NonNull Boolean)sourceSets(project).
+    private static boolean hasJavaSourceWithJavaPlugin(Convention projectConvention) {
+        return (@NonNull Boolean)sourceSets(projectConvention).
             map(ssc ->
                 ssc.stream().
                     filter(ProjectUtils::hasJavaSource).
@@ -139,8 +141,8 @@ public class ProjectUtils {
     }
 
 
-    public static Optional<SourceSetContainer> sourceSets(Project project) {
-        return ofNullable(project.getConvention().findPlugin(JavaPluginConvention.class)).
+    public static Optional<SourceSetContainer> sourceSets(Convention projectConvention) {
+        return ofNullable(projectConvention.findPlugin(JavaPluginConvention.class)).
             flatMap(javaPluginConvention -> ofNullable(javaPluginConvention.getSourceSets()));
     }
 
@@ -154,32 +156,32 @@ public class ProjectUtils {
      * Gets the named {@link Configuration} from the {@link Project}. If it does not yet exist, it is created and the
      * dependencies are configured using the {@link Consumer}.
      *
-     * @param project              the {@link Project} to get the {@link Configuration} from
      * @param confName             the name of the {@link Configuration}
      * @param dependenciesConsumer used to set up the given {@link DependencySet} for the newly created {@link Configuration}
+     * @param configurations       container of {@link Configuration}s
      * @return the named {@link Configuration}
-     * @see #createConfiguration(Project, String, Consumer)
+     * @see #createConfiguration(String, Consumer, ConfigurationContainer)
      */
-    public static Configuration getConfiguration(Project project, String confName, Consumer<DependencySet> dependenciesConsumer) {
-        return ofNullable(project.getConfigurations().findByName(confName)).
-            orElseGet(() -> createConfiguration(project, confName, dependenciesConsumer));
+    public static Configuration getConfiguration(String confName, Consumer<DependencySet> dependenciesConsumer,
+                                                 ConfigurationContainer configurations) {
+        return ofNullable(configurations.findByName(confName)).
+            orElseGet(() -> createConfiguration(confName, dependenciesConsumer, configurations));
     }
 
 
     /**
      * Creates a new {@link Configuration} with the given name, configuring the dependencies using the {@link Consumer}.
      *
-     * @param project              the {@link Project} to create the {@link Configuration} in
      * @param confName             the name of the new {@link Configuration}
      * @param dependenciesConsumer used to set up the given {@link DependencySet} for the newly created {@link Configuration}
+     * @param configurations       container of {@link Configuration}s
      * @return the newly created {@link Configuration}
      * @throws InvalidUserDataException if the Configuration by already exists
-     * @see #getConfiguration(Project, String, Consumer)
      */
-    public static Configuration createConfiguration(Project project, String confName,
-                                                    Consumer<DependencySet> dependenciesConsumer) throws InvalidUserDataException {
-        return project.getConfigurations().
-            create(confName, conf -> dependenciesConsumer.accept(conf.getDependencies()));
+    public static Configuration createConfiguration(String confName,
+                                                    Consumer<DependencySet> dependenciesConsumer,
+                                                    ConfigurationContainer configurations) throws InvalidUserDataException {
+        return configurations.create(confName, conf -> dependenciesConsumer.accept(conf.getDependencies()));
     }
 
 }

@@ -97,7 +97,7 @@ class ProjectUtilsTest extends ProjectSpec {
         ProjectUtils.hasJavaSource(project) == false
 
         when:
-        ProjectUtils.sourceSets(project).ifPresent({
+        ProjectUtils.sourceSets(project.getConvention()).ifPresent({
             it.create("gen-some-java").java.srcDir("src/main/some-java")
         })
         createDirectories(srcMain.resolve("some-java"))
@@ -132,7 +132,7 @@ class ProjectUtilsTest extends ProjectSpec {
         ProjectUtils.hasJavaSource(project) == false
 
         when:
-        ProjectUtils.sourceSets(project).ifPresent({
+        ProjectUtils.sourceSets(project.getConvention()).ifPresent({
             it.create("gen-some-java").java.srcDir("src/main/some-java")
         })
         createDirectories(srcMain.resolve("some-java"))

@@ -34,28 +34,28 @@ public abstract class AnnotationProcessorConfiguration extends AbstractConfig {
     }
 
 
-    protected void configure() {
-        configJavaPlugin();
+    protected void configure(JavaConfig javaConfig) {
+        configJavaPlugin(javaConfig);
     }
 
 
-    protected void configJavaPlugin() {
+    protected void configJavaPlugin(JavaConfig javaConfig) {
         project.getPlugins().withType(JavaPlugin.class, plugin -> {
-            registerWithJavac();
+            registerWithJavac(javaConfig);
             addCompileOnlyDependencies();
         });
     }
 
 
     /**
-     * @see JavaConfig#registerAnnotationProcessorLibFiles(Project, Collection)
-     * @see JavaConfig#registerAnnotationProcessorClassnames(Project, Collection)
-     * @see JavaConfig#registerAnnotationProcessorOptions(Project, Collection)
-     * @see JavaConfig#registerBootClasspath(Project, Collection)
+     * @see JavaConfig#registerAnnotationProcessorLibFiles(Collection)
+     * @see JavaConfig#registerAnnotationProcessorClassnames(Collection)
+     * @see JavaConfig#registerAnnotationProcessorOptions(Collection)
+     * @see JavaConfig#registerBootClasspath(Collection)
      */
-    protected void registerWithJavac() {
-        JavaConfig.registerAnnotationProcessorLibFiles(project, myProcessorLibFiles());
-        JavaConfig.registerAnnotationProcessorClassnames(project, myProcessorClassNames());
+    protected void registerWithJavac(JavaConfig javaConfig) {
+        javaConfig.registerAnnotationProcessorLibFiles(myProcessorLibFiles());
+        javaConfig.registerAnnotationProcessorClassnames(myProcessorClassNames());
     }
 
 
