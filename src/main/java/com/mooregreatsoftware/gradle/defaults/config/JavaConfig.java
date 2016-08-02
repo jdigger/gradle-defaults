@@ -18,6 +18,8 @@ package com.mooregreatsoftware.gradle.defaults.config;
 import com.mooregreatsoftware.gradle.defaults.Utils;
 import lombok.Value;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -35,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsPlugin.userEmail;
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
@@ -42,16 +45,16 @@ import static com.mooregreatsoftware.gradle.defaults.Utils.setFromExt;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME;
 import static org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "RedundantTypeArguments", "RedundantCast"})
 public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     public static final String PATH_SEPARATOR = System.getProperty("path.separator");
 
     public static final String SOURCES_JAR_TASK_NAME = "sourcesJar";
 
+    @MonotonicNonNull
     private Jar sourcesJarTask;
 
 
@@ -124,7 +127,7 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
         attrs.put("Implementation-Version", version());
         attrs.put("Built-By", builtBy());
         attrs.put("Built-Date", Instant.now().toString());
-        attrs.put("Built-JDK", opt(System.getProperty("java.version")).orElse("1.8"));
+        attrs.put("Built-JDK", (@NonNull String)opt(System.getProperty("java.version")).orElse("1.8"));
         attrs.put("Built-Gradle", gradle().getGradleVersion());
         return attrs;
     }
@@ -211,7 +214,7 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
         return setFromExt(project, "annotationProcessorConf.annotationProcessorOptions",
             options.stream().
                 map(JavaConfig::stripLeadingDashA).
-                collect(toList())
+                collect(Collectors.<@NonNull Option>toList())
         );
     }
 
@@ -230,8 +233,7 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
      * Register "raw" javac arguments.
      */
     public static Collection<String> registerJavacOptions(Project project, Collection<String> options) {
-        return setFromExt(project, "javac.otherOtions",
-            options.stream().map(s -> (s.startsWith("-A")) ? s.substring(2) : s).collect(toList()));
+        return setFromExt(project, "javac.otherOptions", options);
     }
 
 
@@ -277,18 +279,20 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     }
 
 
+    @SuppressWarnings("Convert2MethodRef")
     private void addAnnotationProcessorOptions(List<String> compilerArgs) {
         annotationProcessorOptions(project).stream().
             sorted().
             map(arg -> "-A" + arg.name() + "=" + arg.value()).
-            forEach(compilerArgs::add);
+            forEach(e -> compilerArgs.add(e));
     }
 
 
+    @SuppressWarnings("Convert2MethodRef")
     private void addOtherCompilerArgs(List<String> compilerArgs) {
         javacOptions(project).stream().
             sorted().
-            forEach(compilerArgs::add);
+            forEach(e -> compilerArgs.add(e));
     }
 
 

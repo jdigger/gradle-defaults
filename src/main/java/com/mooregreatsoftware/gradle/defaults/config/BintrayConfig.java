@@ -20,6 +20,8 @@ import com.jfrog.bintray.gradle.BintrayExtension;
 import com.jfrog.bintray.gradle.BintrayPlugin;
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
 
 import java.io.File;
@@ -31,7 +33,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Optional.ofNullable;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "RedundantCast", "RedundantTypeArguments"})
 public class BintrayConfig extends AbstractConfigWithExtension {
     public BintrayConfig(Project project, DefaultsExtension extension) {
         super(project, extension);
@@ -60,13 +62,14 @@ public class BintrayConfig extends AbstractConfigWithExtension {
 
         if (extension.getOrgName() != null) pkgConfig.setUserOrg(extension.getId());
 
-        pkgConfig.setRepo(extension.getBintrayRepo());
-        pkgConfig.setName(extension.getBintrayPkg());
-        pkgConfig.setDesc(project.getDescription());
-        pkgConfig.setWebsiteUrl(extension.getSiteUrl());
-        pkgConfig.setIssueTrackerUrl(extension.getIssuesUrl());
-        pkgConfig.setVcsUrl(extension.getVcsReadUrl());
-        pkgConfig.setLicenses(extension.getLicenseKey());
+        ofNullable(extension.getBintrayRepo()).ifPresent(pkgConfig::setRepo);
+        ofNullable(extension.getBintrayPkg()).ifPresent(pkgConfig::setName);
+        ofNullable(project.getDescription()).ifPresent(pkgConfig::setDesc);
+        ofNullable(extension.getSiteUrl()).ifPresent(pkgConfig::setWebsiteUrl);
+        ofNullable(extension.getIssuesUrl()).ifPresent(pkgConfig::setIssueTrackerUrl);
+        ofNullable(extension.getVcsReadUrl()).ifPresent(pkgConfig::setVcsUrl);
+        ofNullable(extension.getLicenseKey()).ifPresent(pkgConfig::setLicenses);
+
         val bintrayLabels = toStringArray(extension.getBintrayLabels());
         pkgConfig.setLabels(bintrayLabels);
         pkgConfig.setPublicDownloadNumbers(true);
@@ -84,8 +87,8 @@ public class BintrayConfig extends AbstractConfigWithExtension {
     }
 
 
-    private static String[] toStringArray(Set<String> labels) {
-        return ofNullable(labels).
+    private static String[] toStringArray(@Nullable Set<String> labels) {
+        return (@NonNull String @NonNull [])ofNullable(labels).
             map(set -> set.toArray(new String[set.size()])).
             orElse(new String[0]);
     }
@@ -98,7 +101,7 @@ public class BintrayConfig extends AbstractConfigWithExtension {
             val filesTree = gradlePluginPropertyFiles(project);
             val pluginIdBintrayAttributeValues = filesToPluginIds(filesTree).
                 map(this::pluginIdToBintrayAttributeValue).
-                collect(Collectors.toList());
+                collect(Collectors.<@NonNull String>toList());
             bintrayAttributes.put("gradle-plugins", pluginIdBintrayAttributeValues);
         }
         else {

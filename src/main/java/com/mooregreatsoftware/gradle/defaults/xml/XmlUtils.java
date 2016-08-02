@@ -18,6 +18,8 @@ package com.mooregreatsoftware.gradle.defaults.xml;
 import groovy.util.Node;
 import groovy.util.NodeList;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +30,11 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 
+@SuppressWarnings("RedundantCast")
 public class XmlUtils {
 
     public static Node findByAttribute(NodeList nodes, String attrName, String attrValue, Supplier<Node> nodeCreator) {
-        @SuppressWarnings("unchecked") final Stream<Node> stream = nodes.stream();
+        @SuppressWarnings("unchecked") val stream = (Stream<@NonNull Node>)nodes.stream();
         return stream.
             filter(n -> attributeMatches(n, attrName, attrValue)).
             findAny().
@@ -40,7 +43,7 @@ public class XmlUtils {
 
 
     public static Node getOrCreate(Node parent, String elementName, Supplier<Node> nodeCreator) {
-        @SuppressWarnings("unchecked") final Stream<Node> stream = parent.children().stream();
+        @SuppressWarnings("unchecked") val stream = (Stream<@NonNull Node>)parent.children().stream();
         return stream.
             filter(n -> n.name().equals(elementName)).
             findAny().
@@ -54,7 +57,7 @@ public class XmlUtils {
     }
 
 
-    public static NodeBuilder n(String name, Map attrs) {
+    public static NodeBuilder n(String name, Map<String, Comparable> attrs) {
         return new NodeBuilder(name, attrs, null, noNodes());
     }
 
@@ -79,12 +82,12 @@ public class XmlUtils {
     }
 
 
-    public static NodeBuilder n(String name, Map attrs, NodeBuilder child) {
+    public static NodeBuilder n(String name, @Nullable Map<String, Comparable> attrs, NodeBuilder child) {
         return new NodeBuilder(name, attrs, null, singletonList(child));
     }
 
 
-    public static NodeBuilder n(String name, Map attrs, List<NodeBuilder> children) {
+    public static NodeBuilder n(String name, @Nullable Map<String, Comparable> attrs, List<NodeBuilder> children) {
         return new NodeBuilder(name, attrs, null, children);
     }
 
@@ -99,12 +102,12 @@ public class XmlUtils {
     }
 
 
-    public static Node createNode(Node parent, String nodeName, Map attrs, NodeBuilder child) {
+    public static Node createNode(Node parent, String nodeName, @Nullable Map<String, Comparable> attrs, NodeBuilder child) {
         return createNode(parent, nodeName, attrs, null, child);
     }
 
 
-    public static Node createNode(Node parent, String nodeName, Map attrs, String textVal, NodeBuilder child) {
+    public static Node createNode(Node parent, String nodeName, @Nullable Map<String, Comparable> attrs, @Nullable String textVal, NodeBuilder child) {
         return createNode(parent, nodeName, attrs, textVal, singletonList(child));
     }
 
@@ -114,18 +117,18 @@ public class XmlUtils {
     }
 
 
-    public static Node createNode(Node parent, String nodeName, Map attrs, List<NodeBuilder> children) {
+    public static Node createNode(Node parent, String nodeName, @Nullable Map<String, ? extends Comparable> attrs, List<NodeBuilder> children) {
         return createNode(parent, nodeName, attrs, null, children);
     }
 
 
-    public static Node createNode(Node parent, String nodeName, Map attrs, String textVal, List<NodeBuilder> children) {
+    public static Node createNode(Node parent, String nodeName, @Nullable Map<String, ? extends Comparable> attrs, @Nullable String textVal, List<NodeBuilder> children) {
         if (parent == null) throw new IllegalArgumentException("parent == null");
         if (nodeName == null) throw new IllegalArgumentException("nodeName == null");
         if (children == null) throw new IllegalArgumentException("children == null");
-        val node = textVal == null ?
-            parent.appendNode(nodeName, attrs) :
-            parent.appendNode(nodeName, attrs, textVal);
+        val node = (textVal == null) ?
+            parent.appendNode(nodeName, (@NonNull Map)attrs) :
+            parent.appendNode(nodeName, (@NonNull Map)attrs, (@NonNull String)textVal);
         children.forEach(child ->
             createNode(node, child.name(), child.attrs(), child.textVal(), child.children())
         );
@@ -136,7 +139,7 @@ public class XmlUtils {
     /**
      * Alias for creating a {@link Collections#singletonMap(Object, Object)}
      */
-    public static Map<String, String> m(String key, String value) {
+    public static Map<String, Comparable> m(String key, String value) {
         return Collections.singletonMap(key, value);
     }
 

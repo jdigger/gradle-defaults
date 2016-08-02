@@ -17,6 +17,8 @@ package com.mooregreatsoftware.gradle.defaults;
 
 import lombok.Value;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
 
 import java.io.IOException;
@@ -34,13 +36,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "RedundantCast"})
 public class Utils {
 
     /**
      * Convert the String into an Optional that only has value if the input was both non-null and non-empty.
      */
-    public static Optional<String> opt(String val) {
+    public static Optional<String> opt(@Nullable String val) {
         return Optional.ofNullable(val).filter(s -> !s.isEmpty());
     }
 
@@ -48,7 +50,7 @@ public class Utils {
     /**
      * Returns true if the given string is non-null and has at least one non-whitespace character; false otherwise.
      */
-    public static boolean isNotEmpty(String str) {
+    public static boolean isNotEmpty(@Nullable String str) {
         return !(str == null || str.trim().isEmpty());
     }
 
@@ -73,7 +75,7 @@ public class Utils {
     @SuppressWarnings("unchecked")
     public static <T> T fromExt(Project project, String keyName, Function<T, T> transformer, Supplier<T> creator) {
         val ext = project.getExtensions().getExtraProperties();
-        val value = transformer.apply(ext.has(keyName) ? (T)ext.get(keyName) : creator.get());
+        val value = (@NonNull T)transformer.apply(ext.has(keyName) ? (T)ext.get(keyName) : creator.get());
         ext.set(keyName, value);
         return value;
     }
@@ -89,11 +91,12 @@ public class Utils {
      * @param <T>                the type of the values
      * @see #fromExt(Project, String, Function, Supplier)
      */
+    @SuppressWarnings("Convert2MethodRef")
     public static <T> Set<T> setFromExt(Project project, String keyName, Supplier<Collection<T>> itemsToAddSupplier) {
         return fromExt(project, keyName, set -> {
             set.addAll(itemsToAddSupplier.get());
             return set;
-        }, HashSet::new);
+        }, () -> new HashSet<T>());
     }
 
 
@@ -107,11 +110,12 @@ public class Utils {
      * @param <T>        the type of the values
      * @see #fromExt(Project, String, Function, Supplier)
      */
+    @SuppressWarnings("Convert2MethodRef")
     public static <T> Set<T> setFromExt(Project project, String keyName, Collection<T> itemsToAdd) {
         return fromExt(project, keyName, set -> {
             set.addAll(itemsToAdd);
             return set;
-        }, HashSet::new);
+        }, () -> new HashSet<T>());
     }
 
 
@@ -146,10 +150,10 @@ public class Utils {
         val javaVer = System.getProperty("java.version");
         val matcher = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)_(\\d+)$").matcher(javaVer);
         if (matcher.matches()) {
-            val major = Integer.parseInt(matcher.group(1));
-            val minor = Integer.parseInt(matcher.group(2));
-            val patch = Integer.parseInt(matcher.group(3));
-            val update = Integer.parseInt(matcher.group(4));
+            val major = Integer.parseInt((@NonNull String)matcher.group(1));
+            val minor = Integer.parseInt((@NonNull String)matcher.group(2));
+            val patch = Integer.parseInt((@NonNull String)matcher.group(3));
+            val update = Integer.parseInt((@NonNull String)matcher.group(4));
 
             return new JdkVersion(major, minor, patch, update);
         }
@@ -173,7 +177,8 @@ public class Utils {
      *
      * @see Comparable
      */
-    public static <K extends Comparable<K>, V extends Comparable<V>> int compareMaps(Map<K, V> m1, Map<K, V> m2) {
+    public static <K extends Comparable<K>, V extends Comparable<V>> int compareMaps(@Nullable Map<K, V> m1,
+                                                                                     @Nullable Map<K, V> m2) {
         if (m1 == null) {
             return m2 == null ? 0 : -1;
         }
@@ -188,8 +193,8 @@ public class Utils {
                 val keyIter = m1Keys.stream().sorted().iterator();
                 while (keyIter.hasNext()) {
                     val key = keyIter.next();
-                    val m1Val = m1.get(key);
-                    val m2Val = m2.get(key);
+                    val m1Val = (@NonNull V)m1.get(key);
+                    val m2Val = (@NonNull V)m2.get(key);
                     val valComp = m1Val.compareTo(m2Val);
                     if (valComp != 0) return valComp;
                 }
@@ -207,7 +212,7 @@ public class Utils {
      *
      * @see Comparable
      */
-    public static <U extends Comparable<U>> int compareSets(Set<U> s1, Set<U> s2) {
+    public static <U extends Comparable<U>> int compareSets(@Nullable Set<U> s1, @Nullable Set<U> s2) {
         if (s1 == null) {
             return s2 == null ? 0 : -1;
         }

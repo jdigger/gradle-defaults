@@ -16,10 +16,10 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import com.mooregreatsoftware.gradle.defaults.Utils;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
 import org.gradle.api.invocation.Gradle;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -30,6 +30,7 @@ public abstract class AbstractConfig {
     protected final Project project;
 
 
+    @SuppressWarnings("argument.type.incompatible")
     public AbstractConfig(Project project) {
         this.project = project;
         project.getExtensions().add(this.getClass().getName(), this);
@@ -49,7 +50,6 @@ public abstract class AbstractConfig {
     protected void debug(String format, String... msgArgs) {
         project.getLogger().debug(format, (Object[])msgArgs);
     }
-
 
 
     protected void info(String msg) {
@@ -82,8 +82,9 @@ public abstract class AbstractConfig {
     }
 
 
+    @SuppressWarnings("RedundantCast")
     protected String description() {
-        return Utils.opt(project.getDescription()).orElse(name());
+        return (@NonNull String)Utils.opt(project.getDescription()).orElse(name());
     }
 
 
@@ -101,8 +102,4 @@ public abstract class AbstractConfig {
         return project.getConvention().findPlugin(JavaPluginConvention.class).getSourceSets();
     }
 
-
-    protected ExtraPropertiesExtension getExt() {
-        return project.getExtensions().getExtraProperties();
-    }
 }

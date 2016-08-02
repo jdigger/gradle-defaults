@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -31,6 +32,7 @@ import static org.gradle.api.plugins.JavaPlugin.JAR_TASK_NAME;
 public abstract class AbstractLanguageConfig<PT extends Plugin> extends AbstractConfig implements ArtifactPublisher {
     private final Supplier<String> compatibilityVersionSupplier;
 
+    @MonotonicNonNull
     private Jar docJarTask;
 
 

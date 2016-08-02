@@ -16,13 +16,12 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaProperty;
+import lombok.val;
 import nl.javadude.gradle.plugins.license.License;
 import nl.javadude.gradle.plugins.license.LicenseExtension;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.Convention;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
 
 import java.util.function.Supplier;
 
@@ -33,7 +32,7 @@ public class LicenseConfig extends AbstractConfig {
     }
 
 
-    public void config(Supplier<String> copyrightYears) {
+    public void config(Supplier<@Nullable String> copyrightYears) {
         plugins().apply("license");
         final LicenseExtension licenseExt = project.getConvention().getByType(LicenseExtension.class);
         licenseExt.setHeader(project.getRootProject().file("gradle/HEADER"));
@@ -42,13 +41,7 @@ public class LicenseConfig extends AbstractConfig {
         licenseExt.mapping("groovy", "SLASHSTAR_STYLE");
         licenseExt.mapping("java", "SLASHSTAR_STYLE");
 
-        project.afterEvaluate(prj -> {
-            @SuppressWarnings("RedundantCast") final MetaClass metaClass = ((GroovyObject)licenseExt).getMetaClass();
-            final MetaProperty conExtPropsProp = metaClass.getMetaProperty("extensions");
-            final Convention convExtensions = (Convention)conExtPropsProp.getProperty(licenseExt);
-            final ExtraPropertiesExtension extensions = convExtensions.getExtraProperties();
-            extensions.set("year", copyrightYears.get());
-        });
+        project.afterEvaluate(prj -> configLicenseExtension(copyrightYears, licenseExt));
 
         tasks().whenTaskAdded(task -> {
             if (task instanceof License) {
@@ -56,4 +49,15 @@ public class LicenseConfig extends AbstractConfig {
             }
         });
     }
+
+
+    private static void configLicenseExtension(Supplier<@Nullable String> copyrightYears, LicenseExtension licenseExt) {
+        @SuppressWarnings("RedundantCast") val metaClass = ((GroovyObject)licenseExt).getMetaClass();
+        val conExtPropsProp = metaClass.getMetaProperty("extensions");
+        val convExtensions = (Convention)conExtPropsProp.getProperty(licenseExt);
+        val extensions = convExtensions.getExtraProperties();
+        val years = copyrightYears.get();
+        if (years != null) extensions.set("year", years);
+    }
+
 }

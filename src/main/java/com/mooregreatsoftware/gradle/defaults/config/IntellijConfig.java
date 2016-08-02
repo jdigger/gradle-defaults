@@ -21,6 +21,7 @@ import com.mooregreatsoftware.gradle.defaults.xml.XmlUtils;
 import groovy.util.Node;
 import groovy.util.NodeList;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Project;
 import org.gradle.api.XmlProvider;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.PATH_SEPARATOR;
 import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.bootClasspath;
@@ -40,9 +42,8 @@ import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.m;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "RedundantTypeArguments"})
 public class IntellijConfig extends AbstractConfig {
     private final Supplier<String> compatibilityVersionSupplier;
 
@@ -135,6 +136,7 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
+    @SuppressWarnings("Convert2MethodRef")
     private Node createProfileNode(Node annotationProcessing) {
         val profileAttrs = new HashMap<String, String>();
         profileAttrs.put("default", "true");
@@ -144,20 +146,20 @@ public class IntellijConfig extends AbstractConfig {
         val configurationFilesAsNodeBuilders = JavaConfig.annotationProcessorLibFiles(project).stream().
             map(IntellijConfig::fileEntry).
             sorted().
-            collect(toList());
+            collect(Collectors.<@NonNull NodeBuilder>toList());
 
         val processorClassnames = JavaConfig.annotationProcessorClassNames(project);
         val profileChildren = processorClassnames.stream().
             sorted().
             map(cn -> n("processor", m("name", cn))).
-            collect(toList());
+            collect(Collectors.<@NonNull NodeBuilder>toList());
         profileChildren.add(n("processorPath", m("useClasspath", "false"),
             configurationFilesAsNodeBuilders));
 
         JavaConfig.annotationProcessorOptions(project).stream().
             sorted().
             map(o -> n("option", nv(o.name(), o.value()))).
-            forEach(profileChildren::add);
+            forEach(e -> profileChildren.add(e));
 
         return createNode(annotationProcessing, "profile", profileAttrs, profileChildren);
     }
@@ -175,7 +177,7 @@ public class IntellijConfig extends AbstractConfig {
         codeStyleNode.appendNode("option", nv("USE_PER_PROJECT_SETTINGS", "true"));
 
         @SuppressWarnings("OptionalGetWithoutIsPresent") val perProjSettings =
-            (Node)createNode(codeStyleNode, "option", m("name", "PER_PROJECT_SETTINGS"), n("value")).
+            (@NonNull Node)createNode(codeStyleNode, "option", m("name", "PER_PROJECT_SETTINGS"), n("value")).
                 children().stream().findFirst().get();
 
         asList(
@@ -250,8 +252,8 @@ public class IntellijConfig extends AbstractConfig {
     }
 
 
-    private static Map<String, String> nv(String name, String value) {
-        val map = new HashMap<String, String>();
+    private static Map<String, Comparable> nv(String name, String value) {
+        val map = new HashMap<String, Comparable>();
         map.put("name", name);
         map.put("value", value);
         return map;

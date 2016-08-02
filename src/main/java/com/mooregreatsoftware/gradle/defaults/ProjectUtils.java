@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults;
 
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -34,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static java.lang.Boolean.FALSE;
 import static java.util.Optional.ofNullable;
 
 @SuppressWarnings("WeakerAccess")
@@ -119,14 +121,15 @@ public class ProjectUtils {
     }
 
 
+    @SuppressWarnings("RedundantCast")
     private static boolean hasJavaSourceWithJavaPlugin(Project project) {
-        return sourceSets(project).
+        return (@NonNull Boolean)sourceSets(project).
             map(ssc ->
                 ssc.stream().
                     filter(ProjectUtils::hasJavaSource).
                     findAny().isPresent()
             ).
-            orElse(false);
+            orElse(FALSE);
     }
 
 

@@ -28,7 +28,9 @@ import com.mooregreatsoftware.gradle.defaults.config.ReleaseConfig;
 import com.mooregreatsoftware.gradle.defaults.config.ScalaConfig;
 import lombok.val;
 import org.ajoberstar.grgit.Grgit;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.BasePlugin;
@@ -101,7 +103,7 @@ public class DefaultsPlugin implements Plugin<Project> {
 
 
     @SuppressWarnings("deprecation")
-    private static Grgit createGrgit(Project project) {
+    private static @Nullable Grgit createGrgit(Project project) {
         try {
             return Grgit.open(project.file("."));
         }
@@ -157,7 +159,7 @@ public class DefaultsPlugin implements Plugin<Project> {
             val git = Git.open(rootDir);
             val repository = git.getRepository();
             val config = repository.getConfig();
-            val userEmail = config.getString("user", null, "email");
+            val userEmail = getEmail(config);
             if (userEmail == null || userEmail.trim().isEmpty()) {
                 project.getLogger().warn("The git repository's \"user.email\" configuration is null, " +
                     "so using \"" + DEFAULT_USER_EMAIL + "\" instead");
@@ -170,6 +172,12 @@ public class DefaultsPlugin implements Plugin<Project> {
                 "git repository's \"user.email\" configuration, so using \"" + DEFAULT_USER_EMAIL + "\" instead");
             return DEFAULT_USER_EMAIL;
         }
+    }
+
+
+    @SuppressWarnings("argument.type.incompatible")
+    private static String getEmail(StoredConfig config) {
+        return config.getString("user", null, "email");
     }
 
 }

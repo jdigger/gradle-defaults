@@ -16,8 +16,11 @@
 package com.mooregreatsoftware.gradle.defaults.config;
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
+import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
 import groovy.util.Node;
 import lombok.val;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
 import org.gradle.api.XmlProvider;
 import org.gradle.api.publish.PublishingExtension;
@@ -33,7 +36,7 @@ import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.createNode;
 import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtils.n;
 import static java.util.Arrays.asList;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "RedundantTypeArguments"})
 public class MavenPublishingConfig extends AbstractConfigWithExtension {
     public static final String PUBLICATION_NAME = "main";
 
@@ -65,9 +68,7 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
         publishing.getRepositories().mavenLocal();
 
-        project.afterEvaluate(prj -> {
-            groupid(project, (MavenPomInternal)pub.getPom());
-        });
+        project.afterEvaluate(prj -> groupid(project, (MavenPomInternal)pub.getPom()));
 
         configPom(project, pub);
 
@@ -90,6 +91,7 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
     private static void configPom(Project project, XmlProvider xmlProvider) {
         val extension = defaultsExtension(project);
+        if (extension == null) return;
 
         val rootNode = xmlProvider.asNode();
 
@@ -115,12 +117,14 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
     }
 
 
+    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
     private static void organization(DefaultsExtension extension, Node rootNode) {
-        if (extension.getOrgName() != null) {
-            createNode(rootNode, "organization", asList(
-                n("name", extension.getOrgName()),
-                n("url", extension.getOrgUrl()))
-            );
+        val orgName = extension.getOrgName();
+        if (orgName != null) {
+            val children = asList(n("name", orgName));
+            val orgUrl = extension.getOrgUrl();
+            if (orgUrl != null) children.add(n("url", orgUrl));
+            createNode(rootNode, "organization", children);
         }
     }
 
@@ -152,28 +156,31 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
 
 
     private static void developers(DefaultsExtension extension, Node rootNode) {
-        if (extension.getDevelopers() != null && !extension.getDevelopers().isEmpty()) {
-            val devNodes = extension.getDevelopers().stream().
-                map(m -> n("developer", asList(
-                    n("id", (String)m.get("id")),
-                    n("name", (String)m.get("name")),
-                    n("email", (String)m.get("email")))
+        val developers = extension.getDevelopers();
+        if (developers != null && !developers.isEmpty()) {
+            val devNodes = developers.stream().
+                map(developer -> n("developer", asList(
+                    n("id", developer.getId()),
+                    n("name", developer.getName()),
+                    n("email", developer.getEmail()))
                 )).
-                collect(Collectors.toList());
+                collect(Collectors.<@NonNull NodeBuilder>toList());
             createNode(rootNode, "developers", devNodes);
         }
     }
 
 
     private static void contributors(DefaultsExtension extension, Node rootNode) {
-        if (extension.getDevelopers() != null && !extension.getDevelopers().isEmpty()) {
-            val devNodes = extension.getDevelopers().stream().
+        val contributors = extension.getContributors();
+        if (contributors != null && !contributors.isEmpty()) {
+            val contribNodes = contributors.stream().
                 map(m -> n("contributor", asList(
-                    n("name", (String)m.get("name")),
-                    n("email", (String)m.get("email")))
+                    // TODO ensure that the @NonNull is true...
+                    n("name", (@NonNull String)m.get("name")),
+                    n("email", (@NonNull String)m.get("email")))
                 )).
-                collect(Collectors.toList());
-            createNode(rootNode, "contributors", devNodes);
+                collect(Collectors.<@NonNull NodeBuilder>toList());
+            createNode(rootNode, "contributors", contribNodes);
         }
     }
 
@@ -188,7 +195,7 @@ public class MavenPublishingConfig extends AbstractConfigWithExtension {
     }
 
 
-    private static DefaultsExtension defaultsExtension(Project project) {
+    private static @Nullable DefaultsExtension defaultsExtension(Project project) {
         if (project == null) return null;
         val extension = project.getExtensions().findByType(DefaultsExtension.class);
         if (extension != null) return extension;
