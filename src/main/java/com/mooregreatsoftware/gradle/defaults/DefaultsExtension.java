@@ -25,7 +25,9 @@ import lombok.val;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaPluginConvention;
 
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +54,6 @@ public class DefaultsExtension {
     private @MonotonicNonNull Set<Developer> developers;
 
     private @Nullable Set<Map> contributors;
-    private String compatibilityVersion = "1.8";
     private @Nullable String siteUrl;
     private @Nullable String issuesUrl;
     private @Nullable String vcsReadUrl;
@@ -83,6 +84,22 @@ public class DefaultsExtension {
             throw new IllegalStateException("\"id\" is not set for " + DefaultsExtension.class.getName() + " on " + this.project.getName());
         }
         return id;
+    }
+
+
+    public void setCompatibilityVersion(Object compatibilityVersion) {
+        val convention = project.getConvention().findPlugin(JavaPluginConvention.class);
+        if (convention == null)
+            throw new GradleException("Trying to set the Java compatibility version on a project without the \"java\" plugin");
+        convention.setSourceCompatibility(compatibilityVersion);
+    }
+
+
+    public String getCompatibilityVersion() {
+        val convention = project.getConvention().findPlugin(JavaPluginConvention.class);
+        if (convention == null)
+            throw new GradleException("Trying to get the Java compatibility version on a project without the \"java\" plugin");
+        return convention.getSourceCompatibility().toString();
     }
 
 

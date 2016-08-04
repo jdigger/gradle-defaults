@@ -24,6 +24,7 @@ import lombok.val;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Project;
 import org.gradle.api.XmlProvider;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
 import org.gradle.plugins.ide.idea.model.IdeaProject;
 
@@ -72,7 +73,7 @@ public class IntellijConfig extends AbstractConfig {
 
         ideaProject.getIpr().withXml(provider -> customizeProjectXml(provider, javaConfig));
 
-        project.afterEvaluate(prj -> configLanguageVersion());
+        project.getPlugins().withType(JavaBasePlugin.class, prj -> configLanguageVersion());
 
         return this;
     }
