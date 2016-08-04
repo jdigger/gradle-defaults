@@ -44,16 +44,16 @@ class LicenseConfigIntSpec extends AbstractConfigIntSpec {
         createLicenseHeader()
 
         expect:
-        sourceFile.readLines().find( { it.contains("Copyright ") }) == null
-        subSourceFile.readLines().find( { it.contains("Copyright ") }) == null
+        sourceFile.readLines().find({ it.contains("Copyright ") }) == null
+        subSourceFile.readLines().find({ it.contains("Copyright ") }) == null
 
         when:
         def result = runTasks('licenseFormat')
 
         then:
         result.success
-        sourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
-        subSourceFile.readLines().find( { it.contains("* Copyright 2014-2016") }) != null
+        sourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
+        subSourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
 
         cleanup:
         println result?.standardOutput

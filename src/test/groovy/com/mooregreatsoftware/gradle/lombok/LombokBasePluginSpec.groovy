@@ -37,7 +37,7 @@ class LombokBasePluginSpec extends ProjectSpec {
         )
         mavenRepoPath = generator.generateTestMavenRepo().absolutePath
         applyRepository(project, mavenRepoPath)
-        JavaConfig.of(project)
+        JavaConfig.@Companion.of(project)
     }
 
 
@@ -87,7 +87,7 @@ class LombokBasePluginSpec extends ProjectSpec {
         def sub = createSubproject(project, 'sub')
         project.subprojects.add(sub)
         applyRepository(sub, mavenRepoPath)
-        JavaConfig.of(sub)
+        JavaConfig.@Companion.of(sub)
 
         when:
         project.apply plugin: pluginName
@@ -105,7 +105,7 @@ class LombokBasePluginSpec extends ProjectSpec {
             def subproject = createSubproject(project, subprojectName)
             project.subprojects.add(subproject)
             applyRepository(subproject, mavenRepoPath)
-            JavaConfig.of(subproject)
+            JavaConfig.@Companion.of(subproject)
         }
 
         when:

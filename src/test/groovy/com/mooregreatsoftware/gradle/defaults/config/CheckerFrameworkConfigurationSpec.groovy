@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 
 import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.CHECKERFRAMEWORK_NULLNESS_CHECKER
 import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.DEFAULT_CHECKER_VERSION
-import static com.mooregreatsoftware.gradle.defaults.config.JavaConfig.PATH_SEPARATOR
 import static com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration.LOMBOK_LAUNCH_ANNOTATION_PROCESSOR
 
 @SuppressWarnings("GroovyAssignabilityCheck")
@@ -46,7 +45,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
     @Override
     @CompileStatic
     public AnnotationProcessorConfiguration createConf() {
-        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.of(project))
+        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.@Companion.of(project))
     }
 
 
@@ -70,7 +69,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
         @Override
         @CompileStatic
         public AnnotationProcessorConfiguration createConf() {
-            def javaConfig = JavaConfig.of(project)
+            def javaConfig = JavaConfig.@Companion.of(project)
             CheckerFrameworkConfiguration.create(project, { version }, javaConfig)
             LombokConfiguration.create(project, { LombokConfiguration.DEFAULT_LOMBOK_VERSION }, javaConfig)
         }
@@ -95,7 +94,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
         @CompileStatic
         String processorJarLocation() {
             return project.extensions.getByType(CheckerFrameworkConfiguration).processorLibraryFile().absolutePath +
-                PATH_SEPARATOR +
+                JavaConfigKt.PATH_SEPARATOR +
                 project.extensions.getByType(LombokConfiguration).processorLibraryFile().absolutePath
         }
 

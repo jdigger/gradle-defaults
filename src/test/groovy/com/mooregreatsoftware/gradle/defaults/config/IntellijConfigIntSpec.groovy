@@ -49,7 +49,8 @@ class IntellijConfigIntSpec extends AbstractConfigIntSpec {
 
         then:
         xml.component.find { it.@name == "GradleSettings" } != null
-        xml.component.'**'.find { it.@name == "OTHER_INDENT_OPTIONS" } != null
+        def componetChildren = xml.component.'**'
+        componetChildren.find { it.@name == "OTHER_INDENT_OPTIONS" } != null
 
         cleanup:
         println result?.standardOutput

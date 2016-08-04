@@ -17,6 +17,8 @@ package com.mooregreatsoftware.gradle.defaults
 
 import spock.lang.Specification
 
+import static com.mooregreatsoftware.gradle.defaults.UtilsKt.jdkVersion
+
 class UtilsSpec extends Specification {
 
     def "IsJava8Compatible"() {
@@ -26,13 +28,13 @@ class UtilsSpec extends Specification {
         System.setProperty("java.version", "1.8.0_60")
 
         then:
-        Utils.jdkVersion() == new Utils.JdkVersion(1, 8, 0 ,60)
+        jdkVersion() == new JdkVersion(1, 8, 0, 60)
 
         when:
         System.setProperty("java.version", "1.8.0_31")
 
         then:
-        Utils.jdkVersion() == new Utils.JdkVersion(1, 8, 0 ,31)
+        jdkVersion() == new JdkVersion(1, 8, 0, 31)
 
         cleanup:
         System.setProperty("java.version", origVersion)

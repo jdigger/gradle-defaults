@@ -20,7 +20,9 @@ import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
 
-import static com.mooregreatsoftware.gradle.defaults.Utils.deleteDir
+import static com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt.hasJavaSource
+import static com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt.sourceSets
+import static com.mooregreatsoftware.gradle.defaults.UtilsKt.deleteDir
 import static java.nio.file.Files.createDirectories
 import static java.nio.file.Files.createFile
 
@@ -29,7 +31,7 @@ class ProjectUtilsTest extends ProjectSpec {
 
     def "hasJavaSource with no plugins"() {
         expect:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         def srcMain = project.projectDir.toPath().resolve("src").resolve("main")
 
@@ -37,39 +39,39 @@ class ProjectUtilsTest extends ProjectSpec {
         createDirectories(srcMain.resolve("java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createFile(srcMain.resolve("java").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
 
         when:
         deleteDir(srcMain.resolve("java"))
         createDirectories(srcMain.resolve("groovy"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createFile(srcMain.resolve("groovy").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
 
         when:
         deleteDir(srcMain.resolve("groovy"))
         createDirectories(srcMain.resolve("scala"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createFile(srcMain.resolve("scala").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
 
         when:
         deleteDir(srcMain.resolve("scala"))
@@ -81,30 +83,31 @@ class ProjectUtilsTest extends ProjectSpec {
         project.plugins.apply(JavaPlugin)
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createDirectories(srcMain.resolve("java"))
         createFile(srcMain.resolve("java").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
 
         when:
         deleteDir(srcMain.resolve("java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
-        ProjectUtils.sourceSets(project.getConvention()).ifPresent({
-            it.create("gen-some-java").java.srcDir("src/main/some-java")
-        })
+        def ss = sourceSets(project.convention)
+        if (ss != null) {
+            ss.create("gen-some-java").java.srcDir("src/main/some-java")
+        }
         createDirectories(srcMain.resolve("some-java"))
         createFile(srcMain.resolve("some-java").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
     }
 
 
@@ -113,14 +116,14 @@ class ProjectUtilsTest extends ProjectSpec {
         def srcMain = project.projectDir.toPath().resolve("src").resolve("main")
 
         expect:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createDirectories(srcMain.resolve("java"))
         createFile(srcMain.resolve("java").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
     }
 
 
@@ -129,17 +132,18 @@ class ProjectUtilsTest extends ProjectSpec {
         def srcMain = project.projectDir.toPath().resolve("src").resolve("main")
 
         expect:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
-        ProjectUtils.sourceSets(project.getConvention()).ifPresent({
-            it.create("gen-some-java").java.srcDir("src/main/some-java")
-        })
+        def sourceSets = sourceSets(project.getConvention())
+        if (sourceSets != null) {
+            sourceSets.create("gen-some-java").java.srcDir("src/main/some-java")
+        }
         createDirectories(srcMain.resolve("some-java"))
         createFile(srcMain.resolve("some-java").resolve("AFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
     }
 
 
@@ -148,7 +152,7 @@ class ProjectUtilsTest extends ProjectSpec {
         def srcMain = project.projectDir.toPath().resolve("src").resolve("main")
 
         expect:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
         project.plugins.findPlugin(JavaPlugin) != null
 
         when:
@@ -156,13 +160,13 @@ class ProjectUtilsTest extends ProjectSpec {
         createFile(srcMain.resolve("groovy").resolve("AFile.groovy"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == false
+        hasJavaSource(project) == false
 
         when:
         createFile(srcMain.resolve("groovy").resolve("BFile.java"))
 
         then:
-        ProjectUtils.hasJavaSource(project) == true
+        hasJavaSource(project) == true
     }
 
 }

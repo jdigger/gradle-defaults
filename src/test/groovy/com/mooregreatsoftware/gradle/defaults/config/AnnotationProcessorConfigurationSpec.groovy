@@ -68,7 +68,7 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
         verifyCompileOnlyDependencies()
 
         when:
-        cofigureTasks()
+        configureTasks()
 
         then:
         project.tasks.withType(JavaCompile, { task ->
@@ -92,7 +92,7 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
     }
 
 
-    protected DomainObjectCollection<JavaCompile> cofigureTasks() {
+    protected DomainObjectCollection<JavaCompile> configureTasks() {
         project.tasks.withType(JavaCompile, { task ->
             task.actions.stream().
                 map({ unwrap(it) }).

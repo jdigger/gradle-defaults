@@ -31,7 +31,7 @@ class JavaConfigSpec extends ProjectSpec {
 
 
     def "defaults"() {
-        def javaConfig = JavaConfig.of(project)
+        def javaConfig = JavaConfig.@Companion.of(project)
 
         when:
         evaluateProject()
@@ -53,7 +53,7 @@ class JavaConfigSpec extends ProjectSpec {
         gitConfig.setString("user", null, "email", "tester@test.com")
         gitConfig.save()
 
-        def javaConfig = JavaConfig.of(project)
+        def javaConfig = JavaConfig.@Companion.of(project)
 
         when:
         evaluateProject()
