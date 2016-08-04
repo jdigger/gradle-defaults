@@ -59,7 +59,7 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
         project.plugins.apply(JavaPlugin)
         project.plugins.apply(IdeaPlugin)
-        JavaConfig.create(project, { "1.8" })
+        JavaConfig.of(project)
 
         when:
         evaluateProject()
@@ -77,7 +77,7 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
         when:
         def rootNode = new Node(null, "project")
-        def javaConfig = JavaConfig.javaConfig(project).get()
+        def javaConfig = JavaConfig.of(project)
         def intellijConfig = IntellijConfig.create(project, { "1.8" }, javaConfig)
         intellijConfig.setupCompiler(rootNode, javaConfig)
         def annotationProcessing = rootNode.component.find {

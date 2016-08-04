@@ -31,13 +31,12 @@ class JavaConfigSpec extends ProjectSpec {
 
 
     def "defaults"() {
-        def javaConfig = JavaConfig.create(project, { "1.8" })
+        def javaConfig = JavaConfig.of(project)
 
         when:
         evaluateProject()
 
         then:
-        javaConfig.compileTask().targetCompatibility == "1.8"
         javaConfig.jarTask().manifest.attributes.get("Built-By") == "unknown@unknown"
         javaConfig.docJarTask().name == "javadocJar"
 
@@ -54,19 +53,18 @@ class JavaConfigSpec extends ProjectSpec {
         gitConfig.setString("user", null, "email", "tester@test.com")
         gitConfig.save()
 
-        def javaConfig = JavaConfig.create(project, { "1.6" })
+        def javaConfig = JavaConfig.of(project)
 
         when:
         evaluateProject()
 
         then:
-        javaConfig.compileTask().targetCompatibility == "1.6"
         javaConfig.jarTask().manifest.attributes.get("Built-By") == "tester@test.com"
     }
 
 
     def "custom built by"() {
-        def javaConfig = new JavaConfig(project, { "1.7" }) {
+        def javaConfig = new JavaConfig(project) {
             protected String builtBy() {
                 return "Fooble Booble"
             }
@@ -76,7 +74,6 @@ class JavaConfigSpec extends ProjectSpec {
         evaluateProject()
 
         then:
-        javaConfig.compileTask().targetCompatibility == "1.7"
         javaConfig.jarTask().manifest.attributes.get("Built-By") == "Fooble Booble"
     }
 

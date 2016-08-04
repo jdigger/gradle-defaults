@@ -46,7 +46,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
     @Override
     @CompileStatic
     public AnnotationProcessorConfiguration createConf() {
-        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.create(project, { "1.8" }))
+        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.of(project))
     }
 
 
@@ -70,7 +70,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
         @Override
         @CompileStatic
         public AnnotationProcessorConfiguration createConf() {
-            def javaConfig = JavaConfig.create(project, { "1.8" })
+            def javaConfig = JavaConfig.of(project)
             CheckerFrameworkConfiguration.create(project, { version }, javaConfig)
             LombokConfiguration.create(project, { LombokConfiguration.DEFAULT_LOMBOK_VERSION }, javaConfig)
         }

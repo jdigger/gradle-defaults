@@ -70,7 +70,7 @@ public class DefaultsPlugin implements Plugin<Project> {
 
     private void configProject(Project prj, DefaultsExtension extension) {
         prj.getRepositories().jcenter();
-        val javConfig = JavaConfig.create(prj, extension::getCompatibilityVersion);
+        val javConfig = JavaConfig.of(prj);
         IntellijConfig.create(prj, extension::getCompatibilityVersion, javConfig);
         GroovyConfig.create(prj, extension::getCompatibilityVersion);
         new ScalaConfig(prj).config(extension::getCompatibilityVersion);

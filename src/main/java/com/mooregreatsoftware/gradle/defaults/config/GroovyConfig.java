@@ -26,7 +26,7 @@ import static org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME;
 public class GroovyConfig extends AbstractLanguageConfig<GroovyPlugin> {
 
     protected GroovyConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
-        super(project, compatibilityVersionSupplier);
+        super(project);
     }
 
 

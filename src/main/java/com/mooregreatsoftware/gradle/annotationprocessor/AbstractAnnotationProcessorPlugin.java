@@ -33,9 +33,7 @@ public abstract class AbstractAnnotationProcessorPlugin implements Plugin<Projec
 
         val configurations = project.getConfigurations();
 
-        val javaConfig = JavaConfig.javaConfig(project).
-            orElseThrow(() -> new IllegalStateException("JavaConfig has not been created"));
-        registerWithJavac(javaConfig, configurations);
+        registerWithJavac(JavaConfig.of(project), configurations);
         addCompileOnlyDependencies(configurations);
     }
 

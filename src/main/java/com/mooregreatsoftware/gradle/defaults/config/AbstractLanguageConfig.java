@@ -20,26 +20,20 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.AbstractCompile;
-
-import java.util.function.Supplier;
 
 import static org.gradle.api.plugins.JavaPlugin.JAR_TASK_NAME;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractLanguageConfig<PT extends Plugin> extends AbstractConfig implements ArtifactPublisher {
-    private final Supplier<String> compatibilityVersionSupplier;
-
     @MonotonicNonNull
     private Jar docJarTask;
 
 
-    protected AbstractLanguageConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
+    protected AbstractLanguageConfig(Project project) {
         super(project);
-        this.compatibilityVersionSupplier = compatibilityVersionSupplier;
     }
 
 
@@ -51,8 +45,6 @@ public abstract class AbstractLanguageConfig<PT extends Plugin> extends Abstract
 
     protected void configLanguage() {
         info("Configuring {}", pluginClass().getSimpleName());
-
-        project.afterEvaluate(prj -> configCompatibilityVersion());
 
         registerArtifacts(MavenPublishingConfig.mainPublication(project));
     }
@@ -98,17 +90,6 @@ public abstract class AbstractLanguageConfig<PT extends Plugin> extends Abstract
     }
 
 
-    protected void configCompatibilityVersion() {
-        val compatibilityVersion = compatibilityVersion();
-        debug("Setting {} source and target compatibility to {}", pluginClass().getSimpleName(), compatibilityVersion);
-
-        // TODO add compatibility setting to "compileTest*" tasks too
-        val compileGroovy = compileTask();
-        compileGroovy.setSourceCompatibility(compatibilityVersion);
-        compileGroovy.setTargetCompatibility(compatibilityVersion);
-    }
-
-
     public final AbstractCompile compileTask() {
         return (AbstractCompile)tasks().getByName(compileTaskName());
     }
@@ -116,8 +97,4 @@ public abstract class AbstractLanguageConfig<PT extends Plugin> extends Abstract
 
     protected abstract String compileTaskName();
 
-
-    public String compatibilityVersion() {
-        return compatibilityVersionSupplier.get();
-    }
 }

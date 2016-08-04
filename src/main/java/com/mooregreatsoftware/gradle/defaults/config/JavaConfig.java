@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsPlugin.userEmail;
 import static com.mooregreatsoftware.gradle.defaults.Utils.opt;
@@ -66,24 +65,19 @@ public class JavaConfig extends AbstractLanguageConfig<JavaPlugin> {
     private final Set<String> javacOptions = new HashSet<>();
 
 
-    protected JavaConfig(Project project, Supplier<String> compatibilityVersionSupplier) {
-        super(project, compatibilityVersionSupplier);
-    }
-
-
-    public static JavaConfig create(Project prj, Supplier<String> compatibilityVersionSupplier) {
-        return javaConfig(prj).
-            orElseGet(() -> (JavaConfig)new JavaConfig(prj, compatibilityVersionSupplier).config());
+    protected JavaConfig(Project project) {
+        super(project);
     }
 
 
     /**
-     * Returns the JavaConfig stored in the given Project, if it exists.
+     * Returns the JavaConfig for in the given Project.
      *
-     * @param project the project containting the JavaConfig
+     * @param project the project containing the JavaConfig
      */
-    public static Optional<JavaConfig> javaConfig(Project project) {
-        return Optional.ofNullable((JavaConfig)project.getExtensions().findByName(JavaConfig.class.getName()));
+    public static JavaConfig of(Project project) {
+        val javaConfig = (JavaConfig)project.getExtensions().findByName(JavaConfig.class.getName());
+        return javaConfig != null ? javaConfig : (JavaConfig)new JavaConfig(project).config();
     }
 
 

@@ -39,7 +39,7 @@ class LombokConfigSpec extends AnnotationProcessorConfigurationSpec {
     @Override
     @CompileStatic
     public LombokConfiguration createConf() {
-        return LombokConfiguration.create(project, { version }, JavaConfig.create(project, { '1.8' }))
+        return LombokConfiguration.create(project, { version }, JavaConfig.of(project))
     }
 
 
