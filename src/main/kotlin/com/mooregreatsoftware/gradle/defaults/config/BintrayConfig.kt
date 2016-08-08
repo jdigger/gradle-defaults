@@ -19,10 +19,10 @@ import com.google.common.io.Files
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.BintrayPlugin
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
 import java.util.HashMap
-import java.util.Optional.ofNullable
 
 @SuppressWarnings("WeakerAccess", "RedundantCast", "RedundantTypeArguments")
 class BintrayConfig(project: Project, extension: DefaultsExtension) : AbstractConfigWithExtension(project, extension) {
@@ -50,9 +50,10 @@ class BintrayConfig(project: Project, extension: DefaultsExtension) : AbstractCo
 
         if (extension.orgName != null) pkgConfig.userOrg = extension.id
 
-        ofNullable<String>(extension.bintrayRepo).ifPresent({ pkgConfig.repo = it })
-        ofNullable<String>(extension.bintrayPkg).ifPresent({ pkgConfig.name = it })
-        ofNullable(project.description).ifPresent({ pkgConfig.desc = it })
+        pkgConfig.setPackageRepo()
+        pkgConfig.setPackageName()
+
+        project.description?.let { pkgConfig.desc = it }
         pkgConfig.websiteUrl = extension.siteUrl
         pkgConfig.issueTrackerUrl = extension.issuesUrl
         pkgConfig.vcsUrl = extension.vcsReadUrl
@@ -74,10 +75,37 @@ class BintrayConfig(project: Project, extension: DefaultsExtension) : AbstractCo
         }
     }
 
+    private fun BintrayExtension.PackageConfig.setPackageRepo() {
+        if (this.repo.isNullOrBlank()) {
+            if (extension.bintrayRepo.isNullOrBlank())
+                throw GradleException("Need to set defaults { bintrayRepo = ... }")
+            this.repo = extension.bintrayRepo
+        }
+        else {
+            if (!extension.bintrayRepo.isNullOrBlank())
+                throw GradleException("Both defaults { bintrayRepo = ... } and bintray { pkg { repo = ... } } have been set.")
+            // repo has already been set
+        }
+    }
 
-    private fun bintrayAttributes(): HashMap<String, Any> {
+    private fun BintrayExtension.PackageConfig.setPackageName() {
+        if (this.name.isNullOrBlank()) {
+            this.name = when {
+                extension.bintrayPkg.isNullOrBlank() -> project.name
+                else -> extension.bintrayPkg
+            }
+        }
+        else {
+            if (!extension.bintrayPkg.isNullOrBlank())
+                throw GradleException("Both defaults { bintrayPkg = ... } and bintray { pkg { name = ... } } have been set.")
+            // name has already been set
+        }
+    }
+
+
+    private fun bintrayAttributes(): Map<String, Any> {
         val bintrayAttributes = HashMap<String, Any>()
-        if (ofNullable<Set<String>>(extension.bintrayLabels).filter { lbl -> lbl.contains("gradle") }.isPresent) {
+        if (extension.bintrayLabels?.contains("gradle") ?: false) {
             info("bintrayLabels does includes 'gradle' so generating 'gradle-plugins' attribute")
             val filesTree = gradlePluginPropertyFiles(project)
             val pluginIdBintrayAttributeValues = filesToPluginIds(filesTree).map { this.pluginIdToBintrayAttributeValue(it) }.toList()
@@ -92,37 +120,24 @@ class BintrayConfig(project: Project, extension: DefaultsExtension) : AbstractCo
     }
 
 
-    private fun pluginIdToBintrayAttributeValue(pluginId: String): String {
-        return pluginId + ":" + project.group + ":" + name()
-    }
-
-    companion object {
-
-        private fun toStringArray(labels: Set<String>?): Array<String> = when {
-            labels != null -> labels.toTypedArray()
-            else -> emptyArray()
-        }
-
-
-        private fun filesToPluginIds(filesTree: Iterable<File>) =
-            filesTree.map { filenameNoExtension(it) }
-
-
-        private fun filenameNoExtension(file: File) =
-            Files.getNameWithoutExtension(file.name)
-
-
-        private fun gradlePluginPropertyFiles(project: Project): Iterable<File> {
-            val fileTreeConf = HashMap<String, String>()
-            fileTreeConf.put("dir", "src/main/resources/META-INF/gradle-plugins")
-            fileTreeConf.put("include", "*.properties")
-            return project.fileTree(fileTreeConf)
-        }
-
-
-        fun bintrayExtension(project: Project): BintrayExtension {
-            return project.convention.getByType(BintrayExtension::class.java)
-        }
-    }
-
+    private fun pluginIdToBintrayAttributeValue(pluginId: String) = pluginId + ":" + project.group + ":" + name()
 }
+
+private fun toStringArray(labels: Set<String>?): Array<String> = when (labels) {
+    null -> emptyArray()
+    else -> labels.toTypedArray()
+}
+
+
+private fun filesToPluginIds(filesTree: Iterable<File>) = filesTree.map { filenameNoExtension(it) }
+
+
+private fun filenameNoExtension(file: File) = Files.getNameWithoutExtension(file.name)
+
+
+private fun gradlePluginPropertyFiles(project: Project): Iterable<File> = project.fileTree(
+    mapOf("dir" to "src/main/resources/META-INF/gradle-plugins", "include" to "*.properties")
+)
+
+
+fun bintrayExtension(project: Project): BintrayExtension = project.convention.getByType(BintrayExtension::class.java)

@@ -78,6 +78,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
             ${applyPlugin(DefaultsPlugin)}
             defaults {
                 id = "tester"
+                bintrayRepo = "java"
                 compatibilityVersion = 1.7
                 orgName = "testing org"
             }
