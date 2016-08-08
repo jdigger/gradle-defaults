@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.mooregreatsoftware:gradle-defaults:2.3.0'
+        classpath 'com.mooregreatsoftware:gradle-defaults:2.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
