@@ -18,21 +18,21 @@ package com.mooregreatsoftware.gradle.defaults.config
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.JavaPlugin
-
 import java.io.File
-import java.util.function.Supplier
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 abstract class AnnotationProcessorConfiguration
-protected constructor(project: Project, protected val versionSupplier: Supplier<String>) : AbstractConfig(project) {
+protected constructor(protected val project: Project) {
 
-    protected fun configure(javaConfig: JavaConfig) {
+    protected fun configure(javaConfig: Future<JavaConfig?>) {
         configJavaPlugin(javaConfig)
     }
 
 
-    protected fun configJavaPlugin(javaConfig: JavaConfig) {
-        project.plugins.withType(JavaPlugin::class.java) { plugin ->
-            registerWithJavac(javaConfig)
+    protected fun configJavaPlugin(javaConfig: Future<JavaConfig?>) {
+        project.plugins.withType(JavaPlugin::class.java) {
+            registerWithJavac(javaConfig.get(1, TimeUnit.SECONDS)!!)
             addCompileOnlyDependencies()
         }
     }

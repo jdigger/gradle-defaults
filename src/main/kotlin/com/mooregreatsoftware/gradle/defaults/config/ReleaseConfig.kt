@@ -15,28 +15,68 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
+import com.jfrog.bintray.gradle.BintrayPlugin
+import com.mooregreatsoftware.gradle.defaults.Ternary
+import com.mooregreatsoftware.gradle.defaults.grgit
+import com.mooregreatsoftware.gradle.defaults.isRootProject
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
+import java.util.concurrent.Future
 
-class ReleaseConfig(project: Project, private val grgit: Grgit) : AbstractConfig(project) {
+class ReleaseConfig private constructor(project: Project, grgit: Grgit) {
 
-    fun config() {
-        plugins().apply("org.ajoberstar.release-opinion")
+    init {
+        project.plugins.apply("org.ajoberstar.release-opinion")
         val release = project.convention.getByType(ReleasePluginExtension::class.java)
         release.grgit = grgit
-        val releaseTask = tasks().getByName("release")
-        releaseTask.dependsOn("publishGhPages")
+
+        val releaseTask = project.tasks.getByName("release")
+
+        project.plugins.withId(GITHUB_PAGES_PLUGIN_ID) {
+            releaseTask.dependsOn("publishGhPages")
+        }
+
         project.allprojects { prj ->
             val prjPlugins = prj.plugins
             val prjTasks = prj.tasks
-            prjPlugins.withId("org.gradle.base") { plugin ->
+            prjPlugins.withId("org.gradle.base") {
                 releaseTask.dependsOn(prjTasks.getByName("clean"), prjTasks.getByName("build"))
             }
-            prjPlugins.withId("com.jfrog.bintray") { plugin ->
+            prjPlugins.withType(BintrayPlugin::class.java) {
                 releaseTask.dependsOn(prjTasks.getByName("bintrayUpload"))
             }
         }
+    }
+
+
+    companion object {
+
+        private fun create(project: Project): Future<ReleaseConfig?> {
+            return confFuture(project, "Release",
+                {
+                    if (project.isRootProject() && project.grgit() != null)
+                        Ternary.TRUE
+                    else
+                        Ternary.FALSE
+                },
+                { true },
+                { ReleaseConfig(project, project.grgit()!!) },
+                null
+            )
+        }
+
+        /**
+         * Returns the ReleaseConfig for the given Project.
+         *
+         * If this project is either not the root project, or if it is not in a git repository, this returns null.
+         *
+         * @param project the project containing the ReleaseConfig
+         */
+        @JvmStatic fun of(project: Project): Future<ReleaseConfig?> {
+            return ofFuture(project, { create(project) })
+        }
+
     }
 
 }

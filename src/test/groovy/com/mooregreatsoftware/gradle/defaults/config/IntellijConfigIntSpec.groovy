@@ -29,7 +29,7 @@ class IntellijConfigIntSpec extends AbstractConfigIntSpec {
 
             group = "com.mooregreatsoftware.gradle.defaults"
             defaults {
-                id = "tester"
+                orgId = "tester"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()

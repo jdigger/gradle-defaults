@@ -1,0 +1,134 @@
+== Language Support
+
+=== Java
+
+If the `java` plugin is applied:
+
+* Add tasks and artifacts for `-sources.jar` and `-javadoc.jar`.
+* Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults
+  to the version of Java used to compile)
+* Configures the JAR MANIFEST.MF to include
+** Implementation-Title = `{project.description ?: project.name}`
+** Implementation-Version = `{project.version}`
+** Built-By = `{userEmail as known to git's "user.email" configuration}`
+** Built-Date = `{now}`
+** Built-JDK = `{System.getProperty('java.version')}`
+** Built-Gradle = `{Gradle version being used}`
+
+==== Lombok
+
+Adds support for https://projectlombok.org/[Lombok] for Java projects. If a project has Java code it is assumed to
+need Lombok, unless it is explicitly disabled with `lombok.enabled = false`.
+
+You can change the version of Lombok to use by setting `lombok.version`. The current default is "1.16.8".
+
+Both compiling from Gradle and IntelliJ IDEA projects are supported.
+
+==== Checker Framework
+
+Adds support for http://types.cs.washington.edu/checker-framework/[Checker Framework] for Java projects.
+If a project has Java code it is assumed to need Checker Framework, unless it is explicitly disabled
+with `checkerFramework.enabled = false`.
+
+You can change the version of Lombok to use by setting `checkerFramework.version`. The current default is "2.0.1".
+
+Both compiling from Gradle and IntelliJ IDEA projects are supported.
+
+=== Groovy
+
+If the `groovy` plugin is applied:
+
+* Adds tasks and artifacts for `-groovydoc.jar`.
+* Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults
+  to the version of Java used to compile)
+
+=== Scala
+
+If the `scala` plugin is applied:
+
+* Adds tasks and artifacts for `-scaladoc.jar`.
+* Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults
+  to the version of Java used to compile)
+
+=== Kotlin
+
+If the `kotlin` plugin (`org.jetbrains.kotlin:kotlin-gradle-plugin`) is applied:
+
+* Adds tasks and artifacts for `-dokka.jar` if the https://kotlinlang.org/docs/reference/kotlin-doc.html[Dokka]
+  plugin has also been applied
+* Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults
+  to the version of Java used to compile)
+
+
+== Publishing & Releasing
+
+=== GitHub Pages
+
+Applies https://github.com/ajoberstar/gradle-git[`org.ajoberstar.github-pages`] plugin.
+
+Will publish content from `src/gh-pages`. In addition, will generate and publish API documentation for Java, Scala,
+Groovy and Kotlin.
+
+=== Licensing
+
+If the `openSource` property is set to true (either against the project or the `defaults` extension), the
+https://github.com/hierynomus/license-gradle-plugin[license plugin] (`com.github.hierynomus.license`) is applied.
+
+It uses the license header from `gradle/HEADER`, injecting `defaults.copyrightYears` for `${year}` in the header.
+
+Strict checking (fail a `check` if all needed files do not have license information) is enabled.
+
+Sets `.java`, `.groovy`, `.scala` and `.kt` files to use slashstar style (`/* \*/`) instead of default
+javadoc (`/** */`) style for the license header.
+
+Properties files are excluded from checks.
+
+=== Release Plugin
+
+The https://github.com/ajoberstar/gradle-git[`org.ajoberstar.release-opinion`] plugin is applied.
+
+The `release` task depends on `clean`, `build` and `publishGhPages`, as well as `bintrayUpload` if BinTray is being used.
+
+=== Maven Publishing
+
+The `maven-publish` plugin is applied and the `main` publication includes any of the following that exist:
+
+* `.jar`
+* `-sources.jar`
+* `-javadoc.jar`
+* `-groovydoc.jar`
+* `-scaladoc.jar`
+* `-dokka.jar`
+
+The POM is configured with information from the project and link:dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html[the "defaults" extension, see its Javadoc].
+
+MavenLocal is added as a publishing location.
+
+=== BinTray
+
+If https://github.com/bintray/gradle-bintray-plugin[`com.jfrog.bintray`] is applied and `bintrayUser` and `bintrayKey` properties are set on the project, then the following configuration is set in addition to any that the build file explicitly configures:
+
+If `defaults.bintrayLabels` includes `gradle`, the `gradle-plugin` attribute is set to support the Gradle plugin portal for any plugin IDs in `src/main/resources`.
+
+The `main` publication from "Maven Publishing" is published to the BinTray repository.
+
+The BinTray project is configured with information from the project and link:dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html[the "defaults" extension, see its Javadoc].
+
+
+== Development
+
+=== IntelliJ IDEA
+
+Applies the `idea` plugin.
+
+* Initializes Git as the VCS
+* Sets the language level to `defaults.compatibilityVersion`
+* Code formatting set to reasonable/consistent standards
+
+=== Misc
+
+* Applies https://github.com/ajoberstar/gradle-imports[`organize-imports`] plugin.
+* Adds the `jcenter()` repository.
+* Configures ordering rules for tasks:
+** All tasks should run after `clean`.
+** All tasks in the `publishing` group should run after `build`.

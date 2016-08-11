@@ -17,9 +17,14 @@ package com.mooregreatsoftware.gradle.defaults.config
 
 import groovy.transform.CompileStatic
 
+import java.util.concurrent.TimeUnit
+
 import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.CHECKERFRAMEWORK_NULLNESS_CHECKER
-import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration.DEFAULT_CHECKER_VERSION
+import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfigurationKt.checkerFrameworkExtension
+import static com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension.DEFAULT_CHECKER_VERSION
+import static com.mooregreatsoftware.gradle.defaults.config.JavaConfigKt.PATH_SEPARATOR
 import static com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration.LOMBOK_LAUNCH_ANNOTATION_PROCESSOR
+import static com.mooregreatsoftware.gradle.defaults.config.LombokExtension.DEFAULT_LOMBOK_VERSION
 
 @SuppressWarnings("GroovyAssignabilityCheck")
 class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfigurationSpec {
@@ -45,7 +50,8 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
     @Override
     @CompileStatic
     public AnnotationProcessorConfiguration createConf() {
-        CheckerFrameworkConfiguration.create(project, { version }, JavaConfig.@Companion.of(project))
+        checkerFrameworkExtension(project).enabled = true
+        CheckerFrameworkConfiguration.create(project).get(1, TimeUnit.SECONDS)
     }
 
 
@@ -65,13 +71,16 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
     static class CheckerFrameworkConfigurationWithLombokSpec extends CheckerFrameworkConfigurationSpec {
 
-
         @Override
         @CompileStatic
         public AnnotationProcessorConfiguration createConf() {
-            def javaConfig = JavaConfig.@Companion.of(project)
-            CheckerFrameworkConfiguration.create(project, { version }, javaConfig)
-            LombokConfiguration.create(project, { LombokConfiguration.DEFAULT_LOMBOK_VERSION }, javaConfig)
+            JavaConfig.of(project)
+
+            LombokConfigurationKt.lombokExtension(project).enabled = true
+            LombokConfiguration.of(project)
+
+            checkerFrameworkExtension(project).enabled = true
+            CheckerFrameworkConfiguration.create(project).get(1, TimeUnit.SECONDS)
         }
 
 
@@ -79,7 +88,7 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
         @CompileStatic
         List<String> dependencies() {
             def deps = super.dependencies()
-            deps.add("org.projectlombok:lombok:${LombokConfiguration.DEFAULT_LOMBOK_VERSION}".toString())
+            deps.add("org.projectlombok:lombok:${DEFAULT_LOMBOK_VERSION}".toString())
             return deps
         }
 
@@ -93,9 +102,9 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
         @Override
         @CompileStatic
         String processorJarLocation() {
-            return project.extensions.getByType(CheckerFrameworkConfiguration).processorLibraryFile().absolutePath +
-                JavaConfigKt.PATH_SEPARATOR +
-                project.extensions.getByType(LombokConfiguration).processorLibraryFile().absolutePath
+            return CheckerFrameworkConfiguration.of(project).get(1, TimeUnit.SECONDS).processorLibraryFile().absolutePath +
+                PATH_SEPARATOR +
+                LombokConfiguration.of(project).get(1, TimeUnit.SECONDS).processorLibraryFile().absolutePath
         }
 
 
@@ -115,8 +124,8 @@ class CheckerFrameworkConfigurationSpec extends AnnotationProcessorConfiguration
 
         void verifyProcessorClasspath(Node profile) {
             assert profile.processorPath.entry.size() == 2
-            assert profile.processorPath.entry[0]["@name"] == project.extensions.getByType(CheckerFrameworkConfiguration).processorLibraryFile().absolutePath
-            assert profile.processorPath.entry[1]["@name"] == project.extensions.getByType(LombokConfiguration).processorLibraryFile().absolutePath
+            assert profile.processorPath.entry[0]["@name"] == CheckerFrameworkConfiguration.of(project).get(1, TimeUnit.SECONDS).processorLibraryFile().absolutePath
+            assert profile.processorPath.entry[1]["@name"] == LombokConfiguration.of(project).get(1, TimeUnit.SECONDS).processorLibraryFile().absolutePath
         }
 
 

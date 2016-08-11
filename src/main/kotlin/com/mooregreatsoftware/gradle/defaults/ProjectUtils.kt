@@ -29,7 +29,13 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * Does the given Project have any Java source code under it?
@@ -40,35 +46,47 @@ import java.util.function.Consumer
  * If the project does not apply the Java plugin, the existence of .java files is still checked in the "standard"
  * locations: src/main/java, src/main/groovy, src/main/kotlin, src/main/scala.
  */
-fun hasJavaSource(project: Project): Boolean {
+fun Project.hasJavaSource(useCache: Boolean = true): Boolean {
+    val key = "project.hasJavaSource"
+    val ext = this.extensions.extraProperties
+
+    if (useCache) {
+        if (ext.has(key)) {
+            return ext.get(key) as Boolean
+        }
+    }
+
     try {
-        return when {
-            hasJavaPlugin(project) -> hasJavaSourceWithJavaPlugin(project.convention)
+        val hasJavaSrc = when {
+            hasJavaPlugin(project) -> hasJavaSourceWithJavaPlugin(this.convention)
             else -> {
-                val foundJavaFile = hasJavaSourceWithoutJavaPlugin(project.projectDir)
+                val foundJavaFile = hasJavaSourceWithoutJavaPlugin(this.projectDir)
                 if (foundJavaFile) {
-                    project.logger.warn("Found Java source files in a standard source directory, " +
+                    this.logger.warn("Found Java source files in a standard source directory, " +
                         "but the Java plugin has not been applied")
                 }
                 foundJavaFile
             }
         }
+        if (useCache) ext.set(key, hasJavaSrc)
+        return hasJavaSrc
     }
     catch (exp: IOException) {
-        project.logger.error("Could not verify if " + project.name + " has Java source", exp)
+        project.logger.error("Could not verify if " + this.name + " has Java source", exp)
+        if (useCache) ext.set(key, false)
         return false
     }
-
 }
+
+
+fun Project.hasJavaBasePlugin() = this.plugins.hasPlugin(JavaBasePlugin::class.java)
 
 
 /**
  * Returns all of the projects that have the Java plugin and have Java source files.
- *
- * @param project a handle into the Project structures, gets resolved to the root Project
  */
 fun Project.allJavaProjects(): Iterable<Project> =
-    this.rootProject.allprojects.filter({ hasJavaPlugin(it) }).filter({ hasJavaSource(it) })
+    this.rootProject.allprojects.filter({ hasJavaPlugin(it) }).filter({ it.hasJavaSource() })
 
 fun Project.isRootProject() = this == this.rootProject
 
@@ -167,4 +185,35 @@ fun createConfiguration(confName: String,
                         dependenciesConsumer: (DependencySet) -> Unit,
                         configurations: ConfigurationContainer): Configuration {
     return configurations.create(confName) { conf -> dependenciesConsumer(conf.dependencies) }
+}
+
+/**
+ * Returns a Future that returns a value after the Project has been fully evaluated.
+ *
+ * @return a Future that will be evaluated after the project has been evaluated
+ */
+fun <T> Project.postEvalCreate(creator: () -> T): Future<T> {
+    val latch = CountDownLatch(1)
+
+    // The ForkJoinPool that is used by default for CompletableFuture is shared between unit testing executions,
+    // causing race conditions. By creating an isolated execution environment, that is avoided.
+    var executor = Executors.newSingleThreadExecutor()
+    val async = CompletableFuture.supplyAsync(Supplier {
+        // wait for the signal that the Project has been evaluated
+        latch.await()
+        creator()
+    }, executor)
+
+    // Adds a listener to the Project that will fire when it finishes evaluating.
+    this.afterEvaluate {
+        // signal the detection to run
+        latch.countDown()
+        // wait for detection to finish before letting Project execution to continue
+        async.get(20, TimeUnit.SECONDS)
+        // cleanup
+        executor.shutdown()
+        executor = null
+    }
+
+    return async
 }

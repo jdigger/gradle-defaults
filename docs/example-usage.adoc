@@ -1,0 +1,24 @@
+
+== Example Usage
+
+Here's the relevant section of this project's `build.gradle` file:
+
+[source,groovy]
+--
+include::../build.gradle[tags="buildfile1"]
+--
+
+== Notes
+
+For all of the configurable properties of link:dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html[the "defaults" extension, see its Javadoc].
+
+For now, the three non-MavenLocal repositories are needed in `buildscript` -- at least until this gets into
+the Gradle Plugin Repository.
+
+=== Multi-Module Support
+
+You only need to apply the plugin to the root project and it will take care of applying sensible
+defaults to all of its children. (In fact, applying it to any project that's not the root does nothing and
+a warning is logged.)
+
+Each sub-module receives its own "defaults" extension that can be used to override the settings of its parent.

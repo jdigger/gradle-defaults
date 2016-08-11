@@ -15,17 +15,29 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
+import com.mooregreatsoftware.gradle.defaults.Ternary
+import com.mooregreatsoftware.gradle.defaults.asTernary
 import com.mooregreatsoftware.gradle.defaults.config.JavaConfig.Option
 import com.mooregreatsoftware.gradle.defaults.getConfiguration
+import com.mooregreatsoftware.gradle.defaults.hasJavaBasePlugin
+import com.mooregreatsoftware.gradle.defaults.hasJavaSource
+import com.mooregreatsoftware.gradle.defaults.isBuggyJavac
+import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
+import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 import java.util.Arrays.asList
-import java.util.function.Supplier
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
-@SuppressWarnings("WeakerAccess")
-class CheckerFrameworkConfiguration protected constructor(project: Project, lombokVersionSupplier: Supplier<String>) : AnnotationProcessorConfiguration(project, lombokVersionSupplier) {
+/**
+ * Configures the project for [Checker Framework](types.cs.washington.edu/checker-framework/current/checker-framework-manual.html)
+ */
+class CheckerFrameworkConfiguration private constructor(project: Project, val version: String) : AnnotationProcessorConfiguration(project) {
 
     override fun myProcessorClassNames(): Collection<String> {
         return setOf(CHECKERFRAMEWORK_NULLNESS_CHECKER)
@@ -41,13 +53,20 @@ class CheckerFrameworkConfiguration protected constructor(project: Project, lomb
             asList(Option("warns", "true"), Option("lint", "-cast:unsafe")))
 
         javaConfig.registerBootClasspath(bootClasspathFiles())
+
+        project.tasks.withType(JavaCompile::class.java) { this.configureJavac(it) }
+    }
+
+
+    private fun configureJavac(jcTask: JavaCompile): Task {
+        return jcTask.doFirst(ConfigCompilerAction())
     }
 
 
     private fun bootClasspathFiles(): Set<File> {
         return getConfiguration("checkerframework.bootclasspath.lib.conf",
             { deps ->
-                deps.add(DefaultExternalModuleDependency("org.checkerframework", "jdk8", versionSupplier.get()))
+                deps.add(DefaultExternalModuleDependency("org.checkerframework", "jdk8", version))
             },
             project.configurations).files
     }
@@ -56,7 +75,7 @@ class CheckerFrameworkConfiguration protected constructor(project: Project, lomb
     private fun processLibConf(): Configuration {
         return getConfiguration("checkerframework.processor.lib.conf",
             { deps ->
-                deps.add(DefaultExternalModuleDependency("org.checkerframework", "checker", versionSupplier.get()))
+                deps.add(DefaultExternalModuleDependency("org.checkerframework", "checker", version))
             },
             project.configurations)
     }
@@ -70,7 +89,7 @@ class CheckerFrameworkConfiguration protected constructor(project: Project, lomb
     fun compilerLibraryFile(): File {
         return getConfiguration("checkerframework.compiler.lib.conf",
             { deps ->
-                deps.add(DefaultExternalModuleDependency("org.checkerframework", "compiler", versionSupplier.get()))
+                deps.add(DefaultExternalModuleDependency("org.checkerframework", "compiler", version))
             },
             project.configurations).singleFile
     }
@@ -82,33 +101,118 @@ class CheckerFrameworkConfiguration protected constructor(project: Project, lomb
 
 
     override fun addCompileOnlyDependencies() {
-        val dep = DefaultExternalModuleDependency("org.checkerframework", "checker-qual", versionSupplier.get())
+        val dep = DefaultExternalModuleDependency("org.checkerframework", "checker-qual", version)
         AnnotationProcessorConfiguration.addCompileOnlyDependency(project, dep)
     }
 
+    // **********************************************************************
+    //
+    // HELPER CLASSES
+    //
+    // **********************************************************************
+
+    private inner class ConfigCompilerAction : Action<Task> {
+
+        @Throws(TimeoutException::class)
+        override fun execute(javaCompileTask: Task) {
+            val options = (javaCompileTask as JavaCompile).options
+
+            if (isBuggyJavac) {
+                val checkerConfFuture = CheckerFrameworkConfiguration.of(project)
+                val checkerConf = checkerConfFuture.get(1, TimeUnit.SECONDS)
+                if (checkerConf != null) {
+                    options.isFork = true
+                    options.forkOptions.jvmArgs = listOf("-Xbootclasspath/p:" + checkerConf.compilerLibraryFile().absolutePath)
+                }
+            }
+        }
+
+    }
+
     companion object {
-        @JvmStatic val DEFAULT_CHECKER_VERSION = "2.0.1"
-
-        @JvmStatic protected val CHECKERFRAMEWORK_NULLNESS_CHECKER = "org.checkerframework.checker.nullness.NullnessChecker"
-
+        const val CHECKERFRAMEWORK_NULLNESS_CHECKER = "org.checkerframework.checker.nullness.NullnessChecker"
 
         /**
          * Creates a new instance of [CheckerFrameworkConfiguration].
          *
          * @param project                the Project to create it against
          *
-         * @param checkerVersionSupplier a [Supplier] of the version of Checker Framework to use
-         *
-         * @see DEFAULT_CHECKER_VERSION
+         * @see CheckerFrameworkExtension.DEFAULT_CHECKER_VERSION
          */
-        @JvmStatic fun create(project: Project, checkerVersionSupplier: Supplier<String>,
-                              javaConfig: JavaConfig): CheckerFrameworkConfiguration {
-            val checkerConfiguration = CheckerFrameworkConfiguration(project, checkerVersionSupplier)
+        @JvmStatic fun create(project: Project): Future<CheckerFrameworkConfiguration?> {
+            val future = confFuture(project, "Checker Framework",
+                { project.checkerFrameworkExtension().enabled },
+                { project.hasJavaBasePlugin() && project.hasJavaSource() },
+                {
+                    val conf = CheckerFrameworkConfiguration(project, project.checkerFrameworkExtension().version)
+                    conf.configure(JavaConfig.of(project))
+                    conf
+                },
+                "${project.name} has Java source files, so enabling Checker Framework support. " +
+                    "To enable/disable explicitly, set `${CheckerFrameworkExtension.NAME}.enabled = true`"
+            )
+            project.extensions.add(CheckerFrameworkConfiguration::class.java.name, future)
+            return future
+        }
 
-            checkerConfiguration.configure(javaConfig)
-
-            return checkerConfiguration
+        /**
+         * Returns the [CheckerFrameworkConfiguration] if the project has Java source code and
+         * [CheckerFrameworkExtension.enabled] has not been set to false. Otherwise will contain null.
+         */
+        @JvmStatic fun of(project: Project): Future<CheckerFrameworkConfiguration?> {
+            @Suppress("UNCHECKED_CAST")
+            val checkerConfigFuture =
+                project.extensions.findByName(CheckerFrameworkConfiguration::class.java.name) as Future<CheckerFrameworkConfiguration?>?
+            return when (checkerConfigFuture) {
+                null -> create(project)
+                else -> checkerConfigFuture
+            }
         }
     }
 
+}
+
+
+/**
+ * The [CheckerFrameworkExtension] for the project.
+ */
+fun Project.checkerFrameworkExtension(): CheckerFrameworkExtension =
+    project.extensions.findByType(CheckerFrameworkExtension::class.java) as CheckerFrameworkExtension? ?:
+        project.extensions.create(CheckerFrameworkExtension.NAME, CheckerFrameworkExtension::class.java)
+
+
+/**
+ * Configuration options for [CheckerFrameworkConfiguration]
+ */
+open class CheckerFrameworkExtension {
+    /**
+     * The version of the Checker Framework to use.
+     */
+    var version = DEFAULT_CHECKER_VERSION
+
+    private var _useChecker = Ternary.MAYBE
+    /**
+     * Is Checker Framework enabled? Defaults to MAYBE and will try to auto-detect support.
+     * See [CheckerFrameworkConfiguration.of]
+     */
+    val enabled: Ternary
+        get() = _useChecker
+
+    @Suppress("unused")
+    fun setEnabled(useChecker: Any) {
+        _useChecker = useChecker.asTernary()
+    }
+
+
+    override fun toString(): String = "CheckerFrameworkExtension(version='$version', _useChecker=$_useChecker)"
+
+
+    companion object {
+        /**
+         * The name to register this under as a Gradle extension.
+         */
+        const val NAME = "checkerFramework"
+
+        const val DEFAULT_CHECKER_VERSION = "2.0.1"
+    }
 }

@@ -15,16 +15,23 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
+import com.mooregreatsoftware.gradle.defaults.Ternary
+import com.mooregreatsoftware.gradle.defaults.asTernary
 import com.mooregreatsoftware.gradle.defaults.getConfiguration
+import com.mooregreatsoftware.gradle.defaults.hasJavaBasePlugin
+import com.mooregreatsoftware.gradle.defaults.hasJavaSource
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 import java.io.File
-import java.util.function.Supplier
+import java.util.concurrent.Future
 
-class LombokConfiguration protected constructor(project: Project, lombokVersionSupplier: Supplier<String>) : AnnotationProcessorConfiguration(project, lombokVersionSupplier) {
-
+/**
+ * Configures the project for [Lombok](https://projectlombok.org/features/index.html)
+ */
+// TODO Offer to auto-create lombok.config file
+class LombokConfiguration protected constructor(project: Project) : AnnotationProcessorConfiguration(project) {
 
     override fun myProcessorClassNames(): Collection<String> {
         return listOf(LOMBOK_LAUNCH_ANNOTATION_PROCESSOR)
@@ -32,7 +39,7 @@ class LombokConfiguration protected constructor(project: Project, lombokVersionS
 
 
     private fun processLibConf(): Configuration {
-        return getConfiguration("lombok.processor.lib.conf", { deps -> deps.add(lombokDependency()) }, project.configurations)
+        return getConfiguration("lombok.processor.lib.conf", { it.add(lombokDependency()) }, project.configurations)
     }
 
 
@@ -52,23 +59,72 @@ class LombokConfiguration protected constructor(project: Project, lombokVersionS
 
 
     private fun lombokDependency(): Dependency {
-        return DefaultExternalModuleDependency("org.projectlombok", "lombok", versionSupplier.get())
+        return DefaultExternalModuleDependency("org.projectlombok", "lombok", project.lombokExtension().version)
     }
 
     companion object {
-        @JvmStatic val DEFAULT_LOMBOK_VERSION = "1.16.8"
 
-        @JvmStatic val LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider\$AnnotationProcessor"
-
-
-        @JvmStatic fun create(project: Project, lombokVersionSupplier: Supplier<String>,
-                              javaConfig: JavaConfig): LombokConfiguration {
-            val lombokConfig = LombokConfiguration(project, lombokVersionSupplier)
-
-            lombokConfig.configure(javaConfig)
-
-            return lombokConfig
+        private fun create(project: Project): Future<LombokConfiguration?> {
+            return confFuture(project, "Lombok",
+                { project.lombokExtension().enabled },
+                { project.hasJavaBasePlugin() && project.hasJavaSource() },
+                {
+                    val conf = LombokConfiguration(project)
+                    conf.configure(JavaConfig.of(project))
+                    conf
+                },
+                "${project.name} has Java source files, so enabling Lombok support. " +
+                    "To enable/disable explicitly, set `${LombokExtension.NAME}.enabled = true`"
+            )
         }
+
+        /**
+         * Returns the [LombokConfiguration] if the project has Java source code and
+         * [LombokExtension.enabled] has not been set to false. Otherwise will contain null.
+         */
+        @JvmStatic fun of(project: Project): Future<LombokConfiguration?> {
+            return ofFuture(project, { create(project) })
+        }
+
+        const val LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider\$AnnotationProcessor"
     }
 
+}
+
+fun Project.lombokExtension(): LombokExtension = project.extensions.findByType(LombokExtension::class.java) as LombokExtension? ?:
+    project.extensions.create(LombokExtension.NAME, LombokExtension::class.java)
+
+
+/**
+ * Configuration options for [LombokConfiguration]
+ */
+open class LombokExtension {
+    var version = DEFAULT_LOMBOK_VERSION
+
+    private var _useLombok = Ternary.MAYBE
+
+    /**
+     * Is Lombok enabled? Defaults to MAYBE and will try to auto-detect support.
+     * See [LombokConfiguration.of]
+     */
+    val enabled: Ternary
+        get() = _useLombok
+
+    @Suppress("unused")
+    fun setEnabled(useLombok: Any) {
+        _useLombok = useLombok.asTernary()
+    }
+
+
+    override fun toString(): String = "LombokExtension(version='$version', _useLombok=$_useLombok)"
+
+
+    companion object {
+        /**
+         * The name to register this under as a Gradle extension.
+         */
+        const val NAME = "lombok"
+
+        const val DEFAULT_LOMBOK_VERSION = "1.16.8"
+    }
 }

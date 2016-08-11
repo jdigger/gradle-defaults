@@ -21,6 +21,8 @@ import org.gradle.api.internal.project.AbstractProject
 import org.gradle.api.internal.project.DefaultProject
 import org.gradle.api.plugins.JavaPlugin
 
+import java.util.concurrent.TimeUnit
+
 class JavaConfigSpec extends ProjectSpec {
 
 
@@ -31,7 +33,7 @@ class JavaConfigSpec extends ProjectSpec {
 
 
     def "defaults"() {
-        def javaConfig = JavaConfig.@Companion.of(project)
+        def javaConfig = JavaConfig.of(project).get(1, TimeUnit.SECONDS)
 
         when:
         evaluateProject()
@@ -53,7 +55,7 @@ class JavaConfigSpec extends ProjectSpec {
         gitConfig.setString("user", null, "email", "tester@test.com")
         gitConfig.save()
 
-        def javaConfig = JavaConfig.@Companion.of(project)
+        def javaConfig = JavaConfig.of(project).get(1, TimeUnit.SECONDS)
 
         when:
         evaluateProject()
@@ -68,7 +70,7 @@ class JavaConfigSpec extends ProjectSpec {
             protected String builtBy() {
                 return "Fooble Booble"
             }
-        }.config() as JavaConfig
+        }.config(JavaPlugin) as JavaConfig
 
         when:
         evaluateProject()

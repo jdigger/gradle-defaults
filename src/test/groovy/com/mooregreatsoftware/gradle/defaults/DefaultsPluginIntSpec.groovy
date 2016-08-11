@@ -33,7 +33,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
-                id = "tester"
+                orgId = "tester"
                 compatibilityVersion = 1.7
                 copyrightYears = '2014-2015'
             }
@@ -46,7 +46,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
 
         then:
         result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
         result.wasExecuted(':classes')
 
         cleanup:
@@ -55,15 +55,75 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
     }
 
 
-    def "release"() {
+    def "build kotlin"() {
+        logLevel = LogLevel.DEBUG
+        fork = true // has Xerces errors without this
+        writeKotlinHelloWorld('com.mooregreatsoftware.gradle.defaults')
+
+        buildFile << """
+            buildscript {
+                ext.kotlin_version = '1.0.3'
+                repositories {
+                    jcenter()
+                }
+
+                dependencies {
+                    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
+                }
+            }
+            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: 'kotlin'
+
+            group = "com.mooregreatsoftware.gradle.defaults"
+
+            defaults {
+                orgId = "tester"
+                compatibilityVersion = 1.8
+                copyrightYears = '2014-2016'
+            }
+
+            dependencies {
+                compile "org.jetbrains.kotlin:kotlin-stdlib:\$kotlin_version"
+            }
+        """.stripIndent()
+
+        createLicenseHeader()
+
+        when:
+        def result = runTasks('licenseFormat', 'build')
+
+        then:
+        result.success
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldKotlinKt.class')
+        result.wasExecuted(':classes')
+
+        cleanup:
+        println result?.standardOutput
+        println result?.standardError
+    }
+
+
+    def "release open source"() {
         logLevel = LogLevel.DEBUG
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            plugins {
-                id 'com.jfrog.bintray' version '1.4'
+            buildscript {
+                ext.kotlin_version = '1.0.3'
+                repositories {
+                    jcenter()
+                }
+
+                dependencies {
+                    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version", {
+                         exclude module: 'kotlin-android-extensions'
+                    }
+                }
             }
-            apply plugin: 'java'
+
+            plugins {
+                id 'com.jfrog.bintray' version '1.7.1'
+            }
 
             group = 'com.mooregreatsoftware.gradle.defaults'
             description = 'Nice Gradle defaults'
@@ -77,14 +137,35 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
 
             ${applyPlugin(DefaultsPlugin)}
             defaults {
-                id = "tester"
+                orgId = "tester"
+                openSource = true
                 bintrayRepo = "java"
-                compatibilityVersion = 1.7
+                compatibilityVersion = 1.8
                 orgName = "testing org"
             }
         """.stripIndent()
 
         createLicenseHeader()
+
+        def javaProjDir = addSubproject("javaProj")
+        createFile("build.gradle", javaProjDir) << """
+            apply plugin: 'java'
+        """.stripIndent()
+        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.javaproj', javaProjDir)
+
+        def otherlangsProjDir = addSubproject("otherlangsProj")
+        createFile("build.gradle", otherlangsProjDir) << """
+            ext.kotlin_version = '1.0.3'
+            apply plugin: 'groovy'
+            apply plugin: 'scala'
+
+            dependencies {
+                compile "org.codehaus.groovy:groovy:2.4.4"
+                compile "org.scala-lang:scala-library:2.10.5"
+            }
+        """.stripIndent()
+        writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults.otherlangsProj', otherlangsProjDir)
+        writeScalaHelloWorld('com.mooregreatsoftware.gradle.defaults.otherlangsProj', otherlangsProjDir)
 
         git.add().addFilepattern(".").call()
         git.commit().setMessage("the files").call()
@@ -94,13 +175,14 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
             '-x', 'bintrayUpload', '-x', 'prepareGhPages', '-Prelease.scope=patch', '-Prelease.stage=final')
 
         then:
-        result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        result.wasExecuted(':classes')
+        if (!result.success) result.rethrowFailure()
+        fileExists('javaProj/build/classes/main/com/mooregreatsoftware/gradle/defaults/javaproj/HelloWorldJava.class')
+        fileExists('otherlangsProj/build/classes/main/com/mooregreatsoftware/gradle/defaults/otherlangsProj/HelloWorldGroovy.class')
+        fileExists('otherlangsProj/build/classes/main/com/mooregreatsoftware/gradle/defaults/otherlangsProj/HelloWorldScala.class')
 
         cleanup:
-        println result.standardOutput
-        println result.standardError
+        println result?.standardOutput
+        println result?.standardError
     }
 
 

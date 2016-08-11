@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults.config
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension
+import com.mooregreatsoftware.gradle.defaults.defaultsExtension
 import com.mooregreatsoftware.gradle.defaults.isNotEmpty
 import com.mooregreatsoftware.gradle.defaults.xml.appendChild
 import com.mooregreatsoftware.gradle.defaults.xml.appendChildren
@@ -28,17 +29,17 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPomInternal
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
-class MavenPublishingConfig(project: Project, extension: DefaultsExtension) : AbstractConfigWithExtension(project, extension) {
+class MavenPublishingConfig(project: Project) {
 
-    fun config() {
-        plugins().apply(MavenPublishPlugin::class.java)
+    init {
+        project.plugins.apply(MavenPublishPlugin::class.java)
 
         // initialize the "main" publication if it hasn't already
         mainPublication(project)
     }
 
     companion object {
-        val PUBLICATION_NAME = "main"
+        const val PUBLICATION_NAME = "main"
 
 
         fun mainPublication(project: Project): MavenPublication {
@@ -75,7 +76,7 @@ class MavenPublishingConfig(project: Project, extension: DefaultsExtension) : Ab
 
 
         private fun configPom(project: Project, xmlProvider: XmlProvider) {
-            val extension = defaultsExtension(project) ?: return
+            val extension = project.defaultsExtension()
 
             with(xmlProvider.asNode()) {
                 name(project)
@@ -136,7 +137,7 @@ class MavenPublishingConfig(project: Project, extension: DefaultsExtension) : Ab
 
 
         private fun Node.developers(extension: DefaultsExtension) {
-            val developers = extension.getDevelopers()
+            val developers = extension.developers
             if (developers != null && !developers.isEmpty()) {
                 this.appendChildren("developers", developers.map { developer ->
                     n("developer", listOf(
@@ -168,11 +169,6 @@ class MavenPublishingConfig(project: Project, extension: DefaultsExtension) : Ab
                     n("url", extension.licenseUrl))))
         }
 
-
-        private fun defaultsExtension(project: Project?): DefaultsExtension? {
-            if (project == null) return null
-            return project.extensions.findByType(DefaultsExtension::class.java) ?: defaultsExtension(project.parent)
-        }
     }
 
 }

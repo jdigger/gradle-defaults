@@ -17,11 +17,27 @@ package com.mooregreatsoftware.gradle.defaults
 
 import nebula.test.PluginProjectSpec
 
+@SuppressWarnings("GroovyPointlessBoolean")
 class DefaultPluginSpec extends PluginProjectSpec {
 
     @Override
     String getPluginName() {
         return "com.mooregreatsoftware.defaults"
+    }
+
+
+    def "extension"() {
+        project.plugins.apply(DefaultsPlugin)
+        def rootExt = DefaultsExtensionKt.defaultsExtension(project)
+        rootExt.openSource = true
+        rootExt.orgId = "theId"
+
+        def subProj = addSubproject("subproj")
+        def subExt = DefaultsExtensionKt.defaultsExtension(subProj)
+
+        expect:
+        subExt.openSource == true
+        subExt.siteUrl == "https://github.com/theId/subproj"
     }
 
 }

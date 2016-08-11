@@ -31,8 +31,9 @@ class LombokConfigIntSpec extends AbstractConfigIntSpec {
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
-                id = "tester"
+                orgId = "tester"
                 compatibilityVersion = 1.8
+                lombok.enabled = true
             }
         """.stripIndent()
 

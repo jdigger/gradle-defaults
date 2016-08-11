@@ -16,8 +16,9 @@
 package com.mooregreatsoftware.gradle.defaults.config
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
+import com.mooregreatsoftware.gradle.defaults.defaultsExtension
 import com.mooregreatsoftware.gradle.defaults.hasItems
-import com.mooregreatsoftware.gradle.defaults.isBuggyJavac
+import com.mooregreatsoftware.gradle.defaults.postEvalCreate
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -25,18 +26,23 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPlugin.COMPILE_JAVA_TASK_NAME
 import org.gradle.api.plugins.JavaPlugin.JAVADOC_TASK_NAME
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 import java.time.Instant
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.TreeSet
+import java.util.concurrent.Future
+import java.util.concurrent.TimeoutException
 
 val PATH_SEPARATOR: String = System.getProperty("path.separator")
 
-open class JavaConfig protected constructor(project: Project) : AbstractLanguageConfig<JavaPlugin>(project) {
+open class JavaConfig protected constructor(project: Project) : AbstractLanguageConfig(project) {
 
     private var sourcesJarTask: Jar? = null
 
@@ -47,13 +53,22 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
     private val _javacOptions = TreeSet<String>()
 
 
-    override fun configLanguage() {
-        super.configLanguage()
+    override fun configLanguage(pluginClassname: String) {
+        super.configLanguage(pluginClassname)
 
-        project.afterEvaluate { prj -> setManifestAttributes() } // TODO doFirst for task
+        project.postEvalCreate {
+            setManifestAttributes() // TODO doFirst for task
+        }
 
-        val tasks = project.tasks // TODO FIX
-        tasks.withType(JavaCompile::class.java) { this.configureJavac(it) }
+        project.tasks.withType(JavaCompile::class.java) { configureJavac(it) }
+
+        project.tasks.withType(AbstractCompile::class.java) { task ->
+            task.doFirst {
+                val defaults = project.defaultsExtension()
+                task.sourceCompatibility = defaults.compatibilityVersion.toString()
+                task.targetCompatibility = defaults.compatibilityVersion.toString()
+            }
+        }
     }
 
 
@@ -70,10 +85,15 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
     }
 
 
+    /**
+     * This will pick up all sources, regardless of language or resource location,
+     * as long as they use the "main" [SourceSetContainer].
+     */
     private fun createSourcesJarTask(): Jar {
-        val sourceJarTask = tasks().create(SOURCES_JAR_TASK_NAME, Jar::class.java)
+        val sourceJarTask = project.tasks.create(SOURCES_JAR_TASK_NAME, Jar::class.java)
         sourceJarTask.classifier = "sources"
-        sourceJarTask.from(sourceSets().findByName("main").allSource as FileCollection)
+        val ss = project.sourceSets!!
+        sourceJarTask.from(ss.findByName("main").allSource as FileCollection)
         return sourceJarTask
     }
 
@@ -81,13 +101,17 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
     override fun registerArtifacts(publication: MavenPublication) {
         super.registerArtifacts(publication)
 
+        val mainJarTask = project.tasks.getByName("jar") as Jar
+        publication.artifact(mainJarTask)
+        project.artifacts.add("archives", mainJarTask)
+
         publication.artifact(sourcesJarTask())
-        artifacts().add("archives", sourcesJarTask())
+        project.artifacts.add("archives", sourcesJarTask())
     }
 
 
     private fun setManifestAttributes() {
-        debug("Setting MANIFEST.MF attributes")
+        project.logger.debug("Setting MANIFEST.MF attributes")
         configureManifestAttributes(jarTask())
     }
 
@@ -101,12 +125,12 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
 
     protected fun manifestAttributes(): Map<String, String> {
         val attrs = HashMap<String, String>()
-        attrs.put("Implementation-Title", description())
-        attrs.put("Implementation-Version", version())
+        attrs.put("Implementation-Title", project.description ?: project.name)
+        attrs.put("Implementation-Version", project.version.toString())
         attrs.put("Built-By", builtBy())
         attrs.put("Built-Date", Instant.now().toString())
         attrs.put("Built-JDK", System.getProperty("java.version") as String)
-        attrs.put("Built-Gradle", gradle().gradleVersion)
+        attrs.put("Built-Gradle", project.gradle.gradleVersion)
         return attrs
     }
 
@@ -118,11 +142,6 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
 
     override fun docTaskName(): String {
         return JAVADOC_TASK_NAME
-    }
-
-
-    override fun pluginClass(): Class<JavaPlugin> {
-        return JavaPlugin::class.java
     }
 
 
@@ -237,18 +256,11 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
 
     protected inner class ConfigCompilerAction : Action<Task> {
 
+        @Throws(TimeoutException::class)
         override fun execute(javaCompileTask: Task) {
             val compilerArgs = createJavacArgs()
-            val options = (javaCompileTask as JavaCompile).options
-
-            if (isBuggyJavac) {
-                val extensions = project.extensions
-                val checkerConf = extensions.findByName(CheckerFrameworkConfiguration::class.java.name) as CheckerFrameworkConfiguration?
-                if (checkerConf != null) {
-                    options.isFork = true
-                    options.forkOptions.jvmArgs = listOf("-Xbootclasspath/p:" + checkerConf.compilerLibraryFile().absolutePath)
-                }
-            }
+            val javaCompile = javaCompileTask as JavaCompile
+            val options = javaCompile.options
 
             options.compilerArgs = compilerArgs
         }
@@ -256,7 +268,7 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
     }
 
 
-    class Option(val name: String, val value: String) : Comparable<Option> {
+    data class Option(val name: String, val value: String) : Comparable<Option> {
         override fun compareTo(other: Option): Int {
             val nameComp = name.compareTo(other.name)
             return if (nameComp != 0) nameComp else value.compareTo(other.value)
@@ -269,14 +281,16 @@ open class JavaConfig protected constructor(project: Project) : AbstractLanguage
 
         /**
          * Returns the JavaConfig for in the given Project.
-
+         *
          * @param project the project containing the JavaConfig
          */
-        @JvmStatic fun of(project: Project): JavaConfig {
-            val javaConfig = project.extensions.findByName(JavaConfig::class.java.name) as JavaConfig?
-            return javaConfig ?: JavaConfig(project).config() as JavaConfig
+        @JvmStatic fun of(project: Project): Future<JavaConfig?> {
+            return ofInstance(project, { JavaConfig(project).config(JavaPlugin::class.java) as JavaConfig })
         }
 
     }
 
 }
+
+val Project.sourceSets: SourceSetContainer?
+    get() = convention.findPlugin(JavaPluginConvention::class.java)?.sourceSets

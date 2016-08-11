@@ -17,15 +17,16 @@ package com.mooregreatsoftware.gradle.defaults.config
 
 import groovy.transform.CompileStatic
 
-import static com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration.DEFAULT_LOMBOK_VERSION
-import static com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration.LOMBOK_LAUNCH_ANNOTATION_PROCESSOR
+import java.util.concurrent.TimeUnit
+
 
 @SuppressWarnings("GroovyAssignabilityCheck")
 class LombokConfigSpec extends AnnotationProcessorConfigurationSpec {
 
     @Override
+    @CompileStatic
     String getVersion() {
-        DEFAULT_LOMBOK_VERSION
+        LombokExtension.DEFAULT_LOMBOK_VERSION
     }
 
 
@@ -39,7 +40,8 @@ class LombokConfigSpec extends AnnotationProcessorConfigurationSpec {
     @Override
     @CompileStatic
     public LombokConfiguration createConf() {
-        return LombokConfiguration.create(project, { version }, JavaConfig.@Companion.of(project))
+        LombokConfigurationKt.lombokExtension(project).enabled = true
+        LombokConfiguration.of(project).get(1, TimeUnit.SECONDS)
     }
 
 
@@ -51,8 +53,9 @@ class LombokConfigSpec extends AnnotationProcessorConfigurationSpec {
 
 
     @Override
+    @CompileStatic
     String processorClassname() {
-        LOMBOK_LAUNCH_ANNOTATION_PROCESSOR
+        LombokConfiguration.LOMBOK_LAUNCH_ANNOTATION_PROCESSOR
     }
 
 }

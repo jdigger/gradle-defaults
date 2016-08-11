@@ -30,7 +30,7 @@ class JavaConfigIntSpec extends AbstractConfigIntSpec {
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
-                id = "tester"
+                orgId = "tester"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()
@@ -45,8 +45,8 @@ class JavaConfigIntSpec extends AbstractConfigIntSpec {
 
         then:
         result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
-        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorld.class')
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
+        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldJava.class')
         [":compileJava", ":submod:compileJava", ":sourcesJar", ":submod:sourcesJar", ":javadocJar", ":submod:javadocJar"].each {
             assert result.wasExecuted(it)
         }

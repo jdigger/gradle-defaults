@@ -21,6 +21,7 @@ import com.mooregreatsoftware.gradle.defaults.config.GhPagesConfig
 import com.mooregreatsoftware.gradle.defaults.config.GroovyConfig
 import com.mooregreatsoftware.gradle.defaults.config.IntellijConfig
 import com.mooregreatsoftware.gradle.defaults.config.JavaConfig
+import com.mooregreatsoftware.gradle.defaults.config.KotlinConfig
 import com.mooregreatsoftware.gradle.defaults.config.LicenseConfig
 import com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration
 import com.mooregreatsoftware.gradle.defaults.config.MavenPublishingConfig
@@ -32,84 +33,52 @@ import org.eclipse.jgit.lib.StoredConfig
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.publish.plugins.PublishingPlugin
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
 
 class DefaultsPlugin : Plugin<Project> {
 
-
     override fun apply(project: Project) {
         if (project != project.rootProject) {
-            project.logger.warn(this.javaClass.name + " can only be applied to the root project")
+            project.logger.warn("${this.javaClass.name} can only be applied to the root project")
             return
         }
 
-        val grgit = createGrgit(project)
-
-        val extension = project.extensions.create("defaults", DefaultsExtension::class.java, project)
-
-        project.plugins.apply("org.ajoberstar.organize-imports")
-
-        if (grgit != null) {
-            GhPagesConfig(project).config(Supplier<String> { extension.vcsWriteUrl })
-            ReleaseConfig(project, grgit).config()
-        }
+        val extension = project.defaultsExtension()
 
         project.allprojects { prj -> configProject(prj, extension) }
     }
 
 
     private fun configProject(prj: Project, extension: DefaultsExtension) {
+        prj.defaultsExtension()
+
         prj.repositories.jcenter()
-        val javaConfig = JavaConfig.of(prj)
-        IntellijConfig.create(prj, { extension.compatibilityVersion }, javaConfig)
-        GroovyConfig.create(prj)
-        ScalaConfig(prj).config(Supplier<String> { extension.compatibilityVersion })
+
+        prj.plugins.apply("org.ajoberstar.organize-imports")
+
+        ReleaseConfig.of(prj)
+        GhPagesConfig.of(prj)
+        JavaConfig.of(prj)
+        IntellijConfig.of(prj)
+        GroovyConfig.of(prj)
+        ScalaConfig.of(prj)
+        KotlinConfig.of(prj)
         LicenseConfig(prj).config(Supplier<String> { extension.copyrightYears })
-        MavenPublishingConfig(prj, extension).config()
-        BintrayConfig(prj, extension).config()
-        configLombok(prj, extension, javaConfig)
-        CheckerFrameworkConfiguration.create(prj, Supplier<String> { extension.checkerFrameworkVersion }, javaConfig)
+        MavenPublishingConfig(prj)
+        BintrayConfig.of(prj)
+        LombokConfiguration.of(prj)
+        CheckerFrameworkConfiguration.of(prj)
+
         addOrderingRules(prj)
     }
 
 
-    private fun configLombok(prj: Project, extension: DefaultsExtension, javaConfig: JavaConfig) {
-        if (prj.plugins.findPlugin(JavaBasePlugin::class.java) != null) {
-            potentialConfigureLombok(prj, extension, javaConfig)
-        }
-        else {
-            prj.afterEvaluate { p -> potentialConfigureLombok(p, extension, javaConfig) }
-        }
-    }
-
     companion object {
-
         val DEFAULT_USER_EMAIL = "unknown@unknown"
         private val EMAIL_CACHE_KEY = "com.mooregreatsoftware.defaults.useremail"
-
-
-        private fun potentialConfigureLombok(prj: Project, extension: DefaultsExtension, javaConfig: JavaConfig) {
-            // TODO Move to LombokConfiguration.create
-            if (extension.useLombok)
-                LombokConfiguration.create(prj, Supplier<String> { extension.lombokVersion }, javaConfig)
-            else
-                prj.logger.info("Not configuring Lombok for {}", prj.name)
-        }
-
-
-        @Suppress("DEPRECATION")
-        private fun createGrgit(project: Project): Grgit? {
-            try {
-                return Grgit.open(project.file("."))
-            }
-            catch (e: Exception) {
-                return null
-            }
-
-        }
 
 
         private fun addOrderingRules(project: Project) {
@@ -177,4 +146,24 @@ class DefaultsPlugin : Plugin<Project> {
         val StoredConfig.email: String? get() = this.getString("user", null, "email")
     }
 
+}
+
+@Suppress("UNCHECKED_CAST", "DEPRECATION")
+fun Project.grgit(): Grgit? {
+    val key = Grgit::class.java.name
+    val ext = rootProject.extensions.extraProperties
+    if (ext.has(key)) {
+        return (ext.get(key) as AtomicReference<Grgit?>).get()
+    }
+    else {
+        val grgitRef: AtomicReference<Grgit?>
+        try {
+            grgitRef = AtomicReference(Grgit.open(project.file(".")))
+        }
+        catch (e: Exception) {
+            grgitRef = AtomicReference(null)
+        }
+        ext.set(key, grgitRef)
+        return grgitRef.get()
+    }
 }

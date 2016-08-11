@@ -53,18 +53,68 @@ abstract class AbstractConfigIntSpec extends IntegrationSpec {
 
     @CompileStatic
     protected File writeJavaHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
-        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorld.java'
-        def javaFile = createFile(path, baseDir)
-        javaFile << """
+        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/HelloWorldJava.java'
+        def srcFile = createFile(path, baseDir)
+        srcFile << """
             package ${packageDotted};
 
-            public class HelloWorld {
+            public class HelloWorldJava {
                 public static void main(String[] args) {
                     System.out.println("Hello Integration Test");
                 }
             }
         """.stripIndent()
-        return javaFile
+        return srcFile
+    }
+
+
+    @CompileStatic
+    protected File writeGroovyHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/groovy/' + packageDotted.replace('.', '/') + '/HelloWorldGroovy.groovy'
+        def srcFile = createFile(path, baseDir)
+        srcFile << """
+            package ${packageDotted}
+
+            @groovy.transform.CompileStatic
+            public class HelloWorldGroovy {
+                public static void main(String[] args) {
+                    println("Hello Integration Test")
+                }
+            }
+        """.stripIndent()
+        return srcFile
+    }
+
+
+    @CompileStatic
+    protected File writeScalaHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/scala/' + packageDotted.replace('.', '/') + '/HelloWorldScala.scala'
+        def srcFile = createFile(path, baseDir)
+        srcFile << """
+            package ${packageDotted}
+
+            object HelloWorldScala {
+              def main(args: Array[String]): Unit = {
+                println("Hello, world!")
+              }
+            }
+        """.stripIndent()
+        return srcFile
+    }
+
+
+    @CompileStatic
+    protected File writeKotlinHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/kotlin/' + packageDotted.replace('.', '/') + '/HelloWorldKotlin.kt'
+        def srcFile = createFile(path, baseDir)
+        srcFile << """
+            package ${packageDotted}
+
+            fun main(args : Array<String>) {
+                println("Hello, world!")
+            }
+        """.stripIndent()
+        return srcFile
     }
 
 

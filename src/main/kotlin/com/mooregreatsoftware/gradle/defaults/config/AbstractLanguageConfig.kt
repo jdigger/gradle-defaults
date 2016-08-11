@@ -21,22 +21,27 @@ import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin.JAR_TASK_NAME
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.compile.AbstractCompile
 
-abstract class AbstractLanguageConfig<PT : Plugin<*>>
-protected constructor(project: Project) : AbstractConfig(project), ArtifactPublisher {
+abstract class AbstractLanguageConfig
+protected constructor(protected val project: Project) : ArtifactPublisher {
 
     private var docJarTask: Jar? = null
 
 
-    fun config(): AbstractLanguageConfig<PT> {
-        plugins().withType(pluginClass()) { plugin -> configLanguage() }
+    fun <T : Plugin<*>> config(pluginClass: Class<T>): AbstractLanguageConfig {
+        project.plugins.withType(pluginClass) { configLanguage(pluginClass.javaClass.name) }
         return this
     }
 
 
-    protected open fun configLanguage() {
-        info("Configuring {}", pluginClass().simpleName)
+    fun config(pluginClassName: String): AbstractLanguageConfig {
+        project.plugins.withId(pluginClassName) { configLanguage(pluginClassName) }
+        return this
+    }
+
+
+    open protected fun configLanguage(pluginClassname: String) {
+        project.logger.info("Configuring {}", pluginClassname)
 
         registerArtifacts(MavenPublishingConfig.mainPublication(project))
     }
@@ -44,7 +49,7 @@ protected constructor(project: Project) : AbstractConfig(project), ArtifactPubli
 
     override fun registerArtifacts(publication: MavenPublication) {
         publication.artifact(docJarTask())
-        artifacts().add("archives", docJarTask())
+        project.artifacts.add("archives", docJarTask())
     }
 
 
@@ -58,7 +63,7 @@ protected constructor(project: Project) : AbstractConfig(project), ArtifactPubli
 
     protected fun createDocJarTask(): Jar {
         val docTaskName = docTaskName()
-        val docJarTask = tasks().create(docTaskName + "Jar", Jar::class.java)
+        val docJarTask = project.tasks.create(docTaskName + "Jar", Jar::class.java)
         docJarTask.classifier = docTaskName
         docJarTask.from(docTask().outputs.files)
         return docJarTask
@@ -66,22 +71,16 @@ protected constructor(project: Project) : AbstractConfig(project), ArtifactPubli
 
 
     fun docTask(): Task {
-        return tasks().getByName(docTaskName())
+        return project.tasks.getByName(docTaskName())
     }
 
 
     protected abstract fun docTaskName(): String
 
 
-    protected abstract fun pluginClass(): Class<PT>
-
-
     fun jarTask(): Jar {
-        return tasks().findByName(JAR_TASK_NAME) as Jar
+        return project.tasks.findByName(JAR_TASK_NAME) as Jar
     }
-
-
-    fun compileTask(): AbstractCompile = tasks().getByName(compileTaskName()) as AbstractCompile
 
 
     protected abstract fun compileTaskName(): String

@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle.defaults.config
+package com.mooregreatsoftware.gradle.defaults
 
-import com.mooregreatsoftware.gradle.defaults.DefaultsExtension
-import org.gradle.api.Project
+enum class Ternary {
+    TRUE, FALSE, MAYBE
+}
 
-// TODO Remove extension param
-abstract class AbstractConfigWithExtension
-protected constructor(project: Project, protected val extension: DefaultsExtension) : AbstractConfig(project) {
-
-    protected fun compatibilityVersion(): String {
-        return extension.compatibilityVersion
+fun Any?.asTernary(): Ternary {
+    fun boolToTern(bool: Boolean) = if (bool) Ternary.TRUE else Ternary.FALSE
+    return when (this) {
+        null -> Ternary.MAYBE
+        is Ternary -> this
+        is Boolean -> boolToTern(this)
+        is String -> boolToTern(java.lang.Boolean.valueOf(this))
+        else -> throw IllegalArgumentException("Don't know how to parse \"$this\"")
     }
-
 }

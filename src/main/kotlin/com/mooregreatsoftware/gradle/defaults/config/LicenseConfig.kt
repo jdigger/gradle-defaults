@@ -16,42 +16,44 @@
 package com.mooregreatsoftware.gradle.defaults.config
 
 import groovy.lang.GroovyObject
-import nl.javadude.gradle.plugins.license.License
 import nl.javadude.gradle.plugins.license.LicenseExtension
+import nl.javadude.gradle.plugins.license.LicensePlugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.Convention
+import org.gradle.api.plugins.ExtraPropertiesExtension
 import java.util.function.Supplier
 
-@SuppressWarnings("WeakerAccess")
-class LicenseConfig(project: Project) : AbstractConfig(project) {
-
+class LicenseConfig(private val project: Project) {
 
     fun config(copyrightYears: Supplier<String>) {
-        plugins().apply("license")
+        project.plugins.apply(LicensePlugin::class.java)
         val licenseExt = project.convention.getByType(LicenseExtension::class.java)
         licenseExt.header = project.rootProject.file("gradle/HEADER")
         licenseExt.strictCheck = true
-        licenseExt.isUseDefaultMappings = false
+        licenseExt.isUseDefaultMappings = true
         licenseExt.mapping("groovy", "SLASHSTAR_STYLE")
         licenseExt.mapping("java", "SLASHSTAR_STYLE")
+        licenseExt.mapping("scala", "SLASHSTAR_STYLE")
+        licenseExt.mapping("kt", "SLASHSTAR_STYLE")
+        licenseExt.mapping("css", "SLASHSTAR_STYLE")
 
         project.afterEvaluate { prj -> configLicenseExtension(copyrightYears, licenseExt) }
-
-        tasks().whenTaskAdded { task ->
-            if (task is License) {
-                task.exclude("**/*.properties")
-            }
-        }
     }
 
 
     private fun configLicenseExtension(copyrightYears: Supplier<String>, licenseExt: LicenseExtension) {
-        @SuppressWarnings("RedundantCast") val metaClass = (licenseExt as GroovyObject).metaClass
-        val conExtPropsProp = metaClass.getMetaProperty("extensions")
-        val convExtensions = conExtPropsProp.getProperty(licenseExt) as Convention
-        val extensions = convExtensions.extraProperties
+        licenseExt.exclude("**/*.properties")
+
         val years = copyrightYears.get()
-        if (years != null) extensions.set("year", years)
+        if (years != null) licenseExt.ext.set("year", years)
     }
 
 }
+
+val LicenseExtension.ext: ExtraPropertiesExtension
+    get() {
+        val metaClass = (this as GroovyObject).metaClass
+        val conExtPropsProp = metaClass.getMetaProperty("extensions")
+        val convExtensions = conExtPropsProp.getProperty(this) as Convention
+        return convExtensions.extraProperties
+    }

@@ -20,34 +20,37 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.scala.ScalaPlugin
 import java.util.concurrent.Future
 
-class ScalaConfig private constructor(project: Project) : AbstractLanguageConfig(project) {
+// TODO Make this automatically set up the buildscript, register the plugin, set up dokka, add the stdlib to the classpath, etc.
+class KotlinConfig private constructor(project: Project) : AbstractLanguageConfig(project) {
 
     override fun compileTaskName(): String {
-        return "compileScala"
+        return "compileKotlin"
     }
 
 
     override fun docTaskName(): String {
-        return ScalaPlugin.SCALA_DOC_TASK_NAME
+        return "dokka"
     }
 
     companion object {
+        const val KOTLIN_PLUGIN_NAME = "org.jetbrains.kotlin.gradle.plugin.KotlinPlugin"
+        const val DOKKA_PLUGIN_NAME = "org.jetbrains.dokka"
 
-        private fun create(project: Project): Future<ScalaConfig?> {
-            return confFuture(project, "Scala",
-                { if (project.plugins.hasPlugin(ScalaPlugin::class.java)) Ternary.TRUE else Ternary.MAYBE },
-                { project.plugins.hasPlugin(ScalaPlugin::class.java) },
-                { ScalaConfig(project).config(ScalaPlugin::class.java) as ScalaConfig },
+        private fun create(project: Project): Future<KotlinConfig?> {
+            return confFuture(project, "Kotlin",
+                { if (project.plugins.hasPlugin(KOTLIN_PLUGIN_NAME)) Ternary.TRUE else Ternary.MAYBE },
+                { project.plugins.hasPlugin(KOTLIN_PLUGIN_NAME) },
+                { KotlinConfig(project).config(ScalaPlugin::class.java) as KotlinConfig },
                 null
             )
         }
 
         /**
-         * Returns the ScalaConfig for the given Project.
+         * Returns the KotlinConfig for the given Project.
          *
-         * @param project the project containing the ScalaConfig
+         * @param project the project containing the KotlinConfig
          */
-        @JvmStatic fun of(project: Project): Future<ScalaConfig?> {
+        @JvmStatic fun of(project: Project): Future<KotlinConfig?> {
             return ofFuture(project, { create(project) })
         }
     }

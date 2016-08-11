@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults.config
 
 import com.mooregreatsoftware.gradle.defaults.allJavaProjects
+import com.mooregreatsoftware.gradle.defaults.defaultsExtension
 import com.mooregreatsoftware.gradle.defaults.hasItems
 import com.mooregreatsoftware.gradle.defaults.isRootProject
 import com.mooregreatsoftware.gradle.defaults.maxIntStr
@@ -34,34 +35,35 @@ import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.plugins.ide.idea.model.IdeaProject
 import java.io.File
 import java.util.ArrayList
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 class IntellijConfig
-private constructor(project: Project,
-                    private val compatibilityVersionSupplier: () -> String) : AbstractConfig(project) {
+private constructor(private val project: Project,
+                    private val javaConfigFuture: Future<JavaConfig?>) {
 
-    private fun config(javaConfig: JavaConfig): IntellijConfig {
-        plugins().apply("idea")
+    init {
+        project.plugins.apply("idea")
 
         // everything below this is only at the (top-level) "Project" level, not the "Module" level
-        if (!project.isRootProject()) return this
+        if (project.isRootProject()) {
+            project.logger.info("Configuring the 'idea' plugin")
 
-        info("Configuring the 'idea' plugin")
+            project.codeStyleExtension()
+            val ideaProject = ideaProject()
+            ideaProject.vcs = "Git"
 
-        val ideaProject = ideaProject()
-        ideaProject.vcs = "Git"
+            ideaProject.ipr.withXml { customizeProjectXml(it) }
 
-        ideaProject.ipr.withXml { provider -> customizeProjectXml(provider, javaConfig) }
-
-        project.plugins.withType(JavaBasePlugin::class.java) { prj -> configLanguageVersion() }
-
-        return this
+            project.plugins.withType(JavaBasePlugin::class.java) { configLanguageVersion() }
+        }
     }
 
 
     private fun configLanguageVersion() {
         val ideaProject = ideaProject()
-        val compatibilityVersion = languageVersion()
-        ideaProject.jdkName = compatibilityVersion
+        val compatibilityVersion = project.defaultsExtension().compatibilityVersion
+        ideaProject.jdkName = compatibilityVersion.toString()
         ideaProject.setLanguageLevel(compatibilityVersion)
     }
 
@@ -69,20 +71,17 @@ private constructor(project: Project,
     fun ideaProject(): IdeaProject = project.ideaModel().project
 
 
-    fun languageVersion(): String = compatibilityVersionSupplier()
-
-
-    private fun customizeProjectXml(provider: XmlProvider, javaConfig: JavaConfig) {
+    private fun customizeProjectXml(provider: XmlProvider) {
         val rootNode = provider.asNode()
 
         addGradleHome(rootNode)
 
-        rootNode.setupCodeStyle()
-        rootNode.setupCompiler(javaConfig)
+        rootNode.setupCodeStyle(project.codeStyleExtension().indentSize.toString())
+        rootNode.setupCompiler()
     }
 
 
-    fun Node.setupCompiler(javaConfig: JavaConfig) {
+    fun Node.setupCompiler() {
         val componentNodes = this.componentNodes()
 
         val compilerConfiguration = componentNodes.findByAttribute("name", "CompilerConfiguration") {
@@ -93,19 +92,22 @@ private constructor(project: Project,
             compilerConfiguration.appendNode("annotationProcessing")
         }
 
-        val profile = annotationProcessing.createProfileNode(javaConfig)
+        val javaConfig = javaConfigFuture.get(1, TimeUnit.SECONDS)
+        if (javaConfig != null) {
+            val profile = annotationProcessing.createProfileNode(javaConfig)
 
-        if (javaConfig.bootClasspath.hasItems()) {
-            val javacSettings = componentNodes.findByAttribute("name", "JavacSettings") {
-                this.appendNode("component", mapOf("name" to "JavacSettings"))
+            if (javaConfig.bootClasspath.hasItems()) {
+                val javacSettings = componentNodes.findByAttribute("name", "JavacSettings") {
+                    this.appendNode("component", mapOf("name" to "JavacSettings"))
+                }
+                javacSettings.appendNode("option",
+                    mapOf("name" to "ADDITIONAL_OPTIONS_STRING",
+                        "value" to "-Xbootclasspath/p:" +
+                            javaConfig.bootClasspath.map { it.absolutePath }.joinToString(PATH_SEPARATOR)))
             }
-            javacSettings.appendNode("option",
-                mapOf("name" to "ADDITIONAL_OPTIONS_STRING",
-                    "value" to "-Xbootclasspath/p:" +
-                        javaConfig.bootClasspath.map { it.absolutePath }.joinToString(PATH_SEPARATOR)))
-        }
 
-        project.allJavaProjects().forEach { prj -> profile.appendNode("module", mapOf("name" to prj.name)) }
+            project.allJavaProjects().forEach { prj -> profile.appendNode("module", mapOf("name" to prj.name)) }
+        }
     }
 
 
@@ -126,26 +128,34 @@ private constructor(project: Project,
 
     private fun addGradleHome(rootNode: Node) {
         rootNode.appendChild("component", mapOf("name" to "GradleSettings"),
-            n("option", nv("SDK_HOME", gradle().gradleHomeDir.toString())))
+            n("option", nv("SDK_HOME", project.gradle.gradleHomeDir.toString())))
     }
 
 
     companion object {
 
-        @JvmStatic fun create(project: Project, compatibilityVersionSupplier: () -> String,
-                              javaConfig: JavaConfig): IntellijConfig {
-            return IntellijConfig(project, compatibilityVersionSupplier).config(javaConfig)
+        /**
+         * Returns the [IntellijConfig] for in the given Project.
+         *
+         * @param project the project containing the IntellijConfig
+         */
+        @JvmStatic fun of(project: Project): Future<IntellijConfig?> {
+            return ofInstance(project, { IntellijConfig(project, JavaConfig.of(project)) })
         }
-
     }
 }
 
 
+// **************************************************************************
+//
+// PRIVATE FUNCTIONS
+//
+// **************************************************************************
+
+
 private fun nv(name: String, value: String) = mapOf("name" to name, "value" to value)
 
-private val indentSize = "4"
-
-private fun Node.setupCodeStyle() {
+private fun Node.setupCodeStyle(indentSize: String) {
     val codeStyleNode = this.codeStyleNode()
     codeStyleNode.setValue(ArrayList<Any>()) // remove any previous children
 
@@ -205,7 +215,7 @@ private fun Node.setupCodeStyle() {
 }
 
 
-fun Node.codeStyleNode(): Node {
+private fun Node.codeStyleNode(): Node {
     val componentNodes = this.componentNodes()
     return componentNodes.findByAttribute("name", "ProjectCodeStyleSettingsManager") {
         this.appendNode("component", mapOf("name" to "ProjectCodeStyleSettingsManager"))
@@ -213,7 +223,7 @@ fun Node.codeStyleNode(): Node {
 }
 
 
-fun Node.componentNodes(): NodeList = this.get("component") as NodeList
+private fun Node.componentNodes(): NodeList = this.get("component") as NodeList
 
 
-fun Project.ideaModel(): IdeaModel = this.extensions.findByType(IdeaModel::class.java)
+private fun Project.ideaModel(): IdeaModel = this.extensions.findByType(IdeaModel::class.java)

@@ -15,7 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
-import com.mooregreatsoftware.gradle.defaults.DefaultsExtension
+import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt
 import groovy.transform.CompileStatic
 import nebula.test.ProjectSpec
 import nebula.test.dependencies.DependencyGraph
@@ -28,12 +28,12 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.plugins.ide.idea.IdeaPlugin
 
-import static com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration.DEFAULT_LOMBOK_VERSION
+import java.util.concurrent.TimeUnit
 
 @SuppressWarnings("GroovyAssignabilityCheck")
 abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
     String mavenRepoPath
-    String version = DEFAULT_LOMBOK_VERSION
+    String version = LombokExtension.DEFAULT_LOMBOK_VERSION
 
 
     def setup() {
@@ -54,12 +54,13 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
 
     def "javac and IDEA project are setup correctly"() {
-        project.extensions.create("defaults", DefaultsExtension, project)
+        DefaultsExtensionKt.defaultsExtension(project)
         createConf()
 
         project.plugins.apply(JavaPlugin)
         project.plugins.apply(IdeaPlugin)
         JavaConfig.of(project)
+        def intellijFuture = IntellijConfig.of(project)
 
         when:
         evaluateProject()
@@ -77,9 +78,8 @@ abstract class AnnotationProcessorConfigurationSpec extends ProjectSpec {
 
         when:
         def rootNode = new Node(null, "project")
-        def javaConfig = JavaConfig.of(project)
-        def intellijConfig = IntellijConfig.create(project, { "1.8" }, javaConfig)
-        intellijConfig.setupCompiler(rootNode, javaConfig)
+        def intellijConfig = intellijFuture.get(1, TimeUnit.SECONDS)
+        intellijConfig.setupCompiler(rootNode)
         def annotationProcessing = rootNode.component.find {
             it.@name == "CompilerConfiguration"
         }.annotationProcessing[0]

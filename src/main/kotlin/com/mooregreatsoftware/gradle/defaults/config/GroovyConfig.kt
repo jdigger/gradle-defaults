@@ -15,17 +15,13 @@
  */
 package com.mooregreatsoftware.gradle.defaults.config
 
+import com.mooregreatsoftware.gradle.defaults.Ternary
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
-
 import org.gradle.api.plugins.GroovyPlugin.GROOVYDOC_TASK_NAME
+import java.util.concurrent.Future
 
-class GroovyConfig protected constructor(project: Project) : AbstractLanguageConfig<GroovyPlugin>(project) {
-
-    override fun pluginClass(): Class<GroovyPlugin> {
-        return GroovyPlugin::class.java
-    }
-
+class GroovyConfig private constructor(project: Project) : AbstractLanguageConfig(project) {
 
     override fun compileTaskName(): String {
         return "compileGroovy"
@@ -38,8 +34,22 @@ class GroovyConfig protected constructor(project: Project) : AbstractLanguageCon
 
     companion object {
 
-        @JvmStatic fun create(project: Project): GroovyConfig {
-            return GroovyConfig(project).config() as GroovyConfig
+        private fun create(project: Project): Future<GroovyConfig?> {
+            return confFuture(project, "Groovy",
+                { if (project.plugins.hasPlugin(GroovyPlugin::class.java)) Ternary.TRUE else Ternary.MAYBE },
+                { project.plugins.hasPlugin(GroovyPlugin::class.java) },
+                { GroovyConfig(project).config(GroovyPlugin::class.java) as GroovyConfig },
+                null
+            )
+        }
+
+        /**
+         * Returns the GroovyConfig for the given Project.
+         *
+         * @param project the project containing the GroovyConfig
+         */
+        @JvmStatic fun of(project: Project): Future<GroovyConfig?> {
+            return ofFuture(project, { create(project) })
         }
 
     }

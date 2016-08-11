@@ -30,7 +30,7 @@ class LicenseConfigIntSpec extends AbstractConfigIntSpec {
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
-                id = "tester"
+                orgId = "tester"
                 compatibilityVersion = 1.7
                 copyrightYears = '2014-2016'
             }
@@ -40,12 +40,16 @@ class LicenseConfigIntSpec extends AbstractConfigIntSpec {
             apply plugin: 'java'
         """.stripIndent())
         def subSourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
+        def propFile = createFile("src/main/java/apropertyfile.properties", subprojDir) << """
+            name=something
+        """.stripIndent()
 
         createLicenseHeader()
 
         expect:
         sourceFile.readLines().find({ it.contains("Copyright ") }) == null
         subSourceFile.readLines().find({ it.contains("Copyright ") }) == null
+        propFile.readLines().find({ it.contains("Copyright ") }) == null
 
         when:
         def result = runTasks('licenseFormat')
@@ -54,6 +58,7 @@ class LicenseConfigIntSpec extends AbstractConfigIntSpec {
         result.success
         sourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
         subSourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
+        propFile.readLines().find({ it.contains("Copyright ") }) == null
 
         cleanup:
         println result?.standardOutput

@@ -34,7 +34,7 @@ class MavenPublishingConfigIntSpec extends AbstractConfigIntSpec {
             description = "a test project"
 
             defaults {
-                id = "testing"
+                orgId = "testing"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()
@@ -79,7 +79,7 @@ class MavenPublishingConfigIntSpec extends AbstractConfigIntSpec {
             apply plugin: 'java'
 
             defaults {
-                id = "testing"
+                orgId = "testing"
                 compatibilityVersion = 1.7
             }
         """.stripIndent()
@@ -96,9 +96,9 @@ class MavenPublishingConfigIntSpec extends AbstractConfigIntSpec {
         result.success == false
         rootCause(result).message.contains('There is no group')
 
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
+//        cleanup:
+//        println result?.standardOutput
+//        println result?.standardError
     }
 
 
@@ -126,11 +126,11 @@ class MavenPublishingConfigIntSpec extends AbstractConfigIntSpec {
 
         then:
         result.success == false
-        rootCause(result).message.contains('"id" is not set')
+        rootCause(result).message.contains('"orgId" is not set')
 
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
+//        cleanup:
+//        println result?.standardOutput
+//        println result?.standardError
     }
 
 
