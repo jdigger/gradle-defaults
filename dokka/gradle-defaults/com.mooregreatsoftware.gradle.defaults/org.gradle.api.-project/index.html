@@ -1,0 +1,78 @@
+<HTML>
+<HEAD>
+<title>com.mooregreatsoftware.gradle.defaults.org.gradle.api.Project - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.defaults</a>&nbsp;/&nbsp;<a href=".">org.gradle.api.Project</a><br/>
+<br/>
+<h3>Extensions for org.gradle.api.Project</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="all-java-projects.html">allJavaProjects</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">allJavaProjects</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><span class="identifier">Project</span><span class="symbol">&gt;</span></code>
+<p>Returns all of the projects that have the Java plugin and have Java source files.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="defaults-extension.html">defaultsExtension</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">defaultsExtension</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-defaults-extension/index.html"><span class="identifier">DefaultsExtension</span></a></code></td>
+</tr>
+<tr>
+<td>
+<a href="grgit.html">grgit</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">grgit</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Grgit</span><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="has-java-base-plugin.html">hasJavaBasePlugin</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">hasJavaBasePlugin</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">&lt;ERROR CLASS&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="has-java-source.html">hasJavaSource</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">hasJavaSource</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$hasJavaSource(org.gradle.api.Project, kotlin.Boolean)/useCache">useCache</span><span class="symbol">:</span>&nbsp;<span class="identifier">Boolean</span>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Boolean</span></code>
+<p>Does the given Project have any Java source code under it?</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="is-root-project.html">isRootProject</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">isRootProject</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Boolean</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="open-source-property.html">openSourceProperty</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">openSourceProperty</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Boolean</span><span class="symbol">?</span></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">openSourceProperty</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$openSourceProperty(org.gradle.api.Project, kotlin.Any)/isOpenSource">isOpenSource</span><span class="symbol">:</span>&nbsp;<span class="identifier">Any</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="post-eval-create.html">postEvalCreate</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">postEvalCreate</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$postEvalCreate(org.gradle.api.Project, kotlin.Function0((com.mooregreatsoftware.gradle.defaults.postEvalCreate.T)))/creator">creator</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html"><span class="identifier">Future</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code>
+<p>Returns a Future that returns a value after the Project has been fully evaluated.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="readable-defaults-extension.html">readableDefaultsExtension</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">readableDefaultsExtension</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html"><span class="identifier">Future</span></a><span class="symbol">&lt;</span><a href="../-readable-defaults-extension/index.html"><span class="identifier">ReadableDefaultsExtension</span></a><span class="symbol">&gt;</span></code>
+<p>The <a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html">Future</a> that contains the <a href="../-readable-defaults-extension/index.html">ReadableDefaultsExtension</a> for the <a href="#">Project</a> after the Project has been evaluated.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,250 @@
+<HTML>
+<HEAD>
+<title>JavaConfig - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.defaults.config</a>&nbsp;/&nbsp;<a href=".">JavaConfig</a><br/>
+<br/>
+<h1>JavaConfig</h1>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">JavaConfig</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-abstract-language-config/index.html"><span class="identifier">AbstractLanguageConfig</span></a></code>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-config-compiler-action/index.html">ConfigCompilerAction</a></td>
+<td>
+<code><span class="keyword">inner</span> <span class="keyword">class </span><span class="identifier">ConfigCompilerAction</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Action</span><span class="symbol">&lt;</span><span class="identifier">Task</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="-option/index.html">Option</a></td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Option</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Comparable</span><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-init-.html">&lt;init&gt;</a></td>
+<td>
+<code><span class="identifier">JavaConfig</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$<init>(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="annotation-processor-class-names.html">annotationProcessorClassNames</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">annotationProcessorClassNames</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="annotation-processor-lib-files.html">annotationProcessorLibFiles</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">annotationProcessorLibFiles</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/8/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="annotation-processor-options.html">annotationProcessorOptions</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">annotationProcessorOptions</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="boot-classpath.html">bootClasspath</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">bootClasspath</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/8/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="javac-options.html">javacOptions</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">javacOptions</span><span class="symbol">: </span><span class="identifier">Iterable</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="../-abstract-language-config/project.html">project</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">project</span><span class="symbol">: </span><span class="identifier">Project</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="built-by.html">builtBy</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">builtBy</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="compile-task-name.html">compileTaskName</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">compileTaskName</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="config-language.html">configLanguage</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">configLanguage</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$configLanguage(kotlin.String)/pluginClassname">pluginClassname</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="configure-manifest-attributes.html">configureManifestAttributes</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">configureManifestAttributes</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$configureManifestAttributes(org.gradle.api.tasks.bundling.Jar)/jarTask">jarTask</span><span class="symbol">:</span>&nbsp;<span class="identifier">Jar</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="create-javac-args.html">createJavacArgs</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createJavacArgs</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">List</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="doc-task-name.html">docTaskName</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">docTaskName</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="manifest-attributes.html">manifestAttributes</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">manifestAttributes</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Map</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">,</span>&nbsp;<span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-classnames.html">registerAnnotationProcessorClassnames</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorClassnames</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerAnnotationProcessorClassnames(kotlin.collections.Collection((kotlin.String)))/classnames">classnames</span><span class="symbol">:</span>&nbsp;<span class="identifier">Collection</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-lib-files.html">registerAnnotationProcessorLibFiles</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorLibFiles</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerAnnotationProcessorLibFiles(kotlin.collections.Collection((java.io.File)))/files">files</span><span class="symbol">:</span>&nbsp;<span class="identifier">Collection</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/8/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-options.html">registerAnnotationProcessorOptions</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorOptions</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerAnnotationProcessorOptions(kotlin.collections.Collection((com.mooregreatsoftware.gradle.defaults.config.JavaConfig.Option)))/options">options</span><span class="symbol">:</span>&nbsp;<span class="identifier">Collection</span><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code>
+<p>Register annotation processor arguments. Do not include the "-A". (e.g., instead of "-Awarn" use "warn")</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="register-artifacts.html">registerArtifacts</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">registerArtifacts</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerArtifacts(org.gradle.api.publish.maven.MavenPublication)/publication">publication</span><span class="symbol">:</span>&nbsp;<span class="identifier">MavenPublication</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-boot-classpath.html">registerBootClasspath</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">registerBootClasspath</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerBootClasspath(kotlin.collections.Collection((java.io.File)))/files">files</span><span class="symbol">:</span>&nbsp;<span class="identifier">Collection</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/8/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-javac-options.html">registerJavacOptions</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">registerJavacOptions</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig$registerJavacOptions(kotlin.collections.Collection((kotlin.String)))/options">options</span><span class="symbol">:</span>&nbsp;<span class="identifier">Collection</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code>
+<p>Register "raw" javac arguments.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="sources-jar-task.html">sourcesJarTask</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">sourcesJarTask</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Jar</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="../-abstract-language-config/config.html">config</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Plugin</span><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">&gt;</span><span class="symbol">&gt;</span> <span class="identifier">config</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.AbstractLanguageConfig$config(java.lang.Class((com.mooregreatsoftware.gradle.defaults.config.AbstractLanguageConfig.config.T)))/pluginClass">pluginClass</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-abstract-language-config/index.html"><span class="identifier">AbstractLanguageConfig</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">config</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.AbstractLanguageConfig$config(kotlin.String)/pluginClassName">pluginClassName</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-abstract-language-config/index.html"><span class="identifier">AbstractLanguageConfig</span></a></code></td>
+</tr>
+<tr>
+<td>
+<a href="../-abstract-language-config/create-doc-jar-task.html">createDocJarTask</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createDocJarTask</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Jar</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="../-abstract-language-config/doc-jar-task.html">docJarTask</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">docJarTask</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Jar</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="../-abstract-language-config/doc-task.html">docTask</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">docTask</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Task</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="../-abstract-language-config/jar-task.html">jarTask</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">jarTask</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Jar</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-s-o-u-r-c-e-s_-j-a-r_-t-a-s-k_-n-a-m-e.html">SOURCES_JAR_TASK_NAME</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">SOURCES_JAR_TASK_NAME</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="of.html">of</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">of</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.config.JavaConfig.Companion$of(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html"><span class="identifier">Future</span></a><span class="symbol">&lt;</span><span class="identifier">JavaConfig</span><span class="symbol">?</span><span class="symbol">&gt;</span></code>
+<p>Returns the JavaConfig for in the given Project.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="../../com.mooregreatsoftware.gradle.defaults/kotlin.-any/as-ternary.html">asTernary</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Any</span><span class="symbol">?</span><span class="symbol">.</span><span class="identifier">asTernary</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.defaults/-ternary/index.html"><span class="identifier">Ternary</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

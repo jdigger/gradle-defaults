@@ -1,0 +1,225 @@
+<HTML>
+<HEAD>
+<title>ReadableDefaultsExtension - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.defaults</a>&nbsp;/&nbsp;<a href=".">ReadableDefaultsExtension</a><br/>
+<br/>
+<h1>ReadableDefaultsExtension</h1>
+<code><span class="keyword">interface </span><span class="identifier">ReadableDefaultsExtension</span></code>
+<p>A read-only set of values for <a href="../-defaults-plugin/index.html">DefaultsPlugin</a>.</p>
+<p><strong>See Also</strong><br/>
+<p><a href="../org.gradle.api.-project/readable-defaults-extension.html">readableDefaultsExtension</a></p>
+</p>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="bintray-labels.html">bintrayLabels</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">bintrayLabels</span><span class="symbol">: </span><span class="identifier">Set</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span><span class="symbol">?</span></code>
+<p>The labels to set of the BinTray package, if BinTray is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="bintray-pkg.html">bintrayPkg</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">bintrayPkg</span><span class="symbol">: </span><span class="identifier">String</span><span class="symbol">?</span></code>
+<p>The name of the BinTray package name, if BinTray is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="bintray-repo.html">bintrayRepo</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">bintrayRepo</span><span class="symbol">: </span><span class="identifier">String</span><span class="symbol">?</span></code>
+<p>The name of the BinTray repository to upload artifacts to, if BinTray is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="checker-framework.html">checkerFramework</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">checkerFramework</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.defaults.config/-checker-framework-extension/index.html"><span class="identifier">CheckerFrameworkExtension</span></a></code>
+<p>Configuration for <a href="types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Checker Framework</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="compatibility-version.html">compatibilityVersion</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">compatibilityVersion</span><span class="symbol">: </span><span class="identifier">JavaVersion</span></code>
+<p>The version of the Java Virtual Machine to target. Used for all the compilers that target the JVM.
+Defaults to the version of Java being used to run Gradle and compile the code.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="contributors.html">contributors</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">contributors</span><span class="symbol">: </span><span class="identifier">Set</span><span class="symbol">&lt;</span><span class="identifier">Map</span><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">,</span>&nbsp;<span class="identifier">*</span><span class="symbol">&gt;</span><span class="symbol">&gt;</span><span class="symbol">?</span></code>
+<p>The information to add to the "contributors" section of the Maven pom.xml</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="copyright-years.html">copyrightYears</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">copyrightYears</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The copyright years for the project. Used for injecting into the license headers under the key "year".
+Defaults to the current year.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="developers.html">developers</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">developers</span><span class="symbol">: </span><span class="identifier">Set</span><span class="symbol">&lt;</span><a href="../-developer/index.html"><span class="identifier">Developer</span></a><span class="symbol">&gt;</span><span class="symbol">?</span></code>
+<p>The information to add to the "developers" section of the Maven pom.xml</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="is-bintray-to-central.html">isBintrayToCentral</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">isBintrayToCentral</span><span class="symbol">: </span><span class="identifier">Boolean</span></code>
+<p>Should the artifacts upload to BinTray also be sent to Maven Central?</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="issues-url.html">issuesUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">issuesUrl</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The URL for where to find issue reports for the project. Defaults to "$siteUrl/issues"</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="license-key.html">licenseKey</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">licenseKey</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The "key" for the license. Used by BinTray. Defaults to "Apache-2.0"</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="license-name.html">licenseName</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">licenseName</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The name of the license. Used by Maven. Defaults to "The Apache Software License, Version 2.0"</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="license-url.html">licenseUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">licenseUrl</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The URL of the license. Used by Maven. Defaults to http://www.apache.org/licenses/LICENSE-2.0</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="lombok.html">lombok</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">lombok</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.defaults.config/-lombok-extension/index.html"><span class="identifier">LombokExtension</span></a></code>
+<p>Configuration for <a href="https://projectlombok.org/features/index.html">Lombok</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="open-source.html">openSource</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">openSource</span><span class="symbol">: </span><span class="identifier">Boolean</span></code>
+<p>Is this an open-source project? If true, additional assumptions are made, such as the need to have a license
+on all code.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="org-id.html">orgId</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">orgId</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The id of the organization (a user also counts as a one-person organization). Used as the default for
+computing the default values of <a href="site-url.html">siteUrl</a>, <a href="vcs-read-url.html">vcsReadUrl</a> and <a href="vcs-write-url.html">vcsWriteUrl</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="org-name.html">orgName</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">orgName</span><span class="symbol">: </span><span class="identifier">String</span><span class="symbol">?</span></code>
+<p>Used for configuring BinTray and Maven metadata.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="org-url.html">orgUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">orgUrl</span><span class="symbol">: </span><span class="identifier">String</span><span class="symbol">?</span></code>
+<p>If theres an <a href="org-name.html">orgName</a> then this is used as part of the "organization" section of the Maven pom.xml</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="project.html">project</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">project</span><span class="symbol">: </span><span class="identifier">Project</span></code>
+<p>The Project this is associated/registered with.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="site-url.html">siteUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">siteUrl</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The URL for the project. Defaults to "https://github.com/$orgId/${project.name}"</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="vcs-read-url.html">vcsReadUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">vcsReadUrl</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The URL for where the version control system gets the source code for the project. Defaults to "${siteUrl}.git"</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="vcs-write-url.html">vcsWriteUrl</a></td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">vcsWriteUrl</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The URL for where the version control system gets the source code for the project. Defaults to <a href="vcs-read-url.html">vcsReadUrl</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="../kotlin.-any/as-ternary.html">asTernary</a></td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">Any</span><span class="symbol">?</span><span class="symbol">.</span><span class="identifier">asTernary</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-ternary/index.html"><span class="identifier">Ternary</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="../-defaults-extension/index.html">DefaultsExtension</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">DefaultsExtension</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">ReadableDefaultsExtension</span></code>
+<p>Configuration for <a href="../-defaults-plugin/index.html">DefaultsPlugin</a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

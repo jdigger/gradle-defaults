@@ -1,0 +1,18 @@
+<HTML>
+<HEAD>
+<title>hasJavaSource - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.defaults</a>&nbsp;/&nbsp;<a href="index.html">org.gradle.api.Project</a>&nbsp;/&nbsp;<a href=".">hasJavaSource</a><br/>
+<br/>
+<h1>hasJavaSource</h1>
+<a name="com.mooregreatsoftware.gradle.defaults$hasJavaSource(org.gradle.api.Project, kotlin.Boolean)"></a>
+<code><span class="keyword">fun </span><span class="identifier">Project</span><span class="symbol">.</span><span class="identifier">hasJavaSource</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$hasJavaSource(org.gradle.api.Project, kotlin.Boolean)/useCache">useCache</span><span class="symbol">:</span>&nbsp;<span class="identifier">Boolean</span>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Boolean</span></code>
+<p>Does the given Project have any Java source code under it?</p>
+<p>If the project applies the Java plugin, that does not necessarily mean it has Java source, since it may
+be another JVM language, source as Groovy or Scala. So its SourceSets are checked for .java files.</p>
+<p>If the project does not apply the Java plugin, the existence of .java files is still checked in the "standard"
+locations: src/main/java, src/main/groovy, src/main/kotlin, src/main/scala.</p>
+</BODY>
+</HTML>
