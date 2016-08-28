@@ -11,7 +11,7 @@ buildscript {
     ext.dokka_version = '0.9.9'
 
     dependencies {
-        classpath 'com.mooregreatsoftware:gradle-defaults:2.1.0'
+        classpath 'com.mooregreatsoftware:gradle-defaults:3.0.0'
 
         // Kotlin support
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -34,11 +34,11 @@ description = 'Plugin providing opinionated defaults for Gradle projects.'
 
 defaults {
     // make sure configuration is done for enforcing licenses, BinTray, etc.
-    // openSource = true
+    openSource = true
 
     compatibilityVersion = 1.8
 
-    id = 'jdigger'
+    orgId = 'jdigger'
 
     bintrayRepo = 'java-lib'
     bintrayLabels = ['gradle', 'plugin']
