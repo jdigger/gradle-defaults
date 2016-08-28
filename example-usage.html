@@ -532,8 +532,7 @@ table.CodeRay td.code>pre{padding:0}
     ext.dokka_version = <span class="string"><span class="delimiter">'</span><span class="content">0.9.9</span><span class="delimiter">'</span></span>
 
     dependencies {
-<span class="comment">//        classpath 'com.mooregreatsoftware:gradle-defaults:2.3.2'</span>
-        classpath <span class="string"><span class="delimiter">'</span><span class="content">com.mooregreatsoftware:gradle-defaults:2.3.4-dev.1+90abfb8</span><span class="delimiter">'</span></span>
+        classpath <span class="string"><span class="delimiter">'</span><span class="content">com.mooregreatsoftware:gradle-defaults:3.0.0</span><span class="delimiter">'</span></span>
 
         <span class="comment">// Kotlin support</span>
         classpath <span class="string"><span class="delimiter">&quot;</span><span class="content">org.jetbrains.kotlin:kotlin-gradle-plugin:</span><span class="inline"><span class="inline-delimiter">$</span>kotlin_version</span><span class="delimiter">&quot;</span></span>
@@ -556,11 +555,11 @@ description = <span class="string"><span class="delimiter">'</span><span class="
 
 defaults {
     <span class="comment">// make sure configuration is done for enforcing licenses, BinTray, etc.</span>
-    <span class="comment">// openSource = true</span>
+    openSource = <span class="predefined-constant">true</span>
 
     compatibilityVersion = <span class="float">1.8</span>
 
-    id = <span class="string"><span class="delimiter">'</span><span class="content">jdigger</span><span class="delimiter">'</span></span>
+    orgId = <span class="string"><span class="delimiter">'</span><span class="content">jdigger</span><span class="delimiter">'</span></span>
 
     bintrayRepo = <span class="string"><span class="delimiter">'</span><span class="content">java-lib</span><span class="delimiter">'</span></span>
     bintrayLabels = [<span class="string"><span class="delimiter">'</span><span class="content">gradle</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">plugin</span><span class="delimiter">'</span></span>]

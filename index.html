@@ -2534,6 +2534,10 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="paragraph">
+<p><span class="image"><a class="image" href="https://travis-ci.org/jdigger/gradle-defaults"><img src="https://travis-ci.org/jdigger/gradle-defaults.png?branch=master" alt="Build Status"></a></span>
+<a href="https://bintray.com/jmoore/java-lib/com.mooregreatsoftware%3Agradle-defaults/_latestVersion"> <span class="image"><img src="https://api.bintray.com/packages/jmoore/java-lib/com.mooregreatsoftware%3Agradle-defaults/images/download.svg" alt="Download"></span> </a></p>
+</div>
+<div class="paragraph">
 <p>Plugin providing opinionated defaults for Gradle builds, making it easier to use some useful plugins, and
 coordinating between plugins.</p>
 </div>
@@ -2780,6 +2784,9 @@ javadoc (<code>/** */</code>) style for the license header.</p>
 <div class="paragraph">
 <p>The POM is configured with information from the project and <a href="dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html">the "defaults" extension, see its Javadoc</a>.</p>
 </div>
+<div class="paragraph">
+<p>MavenLocal is added as a publishing location.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_bintray">BinTray</h3>
@@ -2868,8 +2875,7 @@ javadoc (<code>/** */</code>) style for the license header.</p>
     ext.dokka_version = <span class="string"><span class="delimiter">'</span><span class="content">0.9.9</span><span class="delimiter">'</span></span>
 
     dependencies {
-<span class="comment">//        classpath 'com.mooregreatsoftware:gradle-defaults:2.3.2'</span>
-        classpath <span class="string"><span class="delimiter">'</span><span class="content">com.mooregreatsoftware:gradle-defaults:2.3.4-dev.1+90abfb8</span><span class="delimiter">'</span></span>
+        classpath <span class="string"><span class="delimiter">'</span><span class="content">com.mooregreatsoftware:gradle-defaults:3.0.0</span><span class="delimiter">'</span></span>
 
         <span class="comment">// Kotlin support</span>
         classpath <span class="string"><span class="delimiter">&quot;</span><span class="content">org.jetbrains.kotlin:kotlin-gradle-plugin:</span><span class="inline"><span class="inline-delimiter">$</span>kotlin_version</span><span class="delimiter">&quot;</span></span>
@@ -2892,11 +2898,11 @@ description = <span class="string"><span class="delimiter">'</span><span class="
 
 defaults {
     <span class="comment">// make sure configuration is done for enforcing licenses, BinTray, etc.</span>
-    <span class="comment">// openSource = true</span>
+    openSource = <span class="predefined-constant">true</span>
 
     compatibilityVersion = <span class="float">1.8</span>
 
-    id = <span class="string"><span class="delimiter">'</span><span class="content">jdigger</span><span class="delimiter">'</span></span>
+    orgId = <span class="string"><span class="delimiter">'</span><span class="content">jdigger</span><span class="delimiter">'</span></span>
 
     bintrayRepo = <span class="string"><span class="delimiter">'</span><span class="content">java-lib</span><span class="delimiter">'</span></span>
     bintrayLabels = [<span class="string"><span class="delimiter">'</span><span class="content">gradle</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">plugin</span><span class="delimiter">'</span></span>]
@@ -2947,7 +2953,7 @@ a warning is logged.)</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-08-28 06:31:11 MDT
+Last updated 2016-08-28 13:21:45 MDT
 </div>
 </div>
 </body>
