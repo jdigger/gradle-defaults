@@ -2420,7 +2420,7 @@ table.CodeRay td.code > pre {
 */
 
 .fork-github {
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     border: 0;
@@ -2533,6 +2533,13 @@ table.CodeRay td.code>pre{padding:0}
 <a class="image" href="https://github.com/jdigger/gradle-defaults/"><img src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
 </div>
 </div>
+<div class="paragraph">
+<p>Plugin providing opinionated defaults for Gradle builds, making it easier to use some useful plugins, and
+coordinating between plugins.</p>
+</div>
+<div class="paragraph">
+<p><strong>Requires Gradle 2.14+</strong></p>
+</div>
 <div id="toc" class="toc">
 <div id="toctitle" class="title">Table of Contents</div>
 <ul class="sectlevel1">
@@ -2572,13 +2579,6 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_api">API</a></li>
 </ul>
-</div>
-<div class="paragraph">
-<p>Plugin providing opinionated defaults for Gradle builds, making it easier to use some useful plugins, and
-coordinating between plugins.</p>
-</div>
-<div class="paragraph">
-<p><strong>Requires Gradle 2.14+</strong></p>
 </div>
 </div>
 </div>
@@ -2906,6 +2906,8 @@ defaults {
     ]
 
     copyrightYears = <span class="string"><span class="delimiter">'</span><span class="content">2014-2016</span><span class="delimiter">'</span></span>
+
+    vcsWriteUrl = <span class="string"><span class="delimiter">&quot;</span><span class="content">git@github.com:jdigger/gradle-defaults.git</span><span class="delimiter">&quot;</span></span>
 }</code></pre>
 </div>
 </div>
@@ -2945,7 +2947,7 @@ a warning is logged.)</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-08-28 06:19:23 MDT
+Last updated 2016-08-28 06:31:11 MDT
 </div>
 </div>
 </body>
