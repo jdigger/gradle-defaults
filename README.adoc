@@ -6,7 +6,7 @@ coordinating between plugins.
 *Requires Gradle 2.14+*
 
 image:https://travis-ci.org/jdigger/gradle-defaults.png?branch=master[Build Status,link=https://travis-ci.org/jdigger/gradle-defaults]
-https://bintray.com/jmoore/java-lib/com.mooregreatsoftware%3Agradle-defaults/_latestVersion[ image:https://api.bintray.com/packages/jmoore/java-lib/com.mooregreatsoftware%3Agradle-defaults/images/download.svg[Download] ]
+image:https://api.bintray.com/packages/jmoore/java-lib/gradle-defaults/images/download.svg[link="https://bintray.com/jmoore/java-lib/gradle-defaults/_latestVersion"]
 
 https://jdigger.github.io/gradle-defaults/[Plugin Documentation]
 
