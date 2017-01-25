@@ -7,7 +7,7 @@ buildscript {
         mavenLocal()
     }
 
-    ext.kotlin_version = '1.0.3'
+    ext.kotlin_version = '1.0.6'
     ext.dokka_version = '0.9.9'
 
     dependencies {

@@ -156,7 +156,7 @@ fun Project.grgit(): Grgit? {
         return (ext.get(key) as AtomicReference<Grgit?>).get()
     }
     else {
-        val grgitRef: AtomicReference<Grgit?>
+        var grgitRef: AtomicReference<Grgit?>
         try {
             grgitRef = AtomicReference(Grgit.open(project.file(".")))
         }
