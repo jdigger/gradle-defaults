@@ -20,7 +20,7 @@ import org.gradle.api.logging.LogLevel
 import spock.lang.Subject
 
 @Subject(DefaultsPlugin)
-class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
+class DefaultsPluginIntSpec extends AbstractIntSpec {
 
     def "build"() {
         logLevel = LogLevel.DEBUG
@@ -146,11 +146,14 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            plugins {
-                id 'com.jfrog.bintray' version '1.7.1'
+            buildscript {
+                dependencies {
+                    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+                }
             }
+            apply plugin: 'com.jfrog.bintray'
 
-            group = 'com.mooregreatsoftware.gradle.defaults'
+            group = 'com.mooregreatsoftware.gradle.defaults.test'
             description = 'Nice Gradle defaults'
 
             bintray {
@@ -160,11 +163,12 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
                 }
             }
 
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: "${DefaultsPlugin.PLUGIN_ID}"
+
             defaults {
                 orgId = "tester"
                 openSource = true
-                bintrayRepo = "java"
+                bintrayRepo = "java-test"
                 compatibilityVersion = 1.8
                 orgName = "testing org"
             }
@@ -183,7 +187,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
             apply plugin: 'groovy'
 
             dependencies {
-                compile "org.codehaus.groovy:groovy:2.4.4"
+                compile "org.codehaus.groovy:groovy-all:2.4.4"
             }
         """.stripIndent()
         writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults.otherlangsProj', otherlangsProjDir)
@@ -192,6 +196,7 @@ class DefaultsPluginIntSpec extends AbstractConfigIntSpec {
         git.commit().setMessage("the files").call()
 
         when:
+//        def result = runTasks('publishMainPublicationToMavenLocal')
         def result = runTasks('licenseFormat', 'generatePomFileForMainPublication', 'release',
             '-x', 'bintrayUpload', '-x', 'prepareGhPages', '-Prelease.scope=patch', '-Prelease.stage=final')
 

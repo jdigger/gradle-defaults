@@ -20,7 +20,7 @@ import java.util.Comparator.nullsFirst
 import java.util.Objects.compare
 
 data class NodeBuilder(val name: String, val attrs: Map<String, String>?,
-                       val textVal: String?, val children: List<NodeBuilder>) : Comparable<NodeBuilder> {
+                       val textVal: String?, val children: Iterable<NodeBuilder>) : Comparable<NodeBuilder> {
 
     override fun toString(): String {
         return super.toString()

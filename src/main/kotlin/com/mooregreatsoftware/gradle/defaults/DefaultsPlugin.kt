@@ -15,19 +15,20 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
-import com.mooregreatsoftware.gradle.defaults.config.BintrayConfig
-import com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkConfiguration
-import com.mooregreatsoftware.gradle.defaults.config.GhPagesConfig
-import com.mooregreatsoftware.gradle.defaults.config.GroovyConfig
-import com.mooregreatsoftware.gradle.defaults.config.IntellijConfig
-import com.mooregreatsoftware.gradle.defaults.config.JavaConfig
-import com.mooregreatsoftware.gradle.defaults.config.KotlinConfig
-import com.mooregreatsoftware.gradle.defaults.config.LicenseConfig
-import com.mooregreatsoftware.gradle.defaults.config.LombokConfiguration
-import com.mooregreatsoftware.gradle.defaults.config.MavenPublishingConfig
-import com.mooregreatsoftware.gradle.defaults.config.ReleaseConfig
-import com.mooregreatsoftware.gradle.defaults.config.ScalaConfig
-import org.ajoberstar.grgit.Grgit
+import com.jfrog.bintray.gradle.BintrayPlugin
+import com.mooregreatsoftware.gradle.GrGitUtils
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin
+import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkPlugin
+import com.mooregreatsoftware.gradle.ghpages.ExtGhPagesPlugin
+import com.mooregreatsoftware.gradle.groovy.ExtGroovyPlugin
+import com.mooregreatsoftware.gradle.ide.ExtIntellijPlugin
+import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
+import com.mooregreatsoftware.gradle.kotlin.ExtKotlinPlugin
+import com.mooregreatsoftware.gradle.license.ExtLicensePlugin
+import com.mooregreatsoftware.gradle.lombok.LombokPlugin
+import com.mooregreatsoftware.gradle.maven.MavenPublishPublications
+import com.mooregreatsoftware.gradle.release.ExtReleasePlugin
+import com.mooregreatsoftware.gradle.scala.ExtScalaPlugin
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.StoredConfig
 import org.gradle.api.Plugin
@@ -35,8 +36,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.publish.plugins.PublishingPlugin
 import java.io.IOException
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Supplier
 
 class DefaultsPlugin : Plugin<Project> {
 
@@ -46,37 +45,55 @@ class DefaultsPlugin : Plugin<Project> {
             return
         }
 
-        val extension = project.defaultsExtension()
-
-        project.allprojects { prj -> configProject(prj, extension) }
+        project.allprojects { prj -> configProject(prj) }
     }
 
 
-    private fun configProject(prj: Project, extension: DefaultsExtension) {
+    private fun configProject(prj: Project) {
         prj.defaultsExtension()
 
         prj.repositories.jcenter()
 
-        prj.plugins.apply("org.ajoberstar.organize-imports")
+        if (prj.isRootProject() && GrGitUtils.grgit(prj) != null) {
+            prj.plugins.apply(ExtReleasePlugin.PLUGIN_ID)
+            prj.plugins.apply(ExtGhPagesPlugin.PLUGIN_ID)
+        }
 
-        ReleaseConfig.of(prj)
-        GhPagesConfig.of(prj)
-        JavaConfig.of(prj)
-        IntellijConfig.of(prj)
-        GroovyConfig.of(prj)
-        ScalaConfig.of(prj)
-        KotlinConfig.of(prj)
-        LicenseConfig(prj).config(Supplier<String> { extension.copyrightYears })
-        MavenPublishingConfig(prj)
-        BintrayConfig.of(prj)
-        LombokConfiguration.of(prj)
-        CheckerFrameworkConfiguration.of(prj)
+        prj.plugins.apply(ExtIntellijPlugin.PLUGIN_ID)
+
+        prj.plugins.apply(ExtLicensePlugin.PLUGIN_ID)
+
+        prj.plugins.withType(BintrayPlugin::class.java) {
+            prj.plugins.apply(ExtBintrayPlugin::class.java)
+        }
+
+        prj.plugins.withId("java") { javaPlugin ->
+            prj.plugins.apply(ExtJavaPlugin.PLUGIN_ID)
+            if (prj.hasJavaSource()) {
+                prj.plugins.apply(LombokPlugin.PLUGIN_ID)
+                prj.plugins.apply(CheckerFrameworkPlugin.PLUGIN_ID)
+            }
+        }
+
+        prj.plugins.withId("groovy") { groovyPlugin ->
+            prj.plugins.apply(ExtGroovyPlugin.PLUGIN_ID)
+        }
+
+        prj.plugins.withId("scala") { scalaPlugin ->
+            prj.plugins.apply(ExtScalaPlugin.PLUGIN_ID)
+        }
+
+        prj.plugins.withId("kotlin") { kotlinPlugin ->
+            prj.plugins.apply(ExtKotlinPlugin.PLUGIN_ID)
+        }
 
         addOrderingRules(prj)
     }
 
 
     companion object {
+        val PLUGIN_ID = "com.mooregreatsoftware.defaults"
+
         val DEFAULT_USER_EMAIL = "unknown@unknown"
         private val EMAIL_CACHE_KEY = "com.mooregreatsoftware.defaults.useremail"
 
@@ -129,7 +146,7 @@ class DefaultsPlugin : Plugin<Project> {
                 return when {
                     userEmail.isNullOrBlank() -> {
                         project.logger.warn("The git repository's \"user.email\" configuration is null, " +
-                            "so using \"${DEFAULT_USER_EMAIL}\" instead")
+                            "so using \"$DEFAULT_USER_EMAIL\" instead")
                         DEFAULT_USER_EMAIL
                     }
                     else -> userEmail!!
@@ -137,7 +154,7 @@ class DefaultsPlugin : Plugin<Project> {
             }
             catch (e: IOException) {
                 project.logger.warn("Could not detect the user's email address from the " +
-                    "git repository's \"user.email\" configuration, so using \"${DEFAULT_USER_EMAIL}\" instead")
+                    "git repository's \"user.email\" configuration, so using \"$DEFAULT_USER_EMAIL\" instead")
                 return DEFAULT_USER_EMAIL
             }
         }
@@ -146,24 +163,4 @@ class DefaultsPlugin : Plugin<Project> {
         val StoredConfig.email: String? get() = this.getString("user", null, "email")
     }
 
-}
-
-@Suppress("UNCHECKED_CAST", "DEPRECATION")
-fun Project.grgit(): Grgit? {
-    val key = Grgit::class.java.name
-    val ext = rootProject.extensions.extraProperties
-    if (ext.has(key)) {
-        return (ext.get(key) as AtomicReference<Grgit?>).get()
-    }
-    else {
-        var grgitRef: AtomicReference<Grgit?>
-        try {
-            grgitRef = AtomicReference(Grgit.open(project.file(".")))
-        }
-        catch (e: Exception) {
-            grgitRef = AtomicReference(null)
-        }
-        ext.set(key, grgitRef)
-        return grgitRef.get()
-    }
 }

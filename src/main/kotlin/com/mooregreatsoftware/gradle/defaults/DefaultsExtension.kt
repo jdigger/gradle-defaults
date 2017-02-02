@@ -15,10 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
-import com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension
-import com.mooregreatsoftware.gradle.defaults.config.LombokExtension
-import com.mooregreatsoftware.gradle.defaults.config.checkerFrameworkExtension
-import com.mooregreatsoftware.gradle.defaults.config.lombokExtension
+import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension
+import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkPlugin.checkerFrameworkExtension
+import com.mooregreatsoftware.gradle.lombok.LombokExtension
+import com.mooregreatsoftware.gradle.lombok.LombokPlugin.lombokExtension
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -31,7 +31,7 @@ import java.time.ZoneId
  *
  * @see [defaultsExtension]
  */
-@Suppress("unused")
+@Suppress("unused", "ConvertLambdaToReference")
 open class DefaultsExtension(override val project: Project, override val lombok: LombokExtension, override val checkerFramework: CheckerFrameworkExtension) : ReadableDefaultsExtension {
 
     private var _orgId: String? = null
@@ -250,7 +250,7 @@ fun Project.openSourceProperty(isOpenSource: Any) {
 
 
 fun Project.defaultsExtension(): DefaultsExtension = extensions.findByType(DefaultsExtension::class.java) as DefaultsExtension? ?:
-    extensions.create(DefaultsExtension.NAME, DefaultsExtension::class.java, this, lombokExtension(), checkerFrameworkExtension())
+    extensions.create(DefaultsExtension.NAME, DefaultsExtension::class.java, this, lombokExtension(project), checkerFrameworkExtension(project))
 
 
 // **************************************************************************

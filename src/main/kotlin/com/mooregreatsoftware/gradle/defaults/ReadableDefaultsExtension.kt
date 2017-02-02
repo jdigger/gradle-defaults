@@ -15,8 +15,9 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
-import com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension
-import com.mooregreatsoftware.gradle.defaults.config.LombokExtension
+import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension
+import com.mooregreatsoftware.gradle.lombok.LombokExtension
+import org.checkerframework.checker.nullness.qual.Nullable
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.util.concurrent.Future
@@ -158,7 +159,7 @@ class Developer(val id: String, val name: String, val email: String)
  * The [Future] that contains the [ReadableDefaultsExtension] for the [Project] after the Project has been evaluated.
  */
 @Suppress("UNCHECKED_CAST")
-fun Project.readableDefaultsExtension(): Future<ReadableDefaultsExtension> {
+fun Project.readableDefaultsExtension(): Future<@Nullable  ReadableDefaultsExtension> {
     val keyName = ReadableDefaultsExtension::class.java.name
     val ext = extensions.extraProperties
     return when {

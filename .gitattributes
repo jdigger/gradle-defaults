@@ -1,0 +1,2 @@
+test-libs/*.jar filter=lfs diff=lfs merge=lfs -text
+test-libs/**/*.jar filter=lfs diff=lfs merge=lfs -text

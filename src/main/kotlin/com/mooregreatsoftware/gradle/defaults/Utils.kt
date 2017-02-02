@@ -22,15 +22,15 @@ import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.regex.Pattern
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
-/**
- * Returns true if the given string is non-null and has at least one non-whitespace character; false otherwise.
- */
-fun isNotEmpty(str: String?): Boolean {
-    return !(str == null || str.trim { it <= ' ' }.isEmpty())
+
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+fun <T> stream(items: java.lang.Iterable<T>): Stream<T> {
+    return StreamSupport.stream<T>(items.spliterator(), false)
 }
 
-val maxIntStr = Integer.MAX_VALUE.toString()
 
 /**
  * Delete a directory, akin to "rm -rf".
@@ -57,11 +57,6 @@ fun deleteDir(path: Path) {
             }
         }
     })
-}
-
-fun <T> Iterable<T>.hasItems() = when (this) {
-    is Collection -> this.isNotEmpty()
-    else -> this.iterator().hasNext()
 }
 
 

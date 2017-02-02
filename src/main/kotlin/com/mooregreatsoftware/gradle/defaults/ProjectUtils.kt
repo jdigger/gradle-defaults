@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("ConvertLambdaToReference")
+
 package com.mooregreatsoftware.gradle.defaults
 
+import com.mooregreatsoftware.FileUtils
+import org.gradle.api.Action
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.DependencySet
@@ -79,9 +84,6 @@ fun Project.hasJavaSource(useCache: Boolean = true): Boolean {
 }
 
 
-fun Project.hasJavaBasePlugin() = this.plugins.hasPlugin(JavaBasePlugin::class.java)
-
-
 /**
  * Returns all of the projects that have the Java plugin and have Java source files.
  */
@@ -92,7 +94,7 @@ fun Project.isRootProject() = this == this.rootProject
 
 @Throws(IOException::class)
 private fun hasJavaSourceWithoutJavaPlugin(projectDir: File): Boolean {
-    val srcMain = projectDir.toPath().resolve("src").resolve("main")
+    val srcMain = projectDir.toPath().resolve("src/main")
     return when {
         Files.exists(srcMain) && Files.isDirectory(srcMain) -> hasJavaInStdSrcMain(srcMain)
         else -> false
@@ -100,25 +102,15 @@ private fun hasJavaSourceWithoutJavaPlugin(projectDir: File): Boolean {
 }
 
 private fun hasJavaInStdSrcMain(srcMain: Path) =
-    pathHasAFile(srcMain.resolve("java"), { isJavaFile(it) }) ||
-        pathHasAFile(srcMain.resolve("groovy"), { isJavaFile(it) }) ||
-        pathHasAFile(srcMain.resolve("kotlin"), { isJavaFile(it) }) ||
-        pathHasAFile(srcMain.resolve("scala"), { isJavaFile(it) })
+    pathHasAFileDepthFirst(srcMain.resolve("java"), { isJavaFile(it) }) ||
+        pathHasAFileDepthFirst(srcMain.resolve("groovy"), { isJavaFile(it) }) ||
+        pathHasAFileDepthFirst(srcMain.resolve("kotlin"), { isJavaFile(it) }) ||
+        pathHasAFileDepthFirst(srcMain.resolve("scala"), { isJavaFile(it) })
 
 
 @Throws(IOException::class)
-private fun pathHasAFile(path: Path, matcher: (Path) -> Boolean) = when {
-    Files.exists(path) -> when {
-        Files.isDirectory(path) -> dirHasFile(path, matcher)
-        else -> matcher(path)
-    }
-    else -> false
-}
-
-
-@Throws(IOException::class)
-private fun dirHasFile(dirPath: Path, matcher: (Path) -> Boolean) =
-    Files.walk(dirPath).filter(matcher).findAny().isPresent
+private fun pathHasAFileDepthFirst(path: Path, matcher: (Path) -> Boolean): Boolean =
+    FileUtils.findBreadthFirst(path, matcher).isPresent
 
 
 private fun isJavaFile(p: Path) = p.fileName.toString().endsWith(".java")
@@ -132,6 +124,32 @@ private fun hasJavaSourceWithJavaPlugin(projectConvention: Convention): Boolean 
 
 private fun hasJavaSource(ss: SourceSet): Boolean = !ss.allJava.isEmpty
 
+fun detectTopPackageName(projectConvention: Convention): String? {
+    val sourceSets = sourceSets(projectConvention)
+    if (sourceSets != null) {
+        val sourceSetNames = sourceSets.names
+        val theSourceSets = sourceSetNames.map { sourceSets.getByName(it).allSource }
+        val srcDirs = theSourceSets.flatMap { it.srcDirs }
+        val paths = srcDirs.
+            map { it.toPath() }.
+            map { dirPath ->
+                FileUtils.findBreadthFirst(dirPath, { isSourceCode(it) }).
+                    map { dirPath.relativize(it.parent) }
+            }.
+            filter { it.isPresent }.
+            map { it.get() }
+        val topLevelPackage = paths.sortedBy { it.nameCount }.map { it.toString().replace(it.fileSystem.separator, ".") }.firstOrNull()
+        return topLevelPackage
+    }
+    else {
+        return null
+    }
+}
+
+private fun isSourceCode(path: Path): Boolean {
+    val filename = path.fileName.toString()
+    return filename.endsWith(".java") || filename.endsWith(".scala") || filename.endsWith(".groovy") || filename.endsWith(".kt")
+}
 
 fun sourceSets(projectConvention: Convention): SourceSetContainer? {
     val javaPluginConvention = projectConvention.findPlugin(JavaPluginConvention::class.java)
@@ -216,4 +234,21 @@ fun <T> Project.postEvalCreate(creator: () -> T): Future<T> {
     }
 
     return async
+}
+
+/**
+ * Returns the Actions that make up the Task, stripping off any wrappers.
+ */
+fun Task.getUnwrappedActions(): Iterable<Action<in Task>> {
+    return this.actions.map { it.unwrap() }
+}
+
+fun Action<in Task>.unwrap(): Action<in Task> {
+    return if (this.javaClass.simpleName == "TaskActionWrapper") {
+        val actionField = this.javaClass.getDeclaredField("action")
+        actionField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        actionField.get(this) as Action<in Task>
+    }
+    else this
 }

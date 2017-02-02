@@ -127,7 +127,6 @@ Applies the `idea` plugin.
 
 === Misc
 
-* Applies https://github.com/ajoberstar/gradle-imports[`organize-imports`] plugin.
 * Adds the `jcenter()` repository.
 * Configures ordering rules for tasks:
 ** All tasks should run after `clean`.
