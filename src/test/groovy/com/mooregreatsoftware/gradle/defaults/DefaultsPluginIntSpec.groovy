@@ -62,10 +62,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
         buildFile << """
             buildscript {
-                ext.kotlin_version = '1.0.3'
-                repositories {
-                    jcenter()
-                }
+                ext.kotlin_version = '1.0.6'
 
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
