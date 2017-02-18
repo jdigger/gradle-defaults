@@ -12,7 +12,7 @@ buildscript {
     ext.dokka_version = '0.9.9'
 
     dependencies {
-        classpath 'com.mooregreatsoftware:gradle-defaults:4.0.0-rc.1'
+        classpath 'com.mooregreatsoftware:gradle-defaults:4.0.0'
 
         // Kotlin support
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
