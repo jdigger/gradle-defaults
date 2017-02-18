@@ -12,3 +12,13 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+
+# Hack to get git-lfs installed until it's part of the official images
+# https://github.com/travis-ci/travis-ci/issues/3634#issuecomment-220554067
+before_install:
+  - mkdir -p $HOME/bin
+  - wget https://github.com/github/git-lfs/releases/download/v1.1.2/git-lfs-linux-amd64-1.1.2.tar.gz
+  - tar xvfz git-lfs-linux-amd64-1.1.2.tar.gz
+  - mv git-lfs-1.1.2/git-lfs $HOME/bin/git-lfs
+  - export PATH=$PATH:$HOME/bin/
+before_script: git lfs pull
