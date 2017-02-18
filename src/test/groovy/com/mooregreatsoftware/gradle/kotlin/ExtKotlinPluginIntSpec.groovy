@@ -54,19 +54,12 @@ class ExtKotlinPluginIntSpec extends AbstractIntSpec {
         def subprojDir = addSubproject("submod", """
             buildscript {
                 ext.kotlin_version = '1.0.6'
-                repositories {
-                    jcenter()
-                }
-
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
                 }
             }
             apply plugin: 'kotlin'
 
-            repositories {
-                jcenter()
-            }
             dependencies {
                 compile "org.jetbrains.kotlin:kotlin-stdlib:\$kotlin_version"
             }
@@ -84,8 +77,6 @@ class ExtKotlinPluginIntSpec extends AbstractIntSpec {
         [":compileKotlin", ":submod:compileKotlin", ":sourcesJar", ":javadocJar", ":submod:sourcesJar", ":jar", ":submod:jar"].each {
             assert result.wasExecuted(it)
         }
-
-        new File(projectDir, "build/libs")
 
         cleanup:
         println result?.standardOutput
