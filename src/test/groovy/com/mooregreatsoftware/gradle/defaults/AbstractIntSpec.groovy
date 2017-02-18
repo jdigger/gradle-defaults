@@ -37,7 +37,7 @@ abstract class AbstractIntSpec extends IntegrationSpec {
 
     @CompileStatic
     setup() {
-        logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.INFO
 
         gradleUserHome = projectDir.toPath().resolve(".gradle-home")
         Files.createDirectories(gradleUserHome)

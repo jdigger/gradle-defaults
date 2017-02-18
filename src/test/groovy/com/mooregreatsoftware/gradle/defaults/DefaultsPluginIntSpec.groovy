@@ -23,7 +23,7 @@ import spock.lang.Subject
 class DefaultsPluginIntSpec extends AbstractIntSpec {
 
     def "build"() {
-        logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.INFO
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
@@ -56,7 +56,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
 
     def "build kotlin"() {
-        logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.INFO
         fork = true // has Xerces errors without this
         writeKotlinHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
@@ -101,7 +101,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
 
     def "build scala"() {
-        logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.INFO
         fork = true // has TravisCI errors without this
         writeScalaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
@@ -139,7 +139,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
 
     def "release open source"() {
-        logLevel = LogLevel.DEBUG
+        logLevel = LogLevel.INFO
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
