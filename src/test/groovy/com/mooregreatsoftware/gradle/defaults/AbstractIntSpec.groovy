@@ -42,6 +42,10 @@ abstract class AbstractIntSpec extends IntegrationSpec {
         gradleUserHome = projectDir.toPath().resolve(".gradle-home")
         Files.createDirectories(gradleUserHome)
 
+        createFile("gradle.properties", projectDir) << """
+            org.gradle.daemon=false
+        """.stripIndent()
+
         createFile("test-init.gradle", projectDir) << """
             startParameter.offline=true
             startParameter.refreshDependencies=true
@@ -80,7 +84,7 @@ abstract class AbstractIntSpec extends IntegrationSpec {
         createFile(".gitignore", projectDir) << """
             .gradle-test-kit/
         """.stripIndent()
-        git.add().addFilepattern(".gitignore").call()
+        git.add().addFilepattern(".gitignore").addFilepattern("gradle.*").addFilepattern("*.gradle").call()
         git.commit().setMessage("init").call()
         git.tag().setName("v1.0.0").call()
         createRemoteOrigin(git)
