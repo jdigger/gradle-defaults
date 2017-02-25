@@ -26,8 +26,7 @@ class LombokPluginIntSpec extends AbstractIntSpec {
         writeLombokHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: '${ExtJavaPlugin.PLUGIN_ID}'
+            apply plugin: '${LombokPlugin.PLUGIN_ID}'
 
             group = "com.mooregreatsoftware.gradle.defaults"
 

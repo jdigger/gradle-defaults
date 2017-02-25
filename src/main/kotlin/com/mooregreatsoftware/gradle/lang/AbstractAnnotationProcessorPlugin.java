@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.lang;
 
 import com.mooregreatsoftware.gradle.JavacUtils;
+import com.mooregreatsoftware.gradle.java.ExtJavaPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
@@ -33,10 +34,9 @@ public abstract class AbstractAnnotationProcessorPlugin implements Plugin<Projec
 
 
     private void configJavaPlugin(Project project) {
-        project.getPlugins().withId("org.gradle.java", plugin -> {
-            registerWithJavac(project);
-            addCompileOnlyDependencies(project);
-        });
+        project.getPlugins().apply(ExtJavaPlugin.PLUGIN_ID);
+        registerWithJavac(project);
+        addCompileOnlyDependencies(project);
     }
 
 

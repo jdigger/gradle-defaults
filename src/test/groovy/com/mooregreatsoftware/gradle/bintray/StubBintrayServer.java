@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.bintray;
 
 import fi.iki.elonen.NanoHTTPD;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ import static fi.iki.elonen.NanoHTTPD.Method.HEAD;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.CREATED;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.INTERNAL_ERROR;
 
+@SuppressWarnings("RedundantCast")
 public class StubBintrayServer extends NanoHTTPD {
     private static final Logger LOG = LoggerFactory.getLogger(StubBintrayServer.class);
 
@@ -63,7 +65,7 @@ public class StubBintrayServer extends NanoHTTPD {
             return newFixedLengthResponse(INTERNAL_ERROR, MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
         }
         catch (ResponseException re) {
-            return newFixedLengthResponse(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
+            return newFixedLengthResponse(re.getStatus(), MIME_PLAINTEXT, (@NonNull String)re.getMessage());
         }
     }
 

@@ -25,6 +25,7 @@ import nebula.test.dependencies.DependencyGraph
 import nebula.test.dependencies.GradleDependencyGenerator
 import org.gradle.api.Action
 import org.gradle.api.DomainObjectCollection
+import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
 import static com.mooregreatsoftware.gradle.Projects.evaluate
@@ -43,6 +44,14 @@ abstract class AbstractAnnotationProcessorPluginSpec extends PluginProjectSpec {
         project.repositories.maven({ it.url = mavenRepoPath })
 
         project.setGroup("com.mooregreatsoftware.gradle.defaults")
+    }
+
+
+    @Override
+    Project createSubproject(Project parentProject, String name) {
+        def subProject = super.createSubproject(project, name)
+        subProject.repositories.maven({ it.url = mavenRepoPath })
+        return subProject
     }
 
 

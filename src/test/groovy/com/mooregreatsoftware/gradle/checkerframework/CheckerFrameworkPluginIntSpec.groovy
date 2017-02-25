@@ -25,7 +25,6 @@ class CheckerFrameworkPluginIntSpec extends AbstractIntSpec {
         writeCheckerHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            apply plugin: 'java'
             apply plugin: '${CheckerFrameworkPlugin.PLUGIN_ID}'
         """.stripIndent()
 
@@ -47,7 +46,6 @@ class CheckerFrameworkPluginIntSpec extends AbstractIntSpec {
 
         buildFile << """
             apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
-            apply plugin: 'java'
             apply plugin: '${CheckerFrameworkPlugin.PLUGIN_ID}'
 
             group = "com.mooregreatsoftware.gradle.defaults"
