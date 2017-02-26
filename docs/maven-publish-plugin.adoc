@@ -1,0 +1,21 @@
+= Maven Publish Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.maven-publish"
+
+== Description
+
+The `"org.gradle.maven-publish"` plugin is applied and the `"main"` publication includes any of the following that exist:
+
+* `.jar`
+* `-sources.jar`
+* `-javadoc.jar`
+* `-groovydoc.jar`
+* `-scaladoc.jar`
+* `-dokka.jar`
+
+The POM is configured with information from the project and link:dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html[the "defaults" extension, see its Javadoc].
+
+MavenLocal is added as a publishing location.

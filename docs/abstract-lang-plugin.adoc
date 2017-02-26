@@ -1,0 +1,26 @@
+* Add task and artifact for `-sources.jar`.
+* Sets the compiler target and source compatibility versions based on the `defaults.compatibilityVersion` (defaults
+  to the version of Java used to compile)
+* Configures the MANIFEST.MF of JARs generated to include
+** Implementation-Title = `{project.description ?: project.name}`
+** Implementation-Version = `{project.version}`
+** Built-By = `{userEmail as known to git's "user.email" configuration}`
+** Built-Date = `{now}`
+** Built-JDK = `{System.getProperty('java.version')}`
+** Built-Gradle = `{Gradle version being used}`
+* The `mavenLocal()` repository is added to the project.
+* Configures the generated POM.XML when publishing to include
+** <name> = `project.name}`
+** group = `{project.group ?: see below}`
+** version = `{project.description ?: project.name}`
+** <description> = `{project.description}` if it has been set
+** <url> = `{defaults.siteUrl}`
+** organization = `{now}`
+** licenses = `{System.getProperty('java.version')}`
+** developers = `{Gradle version being used}`
+** constributors = `{Gradle version being used}`
+** scm = `{Gradle version being used}`
+
+If `project.group` is not set, this tries to make a "`reasonable guess`". It does so by scanning the source code of
+the project (`.java`, `.groovy`, `.scala`, `.kt`) and searching for the top-level package. For example, if you have
+three Java classes, `com.mooregreatsoftware.zzzzzzzgradle.MyClass` and `com.mooregreatsoftware.gradle.defaults.AnotherClass` and `com.mooregreatsoftware.gradle.MyClass`

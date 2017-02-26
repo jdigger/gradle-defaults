@@ -1,0 +1,15 @@
+= License Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.license"
+
+== Description
+
+* The license header from `gradle/HEADER` is injected at the top of all source code. (Including tests.)
+* `"extLicense.copyrightYears"` is substituted for `"${year}"` in the header.
+* Strict checking (fail a `check` if all needed files do not have license information) is enabled.
+* Sets `.java`, `.groovy`, `.scala` and `.kt` files to use slashstar style (`/* \*/`) instead of default
+javadoc (`/** */`) style for the license header.
+* Properties files are excluded from checks.

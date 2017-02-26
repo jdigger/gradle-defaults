@@ -1,0 +1,22 @@
+= Release Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.release"
+
+== Description
+
+Applies the https://github.com/ajoberstar/gradle-git[`"org.ajoberstar.release-opinion"`] plugin.
+
+The `release` task depends on `clean` and `build`.
+
+If the GitHub Page plugin is applied (either directly with
+https://github.com/ajoberstar/gradle-git[`"org.ajoberstar.github-pages"`] or via
+<<gh-pages-plugin.adoc#,`"com.mooregreatsoftware.gh-pages"`>>) then `"release"` depends on
+`publishGhPages`.
+
+If the BinTray plugin is applied (either directly with
+https://github.com/bintray/gradle-bintray-plugin[`"com.jfrog.bintray"`] or via
+<<bintray-plugin.adoc#,`"com.mooregreatsoftware.bintray"`>>) then `"release"` depends on
+`bintrayUpload`.

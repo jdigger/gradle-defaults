@@ -26,7 +26,9 @@ public class LombokExtension {
 
     static final String NAME = "lombok";
 
+    // tag::default_version[]
     public static final String DEFAULT_LOMBOK_VERSION = "1.16.12";
+    // end::default_version[]
 
 
     public LombokExtension() {

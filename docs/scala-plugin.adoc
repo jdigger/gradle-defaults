@@ -1,0 +1,12 @@
+= Scala Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.scala"
+
+== Description
+
+* Applies the "org.gradle.scala" plugin.
+* Add task and artifact for `-scaladoc.jar`.
+include::abstract-lang-plugin.adoc[]

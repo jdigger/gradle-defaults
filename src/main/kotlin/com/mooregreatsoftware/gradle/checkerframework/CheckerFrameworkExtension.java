@@ -34,6 +34,8 @@ public class CheckerFrameworkExtension {
      */
     public static final String NAME = "checkerFramework";
 
+    // tag::default_version[]
     public static final String DEFAULT_CHECKER_VERSION = "2.1.8";
+    // end::default_version[]
 
 }

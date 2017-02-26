@@ -1,0 +1,15 @@
+= Kotlin Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.kotlin"
+
+== Description
+
+If the `kotlin` plugin (`org.jetbrains.kotlin:kotlin-gradle-plugin`) is applied
+(see caveats in https://github.com/jdigger/gradle-defaults/issues/23[Issue 23]):
+
+* Adds tasks and artifacts for `-dokka.jar` if the https://kotlinlang.org/docs/reference/kotlin-doc.html[Dokka]
+  plugin has also been applied
+include::abstract-lang-plugin.adoc[]

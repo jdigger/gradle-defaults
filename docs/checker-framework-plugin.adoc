@@ -1,0 +1,24 @@
+= Checker Framework
+:mainSrcDir: ../src/main/kotlin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.checker-framework"
+
+== Description
+
+Adds support for http://types.cs.washington.edu/checker-framework/[Checker Framework] for Java projects.
+
+You can change the version to use by setting `checkerFramework.version` on the project. The current default is:
+[source,java]
+--
+include::{mainSrcDir}/com/mooregreatsoftware/gradle/checkerframework/CheckerFrameworkExtension.java[tags="default_version"]
+--
+
+The dependency is set as "compile only", so it won't show up in generated artifacts.
+
+This automatically applies the <<java-plugin.adoc#,"com.mooregreatsoftware.java" plugin>>.
+If the "org.gradle.idea" plugin is used, the <<idea-plugin.adoc#,"com.mooregreatsoftware.idea" plugin>> is also added.
+This ensures that compiling is properly supported by both Gradle and IntelliJ even if there are other annotation
+processors on the classpath.

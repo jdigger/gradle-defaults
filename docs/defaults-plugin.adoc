@@ -1,0 +1,34 @@
+= Defaults Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.defaults"
+
+== Description
+
+This can only be applied to the root project. If it's applied anywhere else, a warning is logged and nothing else happens.
+
+Does the following at the root level:
+
+* Applies the <<release-plugin.adoc#,com.mooregreatsoftware.release" plugin>> if there is a git repository
+* Applies the <<gh-pages-plugin.adoc#,com.mooregreatsoftware.gh-pages" plugin>> if there is a git repository
+* The https://bintray.com/bintray/jcenter[jcenter] repository is added.
+
+For all projects (root and any subprojects):
+
+* Applies the <<idea-plugin.adoc#,"com.mooregreatsoftware.idea" plugin>>
+* Applies the <<license-plugin.adoc#,"com.mooregreatsoftware.license" plugin>> if `"defaults.openSource"` is not false (defaults to true)
+  ** `"defaults.copyrightYears"` aliases the `"extLicense.copyrightYears"` value
+* Applies the <<bintray-plugin.adoc#,"com.mooregreatsoftware.bintray" plugin>> if the "bintray" plugin is present
+* Applies the <<java-plugin.adoc#,"com.mooregreatsoftware.java" plugin>> if the "org.gradle.java" plugin is present
+* Applies the <<lombok-plugin.adoc#,"com.mooregreatsoftware.lombok" plugin>> if the "org.gradle.java" plugin is
+  present and there is Java source discovered in the project
+* Applies the <<checker-framework-plugin.adoc#,"com.mooregreatsoftware.checker-framework" plugin>> if the "org.gradle.java" plugin is
+  present and there is Java source discovered in the project
+* Applies the <<groovy-plugin.adoc#,"com.mooregreatsoftware.groovy" plugin>> if the "org.gradle.groovy" plugin is present
+* Applies the <<scala-plugin.adoc#,"com.mooregreatsoftware.scala" plugin>> if the "org.gradle.scala" plugin is present
+* Applies the <<kotlin-plugin.adoc#,"com.mooregreatsoftware.kotlin" plugin>> if the "kotlin" plugin is present
+* Creates a `"defaults"` extension, allowing for setting any project-specific values. Values in a subproject inherit
+  from its parent unless overridden.
+  ** For all of the configurable properties of link:dokka/gradle-defaults/com.mooregreatsoftware.gradle.defaults/-defaults-extension/index.html[the "defaults" extension, see its Javadoc].

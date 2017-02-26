@@ -1,0 +1,68 @@
+= GitHub-Pages
+:icons: font
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.gh-pages"
+
+== Description
+
+Adds support for https://pages.github.com/[GitHub Pages] via the
+https://github.com/ajoberstar/gradle-git[`org.ajoberstar.github-pages`] plugin.
+
+If there are any API documentation tasks ("javadoc", "groovydoc", "scaladoc", "dokka") in any of the projects, they are
+are set as dependencies of this `"prepareGhPages"` task and added to its CopySpec. The output from those tasks are
+copied to a project-qualified path by task name. See example below.
+
+If there is a `"src/gh-pages"` path under the root project, it is copied into the root of the resulting output.
+
+For any other configuration, please refer to https://github.com/ajoberstar/gradle-git/wiki/Github%20Pages%20Plugin[the
+underlying plugin's documentation].
+
+[NOTE]
+--
+This can only be applied to the root project. Applying this plugin to a subproject will log a warning.
+--
+
+[WARNING]
+--
+There is currently a limitation with the source plugin preventing its use with TLS/SSL/HTTPS. The work-around is to use
+SSH as the transport for the git repository.
+--
+
+== Example
+
+Given a project structure like:
+
+```
+myproj
++- build.gradle
++- src
+|  +- main
+|  |  +- java
+|  |     +- ...
+|  +- gh-pages
+|     +- index.html
+|     +- images
+|        +- ...
++- subproj
+   +- build.gradle
+   +- src
+      +- main
+         +- groovy
+            +- ...
+```
+
+then the resulting output would essentially be
+
+```
++- index.html    <- from src/gh-pages
++- images
+|  +- ...
++- javadoc
+|  +- ...
++- subproj
+   +- groovydoc
+      +- ...
+```

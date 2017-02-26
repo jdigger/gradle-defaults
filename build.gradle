@@ -86,7 +86,7 @@ asciidoctor {
     sourceDir = file('docs')
     separateOutputDirs = false
     outputDir = file("$buildDir/docs")
-    attributes 'source-highlighter': 'coderay'
+    attributes 'source-highlighter': 'coderay', 'mainSrcDir': file('src/main/kotlin').toString()
 }
 
 compileKotlin.kotlinOptions.jvmTarget = "1.8"

@@ -1,0 +1,12 @@
+= Java Plugin
+
+== Usage
+
+[source,groovy]
+apply plugin: "com.mooregreatsoftware.java"
+
+== Description
+
+* Applies the "org.gradle.java" plugin.
+* Add task and artifact for `-javadoc.jar`.
+include::abstract-lang-plugin.adoc[]
