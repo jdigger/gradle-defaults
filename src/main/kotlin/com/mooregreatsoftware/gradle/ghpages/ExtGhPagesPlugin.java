@@ -144,7 +144,7 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
         prepareTask.dependsOn(task);
         FileCollection fromFiles = task.getOutputs().getFiles();
         String intoDir = task.getPath().replace(':', '/');
-        LOG.debug("will copy {} to {}", fromFiles, intoDir);
+        LOG.info("Will copy {} to {}", fromFiles, intoDir);
         return pagesCopySpec(project).addChild().into(intoDir).from(fromFiles);
     }
 

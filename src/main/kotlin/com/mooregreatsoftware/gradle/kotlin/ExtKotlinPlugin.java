@@ -18,10 +18,18 @@ package com.mooregreatsoftware.gradle.kotlin;
 import com.mooregreatsoftware.gradle.lang.AbstractLanguagePlugin;
 import lombok.val;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.gradle.api.Project;
 
 // TODO Make this automatically set up the buildscript, register the plugin, set up dokka, add the stdlib to the classpath, etc.
 public class ExtKotlinPlugin extends AbstractLanguagePlugin {
     public static final String PLUGIN_ID = "com.mooregreatsoftware.kotlin";
+
+
+    @Override
+    protected void doApply(Project project) {
+        super.doApply(project);
+        project.getTasks().getByName("classes").mustRunAfter("copyMainKotlinClasses");
+    }
 
 
     @Override
@@ -40,9 +48,9 @@ public class ExtKotlinPlugin extends AbstractLanguagePlugin {
     protected @Nullable String docTaskName() {
         val classLoader = this.getClass().getClassLoader();
         if (classLoader == null) return null;
+        // check for the existence of Dokka on the classpath
         val resource = classLoader.getResource("/org/jetbrains/dokka/DocumentationBuilder.class");
         return (resource != null) ? "dokka" : null;
     }
-
 
 }

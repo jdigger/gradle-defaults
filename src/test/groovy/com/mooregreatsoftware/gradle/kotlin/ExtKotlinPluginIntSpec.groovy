@@ -28,10 +28,6 @@ class ExtKotlinPluginIntSpec extends AbstractIntSpec {
         buildFile << """
             buildscript {
                 ext.kotlin_version = '1.0.6'
-                repositories {
-                    jcenter()
-                }
-
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
                 }

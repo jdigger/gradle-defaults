@@ -83,6 +83,8 @@ abstract class AbstractIntSpec extends IntegrationSpec {
         git = Git.init().setDirectory(projectDir).call()
         createFile(".gitignore", projectDir) << """
             .gradle-test-kit/
+            build/
+            .gradle/
         """.stripIndent()
         git.add().addFilepattern(".gitignore").addFilepattern("gradle.*").addFilepattern("*.gradle").call()
         git.commit().setMessage("init").call()

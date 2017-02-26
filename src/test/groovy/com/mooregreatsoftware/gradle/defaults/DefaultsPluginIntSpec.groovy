@@ -208,6 +208,50 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
     }
 
 
+    def "github pages"() {
+        logLevel = LogLevel.INFO
+        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
+
+        buildFile << """
+            group = 'com.mooregreatsoftware.gradle.defaults.test'
+            description = 'Nice Gradle defaults'
+
+            apply plugin: "${DefaultsPlugin.PLUGIN_ID}"
+            apply plugin: 'java'
+
+            defaults {
+                orgId = "tester"
+                bintrayRepo = "java-test"
+                compatibilityVersion = 1.8
+                orgName = "testing org"
+                vcsReadUrl = "${git.repository.config.getString("remote", "origin", "url")}"
+            }
+
+            githubPages {
+                deleteExistingFiles = true
+                pages {
+                    from javadoc
+                }
+            }
+        """.stripIndent()
+
+        git.add().addFilepattern(".").call()
+        git.commit().setMessage("the files").call()
+        git.push().setRemote("origin").setPushAll().call()
+
+        when:
+        def result = runTasks('prepareGhPages')
+
+        then:
+        result.rethrowFailure()
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
+
+        cleanup:
+        println result?.standardOutput
+        println result?.standardError
+    }
+
+
     @CompileStatic
     void createLicenseHeader() {
         createFile("gradle/HEADER") << 'Copyright ${year} the original author or authors.\nTHIS CAN BE USED FREELY'
