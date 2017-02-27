@@ -27,9 +27,6 @@ import org.gradle.api.Task;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.copy.CopySpecInternal;
-import org.gradle.api.plugins.GroovyPlugin;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.scala.ScalaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +43,7 @@ import static com.mooregreatsoftware.gradle.GrGitUtils.grgit;
  * (see https://github.com/ajoberstar/gradle-git/wiki/Github%20Pages%20Plugin) and makes sure task
  * dependencies are correct.
  */
+@SuppressWarnings("Convert2MethodRef")
 public class ExtGhPagesPlugin implements Plugin<Project> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtGhPagesPlugin.class);
     public static final String PLUGIN_ID = "com.mooregreatsoftware.gh-pages";
@@ -73,7 +71,7 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
         project.getPlugins().apply(GITHUB_PAGES_PLUGIN_ID);
 
         associateDocTasks(project);
-        pagesCopySpec(project).addChild().from("src/gh-pages");
+        pagesCopySpec(project).addChild().from("src/gh-pages").into("/");
 
         val prepareTask = project.getTasks().getByName(PREPARE_TASK_NAME);
         prepareTask.doFirst(it -> setRepoUri(project, readableDefaultsFuture));
@@ -88,16 +86,18 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
     }
 
 
-    private void associateDocTasks(Project project) {
+    private static void associateDocTasks(Project project) {
         val plugins = project.getPlugins();
-        plugins.withType(JavaPlugin.class, it -> addOutput(project.getTasks().getByName("javadoc")));
-        plugins.withType(GroovyPlugin.class, it -> addOutput(project.getTasks().getByName("groovydoc")));
-        plugins.withType(ScalaPlugin.class, it -> addOutput(project.getTasks().getByName("scaladoc")));
+        plugins.withId("org.gradle.java", it -> addOutput(project.getTasks().getByName("javadoc")));
+        plugins.withId("org.gradle.groovy", it -> addOutput(project.getTasks().getByName("groovydoc")));
+        plugins.withId("org.gradle.scala", it -> addOutput(project.getTasks().getByName("scaladoc")));
         plugins.withId("kotlin", kotlinPlugin -> configKotlin(project));
+
+        project.getSubprojects().forEach(subproject -> associateDocTasks(subproject));
     }
 
 
-    private void configKotlin(Project project) {
+    private static void configKotlin(Project project) {
         project.getPlugins().withId("org.jetbrains.dokka", dokkaPlugin -> configDokkaPlugin(project));
 
         project.afterEvaluate(p -> {
@@ -108,7 +108,7 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
     }
 
 
-    private void configDokkaPlugin(Project project) {
+    private static void configDokkaPlugin(Project project) {
         Task dokkaTask = project.getTasks().getByName("dokka");
         addOutput(dokkaTask);
 
@@ -137,9 +137,11 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
     }
 
 
-    private CopySpec addOutput(Task task) {
+    private static CopySpec addOutput(Task task) {
         Project project = task.getProject();
         LOG.info("Creating CopySpec for GhPages of " + project + " from " + task.getName());
+        val prepareTask = project.getRootProject().getTasks().getByName(PREPARE_TASK_NAME);
+        prepareTask.dependsOn(task);
         FileCollection fromFiles = task.getOutputs().getFiles();
         String intoDir = task.getPath().replace(':', '/');
         LOG.debug("will copy {} to {}", fromFiles, intoDir);
@@ -148,7 +150,7 @@ public class ExtGhPagesPlugin implements Plugin<Project> {
 
 
     private static CopySpecInternal pagesCopySpec(Project project) {
-        val githubPages = githubPages(project);
+        val githubPages = githubPages(project.getRootProject());
         if (githubPages == null) throw new IllegalStateException("No GithubPagesPluginExtension");
         return (CopySpecInternal)githubPages.getPages();
     }
