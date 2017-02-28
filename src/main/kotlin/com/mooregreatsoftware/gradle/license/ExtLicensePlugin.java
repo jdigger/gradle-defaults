@@ -36,6 +36,7 @@ public class ExtLicensePlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        licenseExtension(project); // init extension
         project.getPlugins().apply("com.github.hierynomus.license");
         val licenseExt = project.getConvention().getByName("license");
         try {
@@ -92,6 +93,19 @@ public class ExtLicensePlugin implements Plugin<Project> {
         val conExtPropsProp = metaClass.getMetaProperty("extensions");
         val convExtensions = (Convention)conExtPropsProp.getProperty(licenseExt);
         return convExtensions.getExtraProperties();
+    }
+
+
+    public static ExtLicenseExtension licenseExtension(Project project) {
+        val extensions = project.getExtensions();
+        val licenseExt = extensions.findByType(ExtLicenseExtension.class);
+        if (licenseExt != null) return licenseExt;
+
+        val parentProj = project.getParent();
+        if (parentProj == null)
+            return extensions.create(ExtLicenseExtension.NAME, ExtLicenseExtension.class);
+
+        return extensions.create(ExtLicenseExtension.NAME, ExtLicenseExtension.class, licenseExtension(parentProj));
     }
 
 }

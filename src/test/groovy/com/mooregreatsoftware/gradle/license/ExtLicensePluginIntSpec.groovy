@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.license
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
 class ExtLicensePluginIntSpec extends AbstractIntSpec {
 
@@ -24,20 +23,15 @@ class ExtLicensePluginIntSpec extends AbstractIntSpec {
         def sourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'java'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.7
-                copyrightYears = '2014-2016'
+            allprojects {
+                apply plugin: "${ExtLicensePlugin.PLUGIN_ID}"
+                apply plugin: 'java'
             }
+
+            extLicense.copyrightYears = '2014-2016'
         """.stripIndent()
 
         def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
         """.stripIndent())
         def subSourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
         def propFile = createFile("src/main/java/apropertyfile.properties", subprojDir) << """
@@ -59,6 +53,43 @@ class ExtLicensePluginIntSpec extends AbstractIntSpec {
         sourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
         subSourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
         propFile.readLines().find({ it.contains("Copyright ") }) == null
+
+        cleanup:
+        println result?.standardOutput
+        println result?.standardError
+    }
+
+
+    def "licenseFormat sub extension"() {
+        def sourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
+
+        buildFile << """
+            allprojects {
+                apply plugin: "${ExtLicensePlugin.PLUGIN_ID}"
+                apply plugin: 'java'
+            }
+
+            extLicense.copyrightYears = '2014-2016'
+        """.stripIndent()
+
+        def subprojDir = addSubproject("submod", """
+            extLicense.copyrightYears = '2014-2017'
+        """.stripIndent())
+        def subSourceFile = writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
+
+        createLicenseHeader()
+
+        expect:
+        sourceFile.readLines().find({ it.contains("Copyright ") }) == null
+        subSourceFile.readLines().find({ it.contains("Copyright ") }) == null
+
+        when:
+        def result = runTasks('licenseFormat')
+
+        then:
+        result.success
+        sourceFile.readLines().find({ it.contains("* Copyright 2014-2016") }) != null
+        subSourceFile.readLines().find({ it.contains("* Copyright 2014-2017") }) != null
 
         cleanup:
         println result?.standardOutput

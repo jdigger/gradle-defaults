@@ -26,7 +26,6 @@ import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import com.mooregreatsoftware.gradle.kotlin.ExtKotlinPlugin
 import com.mooregreatsoftware.gradle.license.ExtLicensePlugin
 import com.mooregreatsoftware.gradle.lombok.LombokPlugin
-import com.mooregreatsoftware.gradle.maven.MavenPublishPublications
 import com.mooregreatsoftware.gradle.release.ExtReleasePlugin
 import com.mooregreatsoftware.gradle.scala.ExtScalaPlugin
 import org.eclipse.jgit.api.Git
@@ -50,7 +49,7 @@ class DefaultsPlugin : Plugin<Project> {
 
 
     private fun configProject(prj: Project) {
-        prj.defaultsExtension()
+        val defaultsExtension = prj.defaultsExtension()
 
         prj.repositories.jcenter()
 
@@ -61,7 +60,10 @@ class DefaultsPlugin : Plugin<Project> {
 
         prj.plugins.apply(ExtIntellijPlugin.PLUGIN_ID)
 
-        prj.plugins.apply(ExtLicensePlugin.PLUGIN_ID)
+        prj.afterEvaluate { p ->
+            if (defaultsExtension.openSource)
+                prj.plugins.apply(ExtLicensePlugin.PLUGIN_ID)
+        }
 
         prj.plugins.withType(BintrayPlugin::class.java) {
             prj.plugins.apply(ExtBintrayPlugin::class.java)

@@ -17,14 +17,15 @@ package com.mooregreatsoftware.gradle.defaults
 
 import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension
 import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkPlugin.checkerFrameworkExtension
+import com.mooregreatsoftware.gradle.license.ExtLicenseExtension
+import com.mooregreatsoftware.gradle.license.ExtLicensePlugin
+import com.mooregreatsoftware.gradle.license.ExtLicensePlugin.licenseExtension
 import com.mooregreatsoftware.gradle.lombok.LombokExtension
 import com.mooregreatsoftware.gradle.lombok.LombokPlugin.lombokExtension
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
-import java.time.Instant
-import java.time.ZoneId
 
 /**
  * Configuration for [DefaultsPlugin].
@@ -32,7 +33,7 @@ import java.time.ZoneId
  * @see [defaultsExtension]
  */
 @Suppress("unused", "ConvertLambdaToReference")
-open class DefaultsExtension(override val project: Project, override val lombok: LombokExtension, override val checkerFramework: CheckerFrameworkExtension) : ReadableDefaultsExtension {
+open class DefaultsExtension(override val project: Project, override val license: ExtLicenseExtension, override val lombok: LombokExtension, override val checkerFramework: CheckerFrameworkExtension) : ReadableDefaultsExtension {
 
     private var _orgId: String? = null
     override var orgId: String
@@ -62,7 +63,10 @@ open class DefaultsExtension(override val project: Project, override val lombok:
                     val parentIsOpenSource = project.parent.findIsOpenSource()
                     when {
                         parentIsOpenSource != null -> return parentIsOpenSource
-                        else -> throw IllegalStateException("\"$OPENSOURCE_PROPERTY_NAME\" is not set on ${project.name}")
+                        else -> {
+                            project.logger.warn("\"$OPENSOURCE_PROPERTY_NAME\" is not set on ${project.rootProject.name}: assuming \"true\"")
+                            return true
+                        }
                     }
                 }
                 else -> return openSourceProperty
@@ -178,14 +182,10 @@ open class DefaultsExtension(override val project: Project, override val lombok:
             _licenseUrl = value
         }
 
-    private var _copyrightYears: String? = null
     override var copyrightYears: String
-        get() = climb({ it._copyrightYears }, {
-            // TODO Compute from Git history
-            Instant.now().atZone(ZoneId.systemDefault()).year.toString()
-        })
+        get() = license.copyrightYears
         set(value) {
-            _copyrightYears = value
+            license.copyrightYears = value
         }
 
 
@@ -210,7 +210,7 @@ open class DefaultsExtension(override val project: Project, override val lombok:
     }
 
     fun inspect(): String {
-        return "DefaultsExtension(project=$project, lombok=$lombok, checkerFramework=$checkerFramework, _orgId=$_orgId, _orgName=$_orgName, _orgUrl=$_orgUrl, _bintrayRepo=$_bintrayRepo, _bintrayPkg=$_bintrayPkg, _bintrayLabels=$_bintrayLabels, _isBintrayToCentral=$_isBintrayToCentral, _developers=$_developers, _contributors=$_contributors, _siteUrl=$_siteUrl, _issuesUrl=$_issuesUrl, _vcsReadUrl=$_vcsReadUrl, _vcsWriteUrl=$_vcsWriteUrl, _licenseKey=$_licenseKey, _licenseName=$_licenseName, _licenseUrl=$_licenseUrl, _copyrightYears=$_copyrightYears, _compatibilityVersion=$_compatibilityVersion)"
+        return "DefaultsExtension(project=$project, lombok=$lombok, checkerFramework=$checkerFramework, _orgId=$_orgId, _orgName=$_orgName, _orgUrl=$_orgUrl, _bintrayRepo=$_bintrayRepo, _bintrayPkg=$_bintrayPkg, _bintrayLabels=$_bintrayLabels, _isBintrayToCentral=$_isBintrayToCentral, _developers=$_developers, _contributors=$_contributors, _siteUrl=$_siteUrl, _issuesUrl=$_issuesUrl, _vcsReadUrl=$_vcsReadUrl, _vcsWriteUrl=$_vcsWriteUrl, _licenseKey=$_licenseKey, _licenseName=$_licenseName, _licenseUrl=$_licenseUrl, license=$license, _compatibilityVersion=$_compatibilityVersion)"
     }
 
     override fun toString(): String {
@@ -250,7 +250,7 @@ fun Project.openSourceProperty(isOpenSource: Any) {
 
 
 fun Project.defaultsExtension(): DefaultsExtension = extensions.findByType(DefaultsExtension::class.java) as DefaultsExtension? ?:
-    extensions.create(DefaultsExtension.NAME, DefaultsExtension::class.java, this, lombokExtension(project), checkerFrameworkExtension(project))
+    extensions.create(DefaultsExtension.NAME, DefaultsExtension::class.java, this, licenseExtension(project), lombokExtension(project), checkerFrameworkExtension(project))
 
 
 // **************************************************************************

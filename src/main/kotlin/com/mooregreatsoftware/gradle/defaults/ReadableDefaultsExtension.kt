@@ -16,6 +16,7 @@
 package com.mooregreatsoftware.gradle.defaults
 
 import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension
+import com.mooregreatsoftware.gradle.license.ExtLicenseExtension
 import com.mooregreatsoftware.gradle.lombok.LombokExtension
 import org.checkerframework.checker.nullness.qual.Nullable
 import org.gradle.api.JavaVersion
@@ -38,6 +39,11 @@ interface ReadableDefaultsExtension {
      * The Project this is associated/registered with.
      */
     val project: Project
+
+    /**
+     * Configuration for the license plugin
+     */
+    val license: ExtLicenseExtension
 
     /**
      * Configuration for [Lombok](https://projectlombok.org/features/index.html)
