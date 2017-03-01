@@ -15,8 +15,6 @@
  */
 package com.mooregreatsoftware.gradle.release;
 
-import com.jfrog.bintray.gradle.BintrayPlugin;
-import com.mooregreatsoftware.gradle.ghpages.ExtGhPagesPlugin;
 import lombok.val;
 import org.ajoberstar.gradle.git.release.base.ReleasePluginExtension;
 import org.gradle.api.Plugin;
@@ -63,7 +61,7 @@ public class ExtReleasePlugin implements Plugin<Project> {
 
         val releaseTask = project.getTasks().getByName("release");
 
-        plugins.withId(ExtGhPagesPlugin.GITHUB_PAGES_PLUGIN_ID, plugin -> {
+        plugins.withId("com.jfrog.bintray", plugin -> {
             LOG.debug("Making {} depend on publishGhPages", releaseTask.getPath());
             releaseTask.dependsOn("publishGhPages");
         });
@@ -80,8 +78,15 @@ public class ExtReleasePlugin implements Plugin<Project> {
             final Task build = prjTasks.getByName("build");
             LOG.debug("Making {} depend on {} and {}", releaseTask.getPath(), clean.getPath(), build.getPath());
             releaseTask.dependsOn(clean, build);
+
+            // make sure all tasks run AFTER the clean task
+            prjTasks.forEach(task -> {
+                if (!task.getName().equals(clean.getName())) {
+                    task.shouldRunAfter(clean);
+                }
+            });
         });
-        prjPlugins.withType(BintrayPlugin.class, p -> {
+        prjPlugins.withId("com.jfrog.bintray", p -> {
             final Task bintrayUpload = prjTasks.getByName("bintrayUpload");
             LOG.debug("Making {} depend on {}", releaseTask.getPath(), bintrayUpload.getPath());
             releaseTask.dependsOn(bintrayUpload);
