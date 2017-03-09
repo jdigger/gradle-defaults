@@ -16,31 +16,21 @@
 package com.mooregreatsoftware.gradle.kotlin
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
 class ExtKotlinPluginIntSpec extends AbstractIntSpec {
 
     def "build"() {
-        fork = true // has Xerces errors without this
         writeKotlinHelloWorld('com.mooregreatsoftware.gradle.defaults')
         writeHelloWorld('com.mooregreatsoftware.gradle.defaults', projectDir)
 
         buildFile << """
             buildscript {
-                ext.kotlin_version = '1.0.6'
+                ext.kotlin_version = '1.1.0'
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
                 }
             }
-            ${applyPlugin(DefaultsPlugin)}
             apply plugin: '${ExtKotlinPlugin.PLUGIN_ID}'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.8
-            }
 
             dependencies {
                 compile "org.jetbrains.kotlin:kotlin-stdlib:\$kotlin_version"
@@ -49,7 +39,7 @@ class ExtKotlinPluginIntSpec extends AbstractIntSpec {
 
         def subprojDir = addSubproject("submod", """
             buildscript {
-                ext.kotlin_version = '1.0.6'
+                ext.kotlin_version = '1.1.0'
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
                 }
@@ -70,7 +60,7 @@ class ExtKotlinPluginIntSpec extends AbstractIntSpec {
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldKotlinKt.class')
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorld.class')
         fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldKotlinKt.class')
-        [":compileKotlin", ":submod:compileKotlin", ":sourcesJar", ":javadocJar", ":submod:sourcesJar", ":jar", ":submod:jar"].each {
+        [":compileKotlin", ":submod:compileKotlin", ":sourcesJar", ":jar", ":submod:jar"].each {
             assert result.wasExecuted(it)
         }
 

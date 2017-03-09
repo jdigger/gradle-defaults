@@ -57,12 +57,11 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
     def "build kotlin"() {
         logLevel = LogLevel.INFO
-        fork = true // has Xerces errors without this
         writeKotlinHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
             buildscript {
-                ext.kotlin_version = '1.0.6'
+                ext.kotlin_version = '1.1.0'
 
                 dependencies {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"

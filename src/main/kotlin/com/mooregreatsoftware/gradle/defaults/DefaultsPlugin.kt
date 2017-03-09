@@ -60,7 +60,7 @@ class DefaultsPlugin : Plugin<Project> {
 
         prj.plugins.apply(ExtIntellijPlugin.PLUGIN_ID)
 
-        prj.afterEvaluate { p ->
+        prj.afterEvaluate {
             if (defaultsExtension.openSource)
                 prj.plugins.apply(ExtLicensePlugin.PLUGIN_ID)
         }
@@ -69,7 +69,7 @@ class DefaultsPlugin : Plugin<Project> {
             prj.plugins.apply(ExtBintrayPlugin::class.java)
         }
 
-        prj.plugins.withId("java") { javaPlugin ->
+        prj.plugins.withId("java") {
             prj.plugins.apply(ExtJavaPlugin.PLUGIN_ID)
             if (prj.hasJavaSource()) {
                 prj.plugins.apply(LombokPlugin.PLUGIN_ID)
@@ -77,15 +77,15 @@ class DefaultsPlugin : Plugin<Project> {
             }
         }
 
-        prj.plugins.withId("groovy") { groovyPlugin ->
+        prj.plugins.withId("groovy") {
             prj.plugins.apply(ExtGroovyPlugin.PLUGIN_ID)
         }
 
-        prj.plugins.withId("scala") { scalaPlugin ->
+        prj.plugins.withId("scala") {
             prj.plugins.apply(ExtScalaPlugin.PLUGIN_ID)
         }
 
-        prj.plugins.withId("kotlin") { kotlinPlugin ->
+        prj.plugins.withId("kotlin") {
             prj.plugins.apply(ExtKotlinPlugin.PLUGIN_ID)
         }
 
@@ -101,7 +101,7 @@ class DefaultsPlugin : Plugin<Project> {
 
 
         private fun addOrderingRules(project: Project) {
-            project.plugins.withType(BasePlugin::class.java) { plugin ->
+            project.plugins.withType(BasePlugin::class.java) {
                 allTasksShouldRunAfterClean(project)
                 publishingTasksShouldRunAfterBuild(project)
             }

@@ -27,7 +27,7 @@ class ExtReleasePluginSpec extends PluginProjectSpec {
 
     @Override
     String getPluginName() {
-        return ExtReleasePlugin.PLUGIN_ID;
+        return ExtReleasePlugin.PLUGIN_ID
     }
 
 

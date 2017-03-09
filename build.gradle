@@ -8,7 +8,7 @@ buildscript {
         mavenLocal()
     }
 
-    ext.kotlin_version = '1.0.6'
+    ext.kotlin_version = '1.1.2'
     ext.dokka_version = '0.9.13'
 
     dependencies {
@@ -87,6 +87,8 @@ asciidoctor {
     outputDir = file("$buildDir/docs")
     attributes 'source-highlighter': 'coderay'
 }
+
+compileKotlin.kotlinOptions.jvmTarget = "1.8"
 
 dokka {
     jdkVersion = 8

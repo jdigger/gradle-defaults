@@ -61,7 +61,7 @@ public class ExtReleasePlugin implements Plugin<Project> {
 
         val releaseTask = project.getTasks().getByName("release");
 
-        plugins.withId("com.jfrog.bintray", plugin -> {
+        plugins.withId("org.ajoberstar.github-pages", plugin -> {
             LOG.debug("Making {} depend on publishGhPages", releaseTask.getPath());
             releaseTask.dependsOn("publishGhPages");
         });
