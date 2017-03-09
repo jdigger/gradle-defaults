@@ -15,17 +15,30 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.BINTRAY_LABELS_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.BINTRAY_PKG_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.BINTRAY_REPO_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.ISSUES_URL_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.LICENSE_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.ORG_ID_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.SITE_URL_KEY
+import com.mooregreatsoftware.gradle.bintray.ExtBintrayPlugin.VCS_READ_URL_KEY
 import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension
 import com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkPlugin.checkerFrameworkExtension
 import com.mooregreatsoftware.gradle.license.ExtLicenseExtension
-import com.mooregreatsoftware.gradle.license.ExtLicensePlugin
 import com.mooregreatsoftware.gradle.license.ExtLicensePlugin.licenseExtension
 import com.mooregreatsoftware.gradle.lombok.LombokExtension
 import com.mooregreatsoftware.gradle.lombok.LombokPlugin.lombokExtension
+import com.mooregreatsoftware.gradle.util.getCustomProperty
+import com.mooregreatsoftware.gradle.util.hasCustomProperty
+import com.mooregreatsoftware.gradle.util.isRootProject
+import com.mooregreatsoftware.gradle.util.setCustomProperty
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Configuration for [DefaultsPlugin].
@@ -35,151 +48,125 @@ import org.gradle.api.plugins.JavaPluginConvention
 @Suppress("unused", "ConvertLambdaToReference")
 open class DefaultsExtension(override val project: Project, override val license: ExtLicenseExtension, override val lombok: LombokExtension, override val checkerFramework: CheckerFrameworkExtension) : ReadableDefaultsExtension {
 
-    private var _orgId: String? = null
     override var orgId: String
-        get() {
-            if (_orgId == null) {
-                val parentId = project.parent.findProjectId()
-                if (parentId != null) return parentId
-                project.logger.debug("\"${DefaultsExtension.NAME}\" on ${project.name} - ${this.inspect()}")
-                throw IllegalStateException("\"orgId\" is not set for \"${DefaultsExtension.NAME}\" on ${project.name}")
-            }
-            return _orgId as String
-        }
+        get() = customProp(ORG_ID_KEY, {
+            LOG.debug("\"${DefaultsExtension.NAME}\" on ${project.name} - ${this.inspect()}")
+            throw IllegalStateException("\"orgId\" is not set for \"${DefaultsExtension.NAME}\" on ${project.name}")
+        })!!
         set(value) {
-            _orgId = value
+            project.setCustomProperty(ORG_ID_KEY, value)
         }
 
     fun setId(value: String) {
-        project.logger.warn("\"id\" property of \"${DefaultsExtension.NAME}\" is deprecated")
+        LOG.warn("\"id\" property of \"${DefaultsExtension.NAME}\" is deprecated")
         orgId = value
     }
 
     override var openSource: Boolean
-        get() {
-            val openSourceProperty = project.openSourceProperty()
-            when (openSourceProperty) {
-                null -> {
-                    val parentIsOpenSource = project.parent.findIsOpenSource()
-                    when {
-                        parentIsOpenSource != null -> return parentIsOpenSource
-                        else -> {
-                            project.logger.warn("\"$OPENSOURCE_PROPERTY_NAME\" is not set on ${project.rootProject.name}: assuming \"true\"")
-                            return true
-                        }
-                    }
-                }
-                else -> return openSourceProperty
-            }
-        }
+        get() = customProp("com.mooregreatsoftware.property.isOpenSource", {
+            LOG.warn("\"${DefaultsExtension.NAME}.openSource\" is not set on ${project.rootProject.name}: assuming \"true\"")
+            true
+        })!!
         set(value) {
-            project.openSourceProperty(value)
+            project.setCustomProperty("com.mooregreatsoftware.property.bintray.isOpenSource", value)
         }
 
-    private var _orgName: String? = null
     override var orgName: String?
-        get() = climb({ it._orgName }, { null })
+        get() = customProp("com.mooregreatsoftware.property.orgName", NULL_SUPPLIER)
         set(value) {
-            _orgName = value
+            project.setCustomProperty("com.mooregreatsoftware.property.orgName", value)
         }
 
-    private var _orgUrl: String? = null
     override var orgUrl: String?
-        get() = climb({ it._orgUrl }, { null })
+        get() = customProp("com.mooregreatsoftware.property.orgUrl", NULL_SUPPLIER)
         set(value) {
-            _orgUrl = value
+            project.setCustomProperty("com.mooregreatsoftware.property.orgUrl", value)
         }
 
-    private var _bintrayRepo: String? = null
     override var bintrayRepo: String?
-        get() = climb({ it._bintrayRepo }, { null })
+        get() = customProp(BINTRAY_REPO_KEY, NULL_SUPPLIER)
         set(value) {
-            _bintrayRepo = value
+            project.setCustomProperty(BINTRAY_REPO_KEY, value)
         }
 
-    private var _bintrayPkg: String? = null
     override var bintrayPkg: String?
-        get() = climb({ it._bintrayPkg }, { null })
+        get() = customProp(BINTRAY_PKG_KEY, NULL_SUPPLIER)
         set(value) {
-            _bintrayPkg = value
+            project.setCustomProperty(BINTRAY_PKG_KEY, value)
         }
 
-    private var _bintrayLabels: Set<String>? = null
     override var bintrayLabels: Set<String>?
-        get() = climb({ it._bintrayLabels }, { null })
+        get() = customProp(BINTRAY_LABELS_KEY, NULL_SUPPLIER)
         set(value) {
-            _bintrayLabels = value
+            project.setCustomProperty(BINTRAY_LABELS_KEY, value)
         }
 
-    private var _isBintrayToCentral: Boolean? = null
     override var isBintrayToCentral: Boolean
-        get() = climb({ it._isBintrayToCentral }, { false })
+        get() = customProp("com.mooregreatsoftware.property.bintray.isBintrayToCentral", { false })!!
         set(value) {
-            _isBintrayToCentral = value
+            project.setCustomProperty("com.mooregreatsoftware.property.bintray.isBintrayToCentral", value)
         }
 
-    private var _developers: Set<Developer>? = null
     override val developers: Set<Developer>?
-        get() = climb({ it._developers }, { null })
+        get() = customProp("com.mooregreatsoftware.property.developers", NULL_SUPPLIER)
 
     fun setDevelopers(devs: Set<Map<String, Any>>) {
-        _developers = devs.map { devFromMap(it) }.toSet()
+        fun devFromMap(map: Map<String, Any>): Developer {
+            val email = map["email"] as String? ?: throw IllegalArgumentException("The email address for a developer must be set")
+            val id = map.getOrElse("id", { email }) as String
+            val name = map.getOrElse("name", { email }) as String
+            return Developer(id = id, name = name, email = email)
+        }
+
+        project.setCustomProperty("com.mooregreatsoftware.property.developers", devs.map { devFromMap(it) }.toSet())
     }
 
-    private var _contributors: Set<Map<*, *>>? = null
     override var contributors: Set<Map<*, *>>?
-        get() = climb({ it._contributors }, { null })
+        get() = customProp("com.mooregreatsoftware.property.contributors", NULL_SUPPLIER)
         set(value) {
-            _contributors = value
+            project.setCustomProperty("com.mooregreatsoftware.property.contributors", value)
         }
 
-    private var _siteUrl: String? = null
     override var siteUrl: String
-        get() = climb({ it._siteUrl }, { "https://github.com/$orgId/${project.name}" })
+        get() = customProp(SITE_URL_KEY, { "https://github.com/$orgId/${project.name}" })!!
         set(value) {
-            _siteUrl = value
+            project.setCustomProperty(SITE_URL_KEY, value)
         }
 
-    private var _issuesUrl: String? = null
     override var issuesUrl: String
-        get() = climb({ it._issuesUrl }, { "$siteUrl/issues" })
+        get() = customProp(ISSUES_URL_KEY, { "$siteUrl/issues" })!!
         set(value) {
-            _issuesUrl = value
+            project.setCustomProperty(ISSUES_URL_KEY, value)
         }
 
-    private var _vcsReadUrl: String? = null
     override var vcsReadUrl: String
-        get() = climb({ it._vcsReadUrl }, { "$siteUrl.git" })
+        get() = customProp(VCS_READ_URL_KEY, { "$siteUrl.git" })!!
         set(value) {
-            _vcsReadUrl = value
+            project.setCustomProperty(VCS_READ_URL_KEY, value)
         }
 
-    private var _vcsWriteUrl: String? = null
     override var vcsWriteUrl: String
-        get() = climb({ it._vcsWriteUrl }, { vcsReadUrl })
+        get() = customProp(VCS_WRITE_URL_KEY, { vcsReadUrl })!!
         set(value) {
-            _vcsWriteUrl = value
+            project.setCustomProperty(VCS_WRITE_URL_KEY, value)
         }
 
-    private var _licenseKey: String? = null
     override var licenseKey: String
-        get() = climb({ it._licenseKey }, { "Apache-2.0" })
+        get() = customProp(LICENSE_KEY, { "Apache-2.0" })!!
         set(value) {
-            _licenseKey = value
+            project.setCustomProperty(LICENSE_KEY, value)
         }
 
-    private var _licenseName: String? = null
     override var licenseName: String
-        get() = climb({ it._licenseName }, { "The Apache Software License, Version 2.0" })
+        get() = customProp("com.mooregreatsoftware.property.license.name", { "The Apache Software License, Version 2.0" })!!
         set(value) {
-            _licenseName = value
+            project.setCustomProperty("com.mooregreatsoftware.property.license.name", value)
         }
 
-    private var _licenseUrl: String? = null
     override var licenseUrl: String
-        get() = climb({ it._licenseUrl }, { "http://www.apache.org/licenses/LICENSE-2.0" })
+        get() = customProp("com.mooregreatsoftware.property.license.url", { "http://www.apache.org/licenses/LICENSE-2.0" })!!
         set(value) {
-            _licenseUrl = value
+            project.setCustomProperty("com.mooregreatsoftware.property.license.url", value)
         }
 
     override var copyrightYears: String
@@ -189,28 +176,27 @@ open class DefaultsExtension(override val project: Project, override val license
         }
 
 
-    private var _compatibilityVersion: JavaVersion? = null
     override val compatibilityVersion: JavaVersion
-        get() = when (_compatibilityVersion) {
-            null -> {
-                val convention = project.convention.findPlugin(JavaPluginConvention::class.java) ?:
-                    throw GradleException("Trying to get the Java compatibility version on a project without the \"java\" plugin")
-                convention.sourceCompatibility
-            }
-            else -> _compatibilityVersion!!
-        }
+        get() = customProp("com.mooregreatsoftware.property.java.version", {
+            val convention = project.convention.findPlugin(JavaPluginConvention::class.java) ?:
+                throw GradleException("Trying to get the Java compatibility version on a project without the \"java\" plugin")
+            convention.sourceCompatibility
+        })!!
 
     fun setCompatibilityVersion(compatibilityVersion: Any) {
-        _compatibilityVersion = JavaVersion.toVersion(compatibilityVersion)
+        project.setCustomProperty("com.mooregreatsoftware.property.java.version", JavaVersion.toVersion(compatibilityVersion))
     }
 
 
-    private fun <T> climb(supplier: (DefaultsExtension) -> T?, defaultSupplier: (Project) -> T): T {
-        return climb(this, supplier, defaultSupplier)
+    private fun <T> customProp(propName: String, defaultSupplier: (Project) -> T): T? {
+        return when {
+            project.hasCustomProperty(propName) -> project.getCustomProperty(propName)
+            else -> defaultSupplier(project)
+        }
     }
 
     fun inspect(): String {
-        return "DefaultsExtension(project=$project, lombok=$lombok, checkerFramework=$checkerFramework, _orgId=$_orgId, _orgName=$_orgName, _orgUrl=$_orgUrl, _bintrayRepo=$_bintrayRepo, _bintrayPkg=$_bintrayPkg, _bintrayLabels=$_bintrayLabels, _isBintrayToCentral=$_isBintrayToCentral, _developers=$_developers, _contributors=$_contributors, _siteUrl=$_siteUrl, _issuesUrl=$_issuesUrl, _vcsReadUrl=$_vcsReadUrl, _vcsWriteUrl=$_vcsWriteUrl, _licenseKey=$_licenseKey, _licenseName=$_licenseName, _licenseUrl=$_licenseUrl, license=$license, _compatibilityVersion=$_compatibilityVersion)"
+        return "DefaultsExtension(project=$project, lombok=$lombok, checkerFramework=$checkerFramework, license=$license)"
     }
 
     override fun toString(): String {
@@ -219,84 +205,38 @@ open class DefaultsExtension(override val project: Project, override val license
 
 
     companion object {
+        val LOG: Logger = LoggerFactory.getLogger(DefaultsExtension::class.java)
+
         /**
          * The name to register this under as a Gradle extension.
          */
         const val NAME = "defaults"
+
+        //        const val BINTRAY_PKG_KEY = "com.mooregreatsoftware.property.bintray.pkg"
+//        const val BINTRAY_REPO_KEY = "com.mooregreatsoftware.property.bintray.repo"
+//        const val BINTRAY_LABELS_KEY = "com.mooregreatsoftware.property.bintray.labels"
+//
+//        const val ORG_ID_KEY = "com.mooregreatsoftware.property.orgId"
+//        const val SITE_URL_KEY = "com.mooregreatsoftware.property.siteUrl"
+//        const val ISSUES_URL_KEY = "com.mooregreatsoftware.property.issuesUrl"
+//
+//        const val LICENSE_KEY = "com.mooregreatsoftware.property.license.key"
+//
+//        const val VCS_READ_URL_KEY = "com.mooregreatsoftware.property.vcs.readUrl"
+        const val VCS_WRITE_URL_KEY = "com.mooregreatsoftware.property.vcs.writeUrl"
+
+
+        private val NULL_SUPPLIER: (Project) -> Nothing? = { null }
+
+        private tailrec fun <T> climb(ext: DefaultsExtension, supplier: (DefaultsExtension) -> T?, defaultSupplier: (Project) -> T): T {
+            return supplier(ext) ?:
+                if (ext.project.isRootProject()) defaultSupplier(ext.project)
+                else climb(ext.project.parent.defaultsExtension(), supplier, defaultSupplier)
+        }
     }
 
-}
-
-// **************************************************************************
-//
-// PUBLIC VALUES AND FUNCTIONS
-//
-// **************************************************************************
-
-val OPENSOURCE_PROPERTY_NAME = "openSource"
-
-
-fun Project.openSourceProperty(): Boolean? {
-    if (hasProperty(OPENSOURCE_PROPERTY_NAME)) {
-        return java.lang.Boolean.valueOf(project.property(OPENSOURCE_PROPERTY_NAME).toString())
-    }
-    return null
-}
-
-
-fun Project.openSourceProperty(isOpenSource: Any) {
-    extensions.extraProperties.set(OPENSOURCE_PROPERTY_NAME, java.lang.Boolean.valueOf(isOpenSource.toString()))
 }
 
 
 fun Project.defaultsExtension(): DefaultsExtension = extensions.findByType(DefaultsExtension::class.java) as DefaultsExtension? ?:
     extensions.create(DefaultsExtension.NAME, DefaultsExtension::class.java, this, licenseExtension(project), lombokExtension(project), checkerFrameworkExtension(project))
-
-
-// **************************************************************************
-//
-// PRIVATE VALUES AND FUNCTIONS
-//
-// **************************************************************************
-
-private fun devFromMap(map: Map<String, Any>): Developer {
-    val email = map["email"] as String? ?: throw IllegalArgumentException("The email address for a developer must be set")
-    val id = map.getOrElse("id", { email }) as String
-    val name = map.getOrElse("name", { email }) as String
-    return Developer(id = id, name = name, email = email)
-}
-
-
-private tailrec fun <T> climb(ext: DefaultsExtension, supplier: (DefaultsExtension) -> T?, defaultSupplier: (Project) -> T): T {
-    return supplier(ext) ?:
-        if (ext.project.isRootProject()) defaultSupplier(ext.project)
-        else climb(ext.project.parent.defaultsExtension(), supplier, defaultSupplier)
-}
-
-
-private tailrec fun Project?.findProjectId(): String? {
-    when (this) {
-        null -> return null
-        else -> {
-            val dext = extensions.findByType(DefaultsExtension::class.java)
-            return when {
-                dext != null -> dext.orgId
-                else -> parent.findProjectId()
-            }
-        }
-    }
-}
-
-
-private tailrec fun Project?.findIsOpenSource(): Boolean? {
-    when (this) {
-        null -> return null
-        else -> {
-            val dext = extensions.findByType(DefaultsExtension::class.java)
-            return when {
-                dext != null -> dext.openSource
-                else -> parent.findIsOpenSource()
-            }
-        }
-    }
-}

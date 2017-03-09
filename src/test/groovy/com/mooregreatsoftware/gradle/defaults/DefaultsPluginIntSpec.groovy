@@ -55,6 +55,77 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
     }
 
 
+    def "build Checker Framework"() {
+        writeCheckerHelloWorld('com.mooregreatsoftware.gradle.defaults')
+
+        buildFile << """
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
+            apply plugin: 'java'
+
+            group = "com.mooregreatsoftware.gradle.defaults"
+
+            defaults {
+                orgId = "tester"
+                compatibilityVersion = 1.8
+            }
+        """.stripIndent()
+
+        when:
+        def result = runTasks('classes')
+
+        then:
+        result.success
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/CheckerHelloWorld.class')
+
+        cleanup:
+        println result?.standardOutput
+        println result?.standardError
+    }
+
+
+    def "build Groovy"() {
+        writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults')
+
+        buildFile << """
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
+            apply plugin: 'groovy'
+
+            defaults {
+                orgId = "tester"
+                compatibilityVersion = 1.7
+            }
+
+            dependencies {
+                compile "org.codehaus.groovy:groovy-all:2.4.4"
+            }
+        """.stripIndent()
+
+        def subprojDir = addSubproject("submod", """
+            apply plugin: 'groovy'
+
+            dependencies {
+                compile "org.codehaus.groovy:groovy-all:2.4.4"
+            }
+        """.stripIndent())
+        writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
+
+        when:
+        def result = runTasks('assemble')
+
+        then:
+        result.success
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldGroovy.class')
+        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldGroovy.class')
+        [":compileJava", ":submod:compileGroovy", ":sourcesJar", ":javadocJar", ":groovydocJar", ":submod:sourcesJar", ":submod:groovydocJar"].each {
+            assert result.wasExecuted(it)
+        }
+
+        cleanup:
+        println result?.standardOutput
+        println result?.standardError
+    }
+
+
     def "build kotlin"() {
         logLevel = LogLevel.INFO
         writeKotlinHelloWorld('com.mooregreatsoftware.gradle.defaults')

@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.scala
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
 class ExtScalaPluginIntSpec extends AbstractIntSpec {
 
@@ -24,15 +23,7 @@ class ExtScalaPluginIntSpec extends AbstractIntSpec {
         writeScalaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
             apply plugin: '${ExtScalaPlugin.PLUGIN_ID}'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.7
-            }
 
             dependencies {
                 compile "org.scala-lang:scala-library:2.10.5"
@@ -55,7 +46,7 @@ class ExtScalaPluginIntSpec extends AbstractIntSpec {
         result.success
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldScala.class')
         fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldScala.class')
-        [":compileJava", ":submod:compileScala", ":sourcesJar", ":javadocJar", ":scaladocJar", ":submod:sourcesJar", ":submod:scaladocJar"].each {
+        [":compileJava", ":submod:compileScala", ":sourcesJar", ":scaladocJar", ":submod:jar"].each {
             assert result.wasExecuted(it)
         }
 

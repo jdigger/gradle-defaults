@@ -19,11 +19,11 @@ import spock.lang.Specification
 
 import java.nio.file.Files
 
-import static com.mooregreatsoftware.FileUtils.findBreadthFirst
+import static com.mooregreatsoftware.gradle.util.FileUtils.findBreadthFirst
 import static com.mooregreatsoftware.TestUtils.createFile
 
 @SuppressWarnings("GroovyPointlessBoolean")
-class FileUtilsTest extends Specification {
+class FileUtilsSpec extends Specification {
 
     def "findBreadthFirst"() {
         def dirPath = Files.createTempDirectory("gradle-defaults-fileutils-test")

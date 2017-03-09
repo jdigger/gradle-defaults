@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle.defaults.xml
+package com.mooregreatsoftware.gradle.util.xml
 
 import groovy.util.Node
 import groovy.util.NodeList

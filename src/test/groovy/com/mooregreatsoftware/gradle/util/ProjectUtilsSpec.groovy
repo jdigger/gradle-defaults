@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle.defaults
+package com.mooregreatsoftware.gradle.util
 
 import nebula.test.ProjectSpec
 import org.gradle.api.plugins.GroovyPlugin
@@ -21,9 +21,9 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
 
 import static com.mooregreatsoftware.TestUtils.createFile
-import static com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt.hasJavaSource
-import static com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt.sourceSets
-import static com.mooregreatsoftware.gradle.defaults.UtilsKt.deleteDir
+import static com.mooregreatsoftware.gradle.util.UtilsKt.deleteDir
+import static com.mooregreatsoftware.gradle.util.ProjectUtilsKt.hasJavaSource
+import static com.mooregreatsoftware.gradle.util.ProjectUtilsKt.sourceSets
 import static java.nio.file.Files.createDirectories
 
 @SuppressWarnings("GroovyPointlessBoolean")

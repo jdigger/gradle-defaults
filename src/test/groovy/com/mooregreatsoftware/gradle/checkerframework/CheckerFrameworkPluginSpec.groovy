@@ -15,7 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.checkerframework
 
-import com.mooregreatsoftware.gradle.JavacUtils
+import com.mooregreatsoftware.gradle.util.JavacUtils
 import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import com.mooregreatsoftware.gradle.lang.AbstractAnnotationProcessorPluginSpec
 import com.mooregreatsoftware.gradle.lombok.LombokPlugin

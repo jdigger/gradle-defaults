@@ -15,8 +15,8 @@
  */
 package com.mooregreatsoftware.gradle.lombok;
 
-import com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt;
 import com.mooregreatsoftware.gradle.lang.AbstractAnnotationProcessorPlugin;
+import com.mooregreatsoftware.gradle.util.ProjectUtilsKt;
 import kotlin.Unit;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
@@ -37,6 +37,12 @@ public class LombokPlugin extends AbstractAnnotationProcessorPlugin {
     public static final String PLUGIN_ID = "com.mooregreatsoftware.lombok";
 
     public static final String LOMBOK_LAUNCH_ANNOTATION_PROCESSOR = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor";
+
+
+    @Override
+    protected String pluginId() {
+        return PLUGIN_ID;
+    }
 
 
     @Override

@@ -21,7 +21,7 @@ import org.gradle.api.logging.LogLevel;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
 
-import static com.mooregreatsoftware.LangUtils.tryRun;
+import static com.mooregreatsoftware.gradle.util.LangUtils.tryRun;
 
 public class Projects {
 

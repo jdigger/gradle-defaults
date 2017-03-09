@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.java
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
 class ExtJavaPluginIntSpec extends AbstractIntSpec {
 
@@ -24,19 +23,12 @@ class ExtJavaPluginIntSpec extends AbstractIntSpec {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: '${ExtJavaPlugin.PLUGIN_ID}'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.7
+            allprojects {
+                apply plugin: '${ExtJavaPlugin.PLUGIN_ID}'
             }
         """.stripIndent()
 
         def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
         """.stripIndent())
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
 
@@ -50,49 +42,6 @@ class ExtJavaPluginIntSpec extends AbstractIntSpec {
         [":compileJava", ":submod:compileJava", ":sourcesJar", ":javadocJar", ":submod:sourcesJar", ":submod:javadocJar"].each {
             assert result.wasExecuted(it)
         }
-//        result.standardOutput.readLines().find({
-//            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
-//        })
-
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
-    }
-
-
-    def "normal java plugin doesn't break things"() {
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
-
-        buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'java'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.7
-            }
-        """.stripIndent()
-
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
-        when:
-        def result = runTasks('assemble')
-
-        then:
-        result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
-        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldJava.class')
-        [":compileJava", ":submod:compileJava", ":sourcesJar", ":javadocJar", ":submod:sourcesJar", ":submod:javadocJar"].each {
-            assert result.wasExecuted(it)
-        }
-//        result.standardOutput.readLines().find({
-//            it.contains("Compiler arguments: -source 1.7 -target 1.7 ") && it.contains("submod")
-//        })
 
         cleanup:
         println result?.standardOutput

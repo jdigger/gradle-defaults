@@ -15,10 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.ide;
 
-import com.mooregreatsoftware.gradle.JavacUtils;
-import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
-import com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt;
+import com.mooregreatsoftware.gradle.util.JavacUtils;
+import com.mooregreatsoftware.gradle.util.xml.NodeBuilder;
 import com.mooregreatsoftware.gradle.java.ExtJavaPlugin;
+import com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt;
 import groovy.util.Node;
 import groovy.util.NodeList;
 import javaslang.collection.List;
@@ -37,16 +37,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.mooregreatsoftware.gradle.JavacUtils.getMutableAnnotationProcessorClassNames;
-import static com.mooregreatsoftware.gradle.JavacUtils.getMutableAnnotationProcessorLibFiles;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.PATH_SEPARATOR;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.getMutableAnnotationProcessorClassNames;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.getMutableAnnotationProcessorLibFiles;
 import static com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt.defaultsExtension;
-import static com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt.allJavaProjects;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.appendChild;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.findByAttribute;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.getOrCreate;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.n;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.appendChild;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.findByAttribute;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.getOrCreate;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.n;
 import static com.mooregreatsoftware.gradle.ide.CodeStyleExtension.codeStyleExtension;
-import static com.mooregreatsoftware.gradle.JavacUtils.PATH_SEPARATOR;
+import static com.mooregreatsoftware.gradle.util.ProjectUtilsKt.allJavaProjects;
 
 @SuppressWarnings({"Convert2MethodRef", "SameParameterValue"})
 public class ExtIntellijPlugin implements Plugin<Project> {
@@ -106,7 +106,6 @@ public class ExtIntellijPlugin implements Plugin<Project> {
             () -> compilerConfiguration.appendNode("annotationProcessing"));
 
         project.getPlugins().withId(ExtJavaPlugin.PLUGIN_ID, it -> {
-            val plugin = (ExtJavaPlugin)it;
             val profile = createProfileNode(project, annotationProcessing);
 
             final List<File> bootClasspath = List.ofAll(JavacUtils.getMutableBootClasspath(project));

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle;
+package com.mooregreatsoftware.gradle.util;
 
 import javaslang.collection.TreeSet;
 import lombok.val;
@@ -135,15 +135,19 @@ public final class JavacUtils {
 
 
     private static void addProcessor(Project project, List<String> compilerArgs) {
+        val classNames = getMutableAnnotationProcessorClassNames(project);
+        if (classNames.isEmpty()) return;
         compilerArgs.add("-processor");
-        compilerArgs.add(TreeSet.ofAll(getMutableAnnotationProcessorClassNames(project)).mkString(","));
+        compilerArgs.add(TreeSet.ofAll(classNames).mkString(","));
     }
 
 
     private static void addProcessorPath(Project project, List<String> compilerArgs) {
+        val libFiles = getMutableAnnotationProcessorLibFiles(project);
+        if (libFiles.isEmpty()) return;
         compilerArgs.add("-processorpath");
         compilerArgs.add(
-            TreeSet.ofAll(getMutableAnnotationProcessorLibFiles(project)).map(f -> f.getAbsolutePath()).mkString(PATH_SEPARATOR)
+            TreeSet.ofAll(libFiles).map(f -> f.getAbsolutePath()).mkString(PATH_SEPARATOR)
         );
     }
 

@@ -15,6 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
+import com.mooregreatsoftware.gradle.Projects
+import com.mooregreatsoftware.gradle.groovy.ExtGroovyPlugin
+import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
+import com.mooregreatsoftware.gradle.kotlin.ExtKotlinPlugin
 import nebula.test.PluginProjectSpec
 
 @SuppressWarnings("GroovyPointlessBoolean")
@@ -38,6 +42,60 @@ class DefaultPluginSpec extends PluginProjectSpec {
         expect:
         subExt.openSource == true
         subExt.siteUrl == "https://github.com/theId/subproj"
+    }
+
+
+    def "with groovy"() {
+        given:
+        def plugin = project.plugins.apply(ExtGroovyPlugin.PLUGIN_ID) as ExtGroovyPlugin
+
+        project.plugins.apply(DefaultsPlugin.PLUGIN_ID)
+        project.group = "com.mooregreatsoftware.gradle.defaults"
+
+        when:
+        Projects.evaluate(project)
+
+        then:
+        plugin.docJarTask(project).name == "groovydocJar"
+
+        and:
+        def artifacts = project.configurations.getByName("archives").allArtifacts
+        artifacts.every { it.type == "jar" }
+        artifacts.collect { it.classifier } as Set == ["", "sources", "javadoc", "groovydoc"] as Set
+
+        when:
+        def jarTask = ExtJavaPlugin.jarTask(project)
+        jarTask.execute()
+
+        then:
+        jarTask.manifest.attributes.get("Built-By") == "unknown@unknown"
+    }
+
+
+    def "with kotlin"() {
+        given:
+        def plugin = project.plugins.apply(ExtKotlinPlugin.PLUGIN_ID) as ExtKotlinPlugin
+
+        project.plugins.apply(DefaultsPlugin.PLUGIN_ID)
+        project.group = "com.mooregreatsoftware.gradle.defaults"
+
+        when:
+        Projects.evaluate(project)
+
+        then:
+        plugin.docJarTask(project) == null
+
+        and:
+        def artifacts = project.configurations.getByName("archives").allArtifacts
+        artifacts.every { it.type == "jar" }
+        artifacts.collect { it.classifier } as Set == ["", "sources", "javadoc"] as Set
+
+        when:
+        def jarTask = ExtJavaPlugin.jarTask(project)
+        jarTask.execute()
+
+        then:
+        jarTask.manifest.attributes.get("Built-By") == "unknown@unknown"
     }
 
 }

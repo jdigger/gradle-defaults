@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.ide
+package com.mooregreatsoftware.gradle.ide
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.ide.ExtIntellijPlugin
 
 class IntellijPluginIntSpec extends AbstractIntSpec {
 

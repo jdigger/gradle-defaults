@@ -28,6 +28,7 @@ public final class TestUtils {
     }
 
 
+    @SuppressWarnings("WeakerAccess")
     public static Path topLevelDir() throws IOException {
         return getTopLevelDir(new File(".").getCanonicalFile().toPath());
     }
@@ -57,4 +58,5 @@ public final class TestUtils {
         if (dir == null) throw new IllegalArgumentException("dir == null");
         return Files.walk(dir, 1).anyMatch(path -> ".travis.yml".equals(path.getFileName().toString()));
     }
+
 }

@@ -61,6 +61,21 @@ class ExtReleasePluginSpec extends PluginProjectSpec {
     }
 
 
+    def "release depends on publishing BinTray if applicable"() {
+        Projects.setLogLevel(LogLevel.INFO)
+        GitHelper.newRepo(projectDir).setupRepo()
+
+        project.plugins.apply(ExtReleasePlugin)
+        project.plugins.apply("com.jfrog.bintray")
+
+        when:
+        def releaseTask = project.tasks.getByName("release")
+
+        then:
+        releaseTask.dependsOn.findAll { it instanceof Task }.collect { ((Task)it).name } contains "bintrayUpload"
+    }
+
+
     def "release does not apply if root project but no git repo"() {
         Projects.setLogLevel(LogLevel.INFO)
 

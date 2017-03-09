@@ -15,10 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.lang;
 
-import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt;
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin;
-import com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt;
+//import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt;
 import com.mooregreatsoftware.gradle.maven.MavenPublishPublications;
+import com.mooregreatsoftware.gradle.util.GrGitUtils;
+import com.mooregreatsoftware.gradle.util.ProjectUtilsKt;
 import lombok.val;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Plugin;
@@ -41,17 +41,9 @@ public abstract class AbstractLanguagePlugin implements Plugin<Project> {
     private static final String SOURCES_JAR_TASK_NAME = "sourcesJar";
 
 
-    protected static void configureLanguageTasks(Project project) {
+    private static void configureLanguageTasks(Project project) {
         project.getTasks().withType(Jar.class, jarTask ->
             jarTask.doFirst(task -> configureManifestAttributes(jarTask))
-        );
-
-        project.getTasks().withType(AbstractCompile.class,
-            abstractCompile -> abstractCompile.doFirst(task -> {
-                val defaults = DefaultsExtensionKt.defaultsExtension(task.getProject());
-                abstractCompile.setSourceCompatibility(defaults.getCompatibilityVersion().toString());
-                abstractCompile.setTargetCompatibility(defaults.getCompatibilityVersion().toString());
-            })
         );
     }
 
@@ -77,14 +69,12 @@ public abstract class AbstractLanguagePlugin implements Plugin<Project> {
 
 
     private static String builtBy(Project project) {
-        return DefaultsPlugin.Companion.userEmail(project);
+        return GrGitUtils.userEmail(project);
     }
 
 
     @Override
     public final void apply(Project project) {
-        DefaultsExtensionKt.defaultsExtension(project);
-
         LOG.info("Applying {} to {}", pluginId(), project);
 
         project.getPlugins().apply(basePluginId());

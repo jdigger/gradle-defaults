@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.groovy
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 
 class ExtGroovyPluginIntSpec extends AbstractIntSpec {
 
@@ -48,49 +47,6 @@ class ExtGroovyPluginIntSpec extends AbstractIntSpec {
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldGroovy.class')
         fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldGroovy.class')
         [":compileJava", ":submod:compileGroovy", ":sourcesJar", ":groovydocJar"].each {
-            assert result.wasExecuted(it)
-        }
-
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
-    }
-
-
-    def "build with defaults"() {
-        writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults')
-
-        buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'groovy'
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.7
-            }
-
-            dependencies {
-                compile "org.codehaus.groovy:groovy-all:2.4.4"
-            }
-        """.stripIndent()
-
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'groovy'
-
-            dependencies {
-                compile "org.codehaus.groovy:groovy-all:2.4.4"
-            }
-        """.stripIndent())
-        writeGroovyHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
-        when:
-        def result = runTasks('assemble')
-
-        then:
-        result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldGroovy.class')
-        fileExists('submod/build/classes/main/com/mooregreatsoftware/gradle/defaults/asubmod/HelloWorldGroovy.class')
-        [":compileJava", ":submod:compileGroovy", ":sourcesJar", ":javadocJar", ":groovydocJar", ":submod:sourcesJar", ":submod:groovydocJar"].each {
             assert result.wasExecuted(it)
         }
 

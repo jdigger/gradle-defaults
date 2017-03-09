@@ -15,9 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.defaults
 
+import com.mooregreatsoftware.gradle.util.JdkVersion
 import spock.lang.Specification
 
-import static com.mooregreatsoftware.gradle.defaults.UtilsKt.jdkVersion
+import static com.mooregreatsoftware.gradle.util.UtilsKt.jdkVersion
 
 class UtilsSpec extends Specification {
 

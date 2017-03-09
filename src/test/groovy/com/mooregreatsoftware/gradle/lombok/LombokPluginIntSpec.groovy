@@ -16,8 +16,6 @@
 package com.mooregreatsoftware.gradle.lombok
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
-import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import groovy.transform.CompileStatic
 
 class LombokPluginIntSpec extends AbstractIntSpec {
@@ -27,13 +25,6 @@ class LombokPluginIntSpec extends AbstractIntSpec {
 
         buildFile << """
             apply plugin: '${LombokPlugin.PLUGIN_ID}'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.8
-            }
         """.stripIndent()
 
         when:

@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import static org.apache.commons.beanutils.BeanUtils.setProperty;
 
 @SuppressWarnings("SameParameterValue")
+// TODO Remove dependency on defaults extension
 public class ExtLicensePlugin implements Plugin<Project> {
     public static final String PLUGIN_ID = "com.mooregreatsoftware.license";
 

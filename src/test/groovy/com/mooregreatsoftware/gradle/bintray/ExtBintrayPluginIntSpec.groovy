@@ -16,7 +16,8 @@
 package com.mooregreatsoftware.gradle.bintray
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
+import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
+import org.gradle.api.logging.LogLevel
 
 import java.nio.file.Files
 
@@ -39,27 +40,19 @@ class ExtBintrayPluginIntSpec extends AbstractIntSpec {
                     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
                 }
             }
-            apply plugin: 'com.jfrog.bintray'
 
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'java'
+            apply plugin: "${ExtBintrayPlugin.PLUGIN_ID}"
+            apply plugin: "${ExtJavaPlugin.PLUGIN_ID}"
 
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
                 orgId = "tester"
-                copyrightYears = '2014-2016'
                 bintrayRepo = 'java-test'
             }
 
             bintray.apiUrl = 'http://localhost:${port}/test-api'
         """.stripIndent()
-
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
 
         when:
         def result = runTasks('bintrayUpload')
@@ -68,7 +61,6 @@ class ExtBintrayPluginIntSpec extends AbstractIntSpec {
         result.success
         bintrayServer.putCount == 4 // one PUT per file being uploaded
         bintrayServer.postCount >= 1 // one POST to send "publish" command, but there's a (static) bug in the base plugin that retains publish requests
-
 
         cleanup:
         bintrayServer?.stop()
@@ -94,27 +86,19 @@ class ExtBintrayPluginIntSpec extends AbstractIntSpec {
                     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
                 }
             }
-            apply plugin: 'com.jfrog.bintray'
 
-            ${applyPlugin(DefaultsPlugin)}
-            apply plugin: 'java'
+            apply plugin: "${ExtBintrayPlugin.PLUGIN_ID}"
+            apply plugin: "${ExtJavaPlugin.PLUGIN_ID}"
 
             group = "com.mooregreatsoftware.gradle.defaults"
 
             defaults {
                 orgId = "tester"
-                copyrightYears = '2014-2016'
                 bintrayRepo = 'java-test'
             }
 
             bintray.apiUrl = 'http://localhost:${port}/test-api'
         """.stripIndent()
-
-        def subprojDir = addSubproject("submod", """
-            apply plugin: 'java'
-        """.stripIndent())
-        writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.asubmod', subprojDir)
-
 
         when:
         def result = runTasks('bintrayUpload')
@@ -123,7 +107,6 @@ class ExtBintrayPluginIntSpec extends AbstractIntSpec {
         result.success
         bintrayServer.putCount == 4 // one PUT per file being uploaded
         bintrayServer.postCount >= 1 // one POST to send "publish" command, but there's a (static) bug in the base plugin that retains publish requests
-
 
         cleanup:
         bintrayServer?.stop()

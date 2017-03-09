@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.bintray
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt
-import com.mooregreatsoftware.gradle.maven.MavenPublishPublications
 import nebula.test.PluginProjectSpec
 import org.gradle.api.GradleException
 
@@ -31,10 +30,9 @@ class ExtBintrayPluginSpec extends PluginProjectSpec {
     }
 
 
-    def "extension"() {
+    def "setting the bintray extension"() {
         project.plugins.apply(pluginName)
         project.group = "test.test"
-        MavenPublishPublications.mainPublication(project)
         def bintrayExtension = ExtBintrayPlugin.bintrayExtension(project)
 
         expect:
@@ -64,11 +62,10 @@ class ExtBintrayPluginSpec extends PluginProjectSpec {
     }
 
 
-    def "orgId is set"() {
+    def "setting on the defaults extension"() {
         project.plugins.apply(pluginName)
         def bintrayExtension = ExtBintrayPlugin.bintrayExtension(project)
         project.group = "test.test"
-        MavenPublishPublications.mainPublication(project)
         def defaultsExt = DefaultsExtensionKt.defaultsExtension(project)
 
         expect:
@@ -80,7 +77,7 @@ class ExtBintrayPluginSpec extends PluginProjectSpec {
         bintrayExtension.pkg.vcsUrl == null
 
         when:
-        bintrayExtension.pkg.repo = "javaFiles"
+        defaultsExt.bintrayRepo = "javaFiles"
         defaultsExt.orgId = 'tester'
 
         evaluate(project)
@@ -89,9 +86,9 @@ class ExtBintrayPluginSpec extends PluginProjectSpec {
         bintrayExtension.publish == true
         bintrayExtension.pkg.publicDownloadNumbers == true
         bintrayExtension.pkg.repo == "javaFiles"
-        bintrayExtension.pkg.websiteUrl == "https://github.com/tester/orgId-is-set"
-        bintrayExtension.pkg.issueTrackerUrl == "https://github.com/tester/orgId-is-set/issues"
-        bintrayExtension.pkg.vcsUrl == "https://github.com/tester/orgId-is-set.git"
+        bintrayExtension.pkg.websiteUrl == "https://github.com/tester/setting-on-the-defaults-extension"
+        bintrayExtension.pkg.issueTrackerUrl == "https://github.com/tester/setting-on-the-defaults-extension/issues"
+        bintrayExtension.pkg.vcsUrl == "https://github.com/tester/setting-on-the-defaults-extension.git"
     }
 
 

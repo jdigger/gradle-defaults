@@ -15,7 +15,6 @@
  */
 package com.mooregreatsoftware.gradle.lang
 
-import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt
 import com.mooregreatsoftware.gradle.ide.ExtIntellijPlugin
 import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import com.mooregreatsoftware.gradle.lombok.LombokExtension
@@ -62,7 +61,6 @@ abstract class AbstractAnnotationProcessorPluginSpec extends PluginProjectSpec {
 
 
     def "javac and IDEA project are setup correctly"() {
-        DefaultsExtensionKt.defaultsExtension(project)
         createPlugin()
 
         project.plugins.apply(ExtJavaPlugin.PLUGIN_ID)

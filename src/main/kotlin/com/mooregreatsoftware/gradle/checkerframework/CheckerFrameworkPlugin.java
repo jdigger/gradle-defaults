@@ -15,10 +15,10 @@
  */
 package com.mooregreatsoftware.gradle.checkerframework;
 
-import com.mooregreatsoftware.gradle.JavacUtils.Option;
-import com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt;
-import com.mooregreatsoftware.gradle.defaults.UtilsKt;
+import com.mooregreatsoftware.gradle.util.JavacUtils.Option;
 import com.mooregreatsoftware.gradle.lang.AbstractAnnotationProcessorPlugin;
+import com.mooregreatsoftware.gradle.util.ProjectUtilsKt;
+import com.mooregreatsoftware.gradle.util.UtilsKt;
 import kotlin.Unit;
 import lombok.val;
 import org.gradle.api.Action;
@@ -33,9 +33,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import static com.mooregreatsoftware.gradle.JavacUtils.createJavacArgs;
-import static com.mooregreatsoftware.gradle.JavacUtils.registerAnnotationProcessorOptions;
-import static com.mooregreatsoftware.gradle.JavacUtils.registerBootClasspath;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.createJavacArgs;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.registerAnnotationProcessorOptions;
+import static com.mooregreatsoftware.gradle.util.JavacUtils.registerBootClasspath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
@@ -49,6 +49,12 @@ public class CheckerFrameworkPlugin extends AbstractAnnotationProcessorPlugin {
     public static final String PLUGIN_ID = "com.mooregreatsoftware.checker-framework";
 
     public static final String CHECKERFRAMEWORK_NULLNESS_CHECKER = "org.checkerframework.checker.nullness.NullnessChecker";
+
+
+    @Override
+    protected String pluginId() {
+        return PLUGIN_ID;
+    }
 
 
     @Override

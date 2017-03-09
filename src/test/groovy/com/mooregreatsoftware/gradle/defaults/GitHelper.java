@@ -15,7 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.defaults;
 
-import com.mooregreatsoftware.LangUtils;
+import com.mooregreatsoftware.gradle.util.LangUtils;
 import lombok.val;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.eclipse.jgit.api.Git;
@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 
-import static com.mooregreatsoftware.LangUtils.tryGet;
-import static com.mooregreatsoftware.LangUtils.tryRun;
+import static com.mooregreatsoftware.gradle.util.LangUtils.tryGet;
+import static com.mooregreatsoftware.gradle.util.LangUtils.tryRun;
 
 @SuppressWarnings("WeakerAccess")
 public class GitHelper implements Closeable {

@@ -23,36 +23,11 @@ import spock.lang.Subject
 @Subject(ExtReleasePlugin)
 class ExtReleasePluginIntSpec extends AbstractIntSpec {
 
-    def "release open source"() {
-        logLevel = LogLevel.LIFECYCLE
+    def "bare release"() {
+        logLevel = LogLevel.INFO
 
         buildFile << """
-//            buildscript {
-//                dependencies {
-//                    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-//                }
-//            }
-//            apply plugin: 'com.jfrog.bintray'
-
-//            group = 'com.mooregreatsoftware.gradle.defaults.test'
-//            description = 'Nice Gradle defaults'
-
-//            bintray {
-//                pkg {
-//                    licenses = ['Apache-2.0']
-//                    attributes = ['plat': ['jvm']]
-//                }
-//            }
-
             apply plugin: "${ExtReleasePlugin.PLUGIN_ID}"
-
-//            defaults {
-//                orgId = "tester"
-//                openSource = true
-//                bintrayRepo = "java-test"
-//                compatibilityVersion = 1.8
-//                orgName = "testing org"
-//            }
         """.stripIndent()
 
         createLicenseHeader()
@@ -79,11 +54,13 @@ class ExtReleasePluginIntSpec extends AbstractIntSpec {
         when:
         def result = runTasks('release',
             '-Prelease.scope=patch', '-Prelease.stage=final')
-//        def result = runTasks('licenseFormat', 'generatePomFileForMainPublication', 'release',
-//            '-x', 'bintrayUpload', '-x', 'prepareGhPages', '-Prelease.scope=patch', '-Prelease.stage=final')
 
         then:
         result.rethrowFailure()
+        result.wasExecuted(":javaProj:clean")
+        result.wasExecuted(":javaProj:build")
+        result.wasExecuted(":otherlangsProj:clean")
+        result.wasExecuted(":otherlangsProj:build")
         fileExists('javaProj/build/classes/main/com/mooregreatsoftware/gradle/defaults/javaproj/HelloWorldJava.class')
         fileExists('otherlangsProj/build/classes/main/com/mooregreatsoftware/gradle/defaults/otherlangsProj/HelloWorldGroovy.class')
         parseVersion(result.standardOutput) == '1.0.1'

@@ -37,7 +37,7 @@ class ExtJavaPluginSpec extends PluginProjectSpec {
     }
 
 
-    def "defaults"() {
+    def "default JAR Manifest info"() {
         when:
         Projects.evaluate(project)
 

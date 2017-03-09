@@ -15,9 +15,8 @@
  */
 @file:Suppress("ConvertLambdaToReference")
 
-package com.mooregreatsoftware.gradle.defaults
+package com.mooregreatsoftware.gradle.util
 
-import com.mooregreatsoftware.FileUtils
 import org.gradle.api.Action
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
@@ -34,6 +33,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -260,4 +260,35 @@ fun Action<in Task>.unwrap(): Action<in Task> {
         actionField.get(this) as Action<in Task>
     }
     else this
+}
+
+fun Project.hasCustomProperty(propertyName: String): Boolean =
+    findProperty<Any>(propertyName, this).isPresent
+
+/**
+ * Climb up the project properties looking for the named property. The property may be either on the Project itself
+ * or in the "extended properties" (e.g., "ext").
+ */
+private fun <T> findProperty(propertyName: String, project: Project): Optional<T> {
+    @Suppress("UNCHECKED_CAST")
+    tailrec fun climbForProp(project: Project): Optional<T> {
+        return when {
+            project.hasProperty(propertyName) -> Optional.of(project.property(propertyName) as T)
+            project.extensions.extraProperties.has(propertyName) -> Optional.of(project.extensions.extraProperties.get(propertyName) as T)
+            project.isRootProject() -> Optional.empty()
+            else -> climbForProp(project.parent)
+        }
+    }
+
+    return climbForProp(project)
+}
+
+
+fun <T> Project.getCustomProperty(propertyName: String): T? {
+    return findProperty<T>(propertyName, this).orElse(null)
+}
+
+
+fun <T> Project.setCustomProperty(propertyName: String, value: T) {
+    this.extensions.extraProperties.set(propertyName, value)
 }

@@ -15,19 +15,21 @@
  */
 package com.mooregreatsoftware.gradle.lang;
 
-import com.mooregreatsoftware.gradle.JavacUtils;
-import com.mooregreatsoftware.gradle.ide.ExtIntellijPlugin;
-import com.mooregreatsoftware.gradle.java.ExtJavaPlugin;
+import com.mooregreatsoftware.gradle.util.JavacUtils;
 import lombok.val;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.plugins.JavaPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collection;
 
 public abstract class AbstractAnnotationProcessorPlugin implements Plugin<Project> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAnnotationProcessorPlugin.class);
+
 
     @Override
     public void apply(Project project) {
@@ -36,12 +38,16 @@ public abstract class AbstractAnnotationProcessorPlugin implements Plugin<Projec
 
 
     private void configJavaPlugin(Project project) {
+        LOG.info("Applying {} to {}", pluginId(), project);
         val plugins = project.getPlugins();
-        plugins.apply(ExtJavaPlugin.PLUGIN_ID);
-        plugins.withId("org.gradle.idea", plugin -> plugins.apply(ExtIntellijPlugin.PLUGIN_ID));
+        plugins.apply("com.mooregreatsoftware.java");
+        plugins.withId("org.gradle.idea", plugin -> plugins.apply("com.mooregreatsoftware.idea"));
         registerWithJavac(project);
         addCompileOnlyDependencies(project);
     }
+
+
+    protected abstract String pluginId();
 
 
     /**

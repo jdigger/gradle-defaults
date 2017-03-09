@@ -16,13 +16,11 @@
 package com.mooregreatsoftware.gradle.bintray;
 
 import com.google.common.io.Files;
-import com.jfrog.bintray.gradle.BintrayExtension;
-import com.jfrog.bintray.gradle.BintrayPlugin;
-import com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt;
-import com.mooregreatsoftware.gradle.defaults.ReadableDefaultsExtension;
-import com.mooregreatsoftware.gradle.defaults.ReadableDefaultsExtensionKt;
+import com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt;
 import com.mooregreatsoftware.gradle.maven.MavenPublishPublications;
+import com.mooregreatsoftware.gradle.util.LangUtils;
 import lombok.val;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.GradleException;
@@ -34,35 +32,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.mooregreatsoftware.gradle.defaults.UtilsKt.stream;
+import static com.mooregreatsoftware.gradle.util.ProjectUtilsKt.getCustomProperty;
+import static com.mooregreatsoftware.gradle.util.ProjectUtilsKt.hasCustomProperty;
+import static com.mooregreatsoftware.gradle.util.UtilsKt.stream;
 
 /**
- * Applies the {@link BintrayPlugin} from JFrog and sets up reasonable defaults that are coordinated with other
+ * Applies the BintrayPlugin from JFrog and sets up reasonable defaults that are coordinated with other
  * "known" plugins (such as for POM.xml data).
  */
+// TODO Remove dependency on defaults extension
 @SuppressWarnings({"RedundantCast", "RedundantTypeArguments", "Convert2MethodRef"})
 public class ExtBintrayPlugin implements Plugin<Project> {
     private static final Logger LOG = LoggerFactory.getLogger(ExtBintrayPlugin.class);
 
+    public static final String PLUGIN_ID = "com.mooregreatsoftware.bintray";
+
+    public static final String BINTRAY_PKG_KEY = "com.mooregreatsoftware.property.bintray.pkg";
+    public static final String BINTRAY_REPO_KEY = "com.mooregreatsoftware.property.bintray.repo";
+    public static final String BINTRAY_LABELS_KEY = "com.mooregreatsoftware.property.bintray.labels";
+
+    public static final String ORG_ID_KEY = "com.mooregreatsoftware.property.orgId";
+    public static final String SITE_URL_KEY = "com.mooregreatsoftware.property.siteUrl";
+    public static final String ISSUES_URL_KEY = "com.mooregreatsoftware.property.issuesUrl";
+
+    public static final String LICENSE_KEY = "com.mooregreatsoftware.property.license.key";
+
+    public static final String VCS_READ_URL_KEY = "com.mooregreatsoftware.property.vcs.readUrl";
+
 
     @Override
-    @SuppressWarnings("argument.type.incompatible")
     public void apply(Project project) {
-        project.getPlugins().apply(BintrayPlugin.class);
+        DefaultsExtensionKt.defaultsExtension(project);
+        LOG.info("Applying com.jfrog.bintray to {}", project);
+        project.getPlugins().apply("com.jfrog.bintray");
 
-        val readExtensionFuture = ReadableDefaultsExtensionKt.readableDefaultsExtension(project);
-        ProjectUtilsKt.postEvalCreate(project, () -> init(project, readExtensionFuture));
+        project.afterEvaluate(proj -> init(proj));
     }
 
 
@@ -73,72 +88,65 @@ public class ExtBintrayPlugin implements Plugin<Project> {
     // **********************************************************************
 
 
-    private void setPackageRepo(BintrayExtension.PackageConfig packageConfig, @Nullable ReadableDefaultsExtension readExtension) {
-        String bintrayRepo = packageConfig.getRepo();
+    private void setPackageRepo(Project project, Object packageConfigExt) {
+        val bintrayRepo = getProperty(packageConfigExt, "repo");
         if (nullOrBlank(bintrayRepo)) {
-            if (readExtension != null) {
-                bintrayRepo = readExtension.getBintrayRepo();
-                if (nullOrBlank(bintrayRepo)) {
-                    throw new GradleException("Need to set defaults { bintrayRepo = ... }");
-                }
-
-                packageConfig.setRepo((@NonNull String)bintrayRepo);
+            if (hasCustomProperty(project, BINTRAY_REPO_KEY)) {
+                setProperty(packageConfigExt, "repo", (@NonNull String)getCustomProperty(project, BINTRAY_REPO_KEY));
             }
             else {
-                throw new GradleException("Need to set bintray { pkg { repo = ... } }");
+                throw new GradleException("Need to set defaults { bintrayRepo = ... }");
             }
         }
         else {
-            if (readExtension != null) {
-                bintrayRepo = readExtension.getBintrayRepo();
-                if (!nullOrBlank(bintrayRepo)) {
-                    throw new GradleException("Both defaults { bintrayRepo = ... } and bintray { pkg { repo = ... } } have been set.");
-                }
+            if (hasCustomProperty(project, BINTRAY_REPO_KEY)) {
+                throw new GradleException("Both defaults { bintrayRepo = ... } and bintray { pkg { repo = ... } } have been set.");
             }
         }
     }
 
 
-    private void setPackageName(Project project, BintrayExtension.PackageConfig packageConfig, ReadableDefaultsExtension readExtension) {
-        String packageName = packageConfig.getName();
+    private void setPackageName(Project project, Object packageConfigExt) {
+        val packageName = getProperty(packageConfigExt, "name");
+        val hasCustomBintrayPkg = hasCustomProperty(project, BINTRAY_PKG_KEY);
         if (nullOrBlank(packageName)) {
-            packageName = readExtension.getBintrayPkg();
-            packageConfig.setName(nullOrBlank(packageName) ? project.getName() : (@NonNull String)packageName);
+            if (hasCustomBintrayPkg)
+                setProperty(packageConfigExt, "name", (@NonNull String)getCustomProperty(project, BINTRAY_PKG_KEY));
+            else
+                setProperty(packageConfigExt, "name", project.getName());
         }
         else {
-            packageName = readExtension.getBintrayPkg();
-            if (!nullOrBlank(packageName)) {
+            if (hasCustomBintrayPkg) {
                 throw new GradleException("Both defaults { bintrayPkg = ... } and bintray { pkg { name = ... } } have been set.");
             }
         }
     }
 
 
-    private static boolean nullOrBlank(@Nullable String str) {
-        return str == null || str.trim().isEmpty();
+    private static boolean nullOrBlank(@Nullable Object value) {
+        return value == null || ((value instanceof String) && ((String)value).trim().isEmpty());
     }
 
 
-    private Map bintrayAttributes(Project project, @Nullable ReadableDefaultsExtension readExtension) {
+    private Map bintrayAttributes(Project project) {
         val bintrayAttributes = new HashMap<String, Object>();
-        if (readExtension != null) {
-            final Set<String> bintrayLabels = readExtension.getBintrayLabels();
-            if (bintrayLabels != null && bintrayLabels.contains("gradle")) {
-                LOG.info("bintrayLabels does includes \'gradle\' so generating \'gradle-plugins\' attribute");
-                val filesTree = gradlePluginPropertyFiles(project);
-                val pluginIds = filesToPluginIds(filesTree);
-                val pluginIdBintrayAttributeValues = new ArrayList<String>();
+        val labels = defaultLabels(project);
+        final @Nullable Collection<String> bintrayLabels = labels == null ? null : Arrays.asList(labels);
+        if (bintrayLabels != null && bintrayLabels.contains("gradle")) {
+            LOG.info("bintrayLabels does includes \'gradle\' so generating \'gradle-plugins\' attribute");
+            val filesTree = gradlePluginPropertyFiles(project);
+            val pluginIds = filesToPluginIds(filesTree);
+            val pluginIdBintrayAttributeValues = new ArrayList<String>();
 
-                for (String it : pluginIds) {
-                    String attributeValue = pluginIdToBintrayAttributeValue(project, it);
-                    pluginIdBintrayAttributeValues.add(attributeValue);
-                }
+            for (String it : pluginIds) {
+                String attributeValue = pluginIdToBintrayAttributeValue(project, it);
+                pluginIdBintrayAttributeValues.add(attributeValue);
+            }
 
-                bintrayAttributes.put("gradle-plugins", pluginIdBintrayAttributeValues);
-            }
-            else {
-                LOG.info("bintrayLabels does not include \'gradle\' so not generating \'gradle-plugins\' attribute");
-            }
+            bintrayAttributes.put("gradle-plugins", pluginIdBintrayAttributeValues);
+        }
+        else {
+            LOG.info("bintrayLabels does not include \'gradle\' so not generating \'gradle-plugins\' attribute");
         }
 
         LOG.info("bintrayAttributes: " + bintrayAttributes);
@@ -154,55 +162,122 @@ public class ExtBintrayPlugin implements Plugin<Project> {
     /**
      * Initialize the plugin. Guaranteed to run after the project has been evaluated.
      */
-    private String init(Project project, Future<@Nullable ReadableDefaultsExtension> readExtensionFuture) {
-        val readExtension = readableDefaultsExtension(readExtensionFuture);
-
-        val bintray = (@NonNull BintrayExtension)bintrayExtension(project);
+    private void init(Project project) {
+        val bintray = (@NonNull Object)bintrayExtension(project);
 
         setCredentials(project);
-        bintray.setPublish(true);
+        setProperty(bintray, "publish", true);
 
         setArtifacts(project, bintray);
 
-        val pkgConfig = bintray.getPkg();
+        val pkgConfig = (@NonNull Object)getProperty(bintray, "pkg");
 
         val desc = project.getDescription();
         if (desc != null) {
-            pkgConfig.setDesc(desc);
+            setProperty(pkgConfig, "desc", desc);
         }
 
-        if (readExtension != null) {
-            setPackageRepo(pkgConfig, readExtension);
-            setPackageName(project, pkgConfig, readExtension);
+        setPackageRepo(project, pkgConfig);
+        setPackageName(project, pkgConfig);
 
-            if (nullOrBlank(pkgConfig.getWebsiteUrl()))
-                pkgConfig.setWebsiteUrl(readExtension.getSiteUrl());
-            if (nullOrBlank(pkgConfig.getIssueTrackerUrl()))
-                pkgConfig.setIssueTrackerUrl(readExtension.getIssuesUrl());
-            if (nullOrBlank(pkgConfig.getVcsUrl()))
-                pkgConfig.setVcsUrl(readExtension.getVcsReadUrl());
-            if (pkgConfig.getLicenses() == null)
-                pkgConfig.setLicenses(readExtension.getLicenseKey());
+        setDefaultValueIfPropEmpty(pkgConfig, "websiteUrl", () -> defaultWebsiteUrl(project));
+        setDefaultValueIfPropEmpty(pkgConfig, "issueTrackerUrl", () -> defaultIssueTrackerUrl(project, pkgConfig));
+        setDefaultValueIfPropEmpty(pkgConfig, "vcsUrl", () -> defaultVcsUrl(project, pkgConfig));
+        setDefaultValueIfPropEmpty(pkgConfig, "licenses", () -> defaultLicenses(project));
+        setDefaultValueIfPropEmpty(pkgConfig, "labels", () -> defaultLabels(project));
 
-            pkgConfig.setLabels(toStringArray(readExtension.getBintrayLabels()));
-        }
+        setProperty(pkgConfig, "publicDownloadNumbers", true);
 
-        pkgConfig.setPublicDownloadNumbers(true);
+        val versionConfig = (@NonNull Object)getProperty(pkgConfig, "version");
+        setProperty(versionConfig, "vcsTag", "v" + project.getVersion());
+        setProperty(versionConfig, "attributes", bintrayAttributes(project));
 
-        val versionConfig = pkgConfig.getVersion();
-        versionConfig.setVcsTag("v" + project.getVersion());
-        versionConfig.setAttributes(bintrayAttributes(project, readExtension));
-
-        val gpg = versionConfig.getGpg();
+        val gpg = (@NonNull Object)getProperty(versionConfig, "gpg");
         if (project.hasProperty("gpgPassphrase")) {
-            gpg.setSign(true);
-            gpg.setPassphrase((String)project.property("gpgPassphrase"));
+            setProperty(gpg, "sign", true);
+            setProperty(gpg, "passphrase", ((String)project.property("gpgPassphrase")));
         }
         else {
             LOG.info("\"gpgPassphrase\" not set on the project, so not signing the Bintray upload");
         }
+    }
 
-        return "";
+
+    private String defaultWebsiteUrl(Project project) {
+        return defaultValue(project, "websiteUrl", SITE_URL_KEY,
+            () -> "https://github.com/" + orgId(project) + "/" + project.getName());
+    }
+
+
+    private String defaultIssueTrackerUrl(Project project, Object config) {
+        return defaultValue(project, "issuesTrackerUrl", ISSUES_URL_KEY,
+            () -> getProperty(config, "websiteUrl") + "/issues");
+    }
+
+
+    private String defaultVcsUrl(Project project, Object config) {
+        return defaultValue(project, "vcsUrl", VCS_READ_URL_KEY,
+            () -> getProperty(config, "websiteUrl") + ".git");
+    }
+
+
+    private String[] defaultLicenses(Project project) {
+        return defaultValue(project, "licenses", LICENSE_KEY,
+            () -> new String[]{"Apache-2.0"});
+    }
+
+
+    private String @Nullable [] defaultLabels(Project project) {
+        val hasCustomProperty = hasCustomProperty(project, BINTRAY_LABELS_KEY);
+        if (hasCustomProperty) return toStringArray(getCustomProperty(project, BINTRAY_LABELS_KEY));
+        return null;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private <T> T defaultValue(Project project, String propertyName, String defaultKey, Supplier<T> defaultComputer) {
+        val hasCustomProperty = hasCustomProperty(project, defaultKey);
+        if (hasCustomProperty) return (@NonNull T)getCustomProperty(project, defaultKey);
+        val computedValue = defaultComputer.get();
+        LOG.info("Computed the {} to be: {}", propertyName, (@NonNull Object)computedValue);
+        return computedValue;
+    }
+
+
+    private String orgId(Project project) {
+        val hasCustomProperty = hasCustomProperty(project, ORG_ID_KEY);
+        if (hasCustomProperty) return (@NonNull String)getCustomProperty(project, ORG_ID_KEY);
+        throw new IllegalStateException("\"orgId\" is not set for on \"" + project.getName() + "\"");
+    }
+
+
+    private static @Nullable Object getProperty(Object object, String name) {
+        try {
+            return BeanUtilsBean.getInstance().getPropertyUtils().getSimpleProperty(object, name);
+        }
+        catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw LangUtils.softened(e);
+        }
+    }
+
+
+    private static void setProperty(Object bean, String propName, @Nullable Object value) {
+        try {
+            BeanUtilsBean.getInstance().getPropertyUtils().setSimpleProperty(bean, propName, value);
+        }
+        catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw LangUtils.softened(e);
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static <S> void setDefaultValueIfPropEmpty(Object config, String propName, Supplier<@Nullable S> defaultSupplier) {
+        val currentValue = getProperty(config, propName);
+        if (nullOrBlank(currentValue)) {
+            val defaultValue = defaultSupplier.get();
+            setProperty(config, propName, defaultValue);
+        }
     }
 
 
@@ -229,27 +304,18 @@ public class ExtBintrayPlugin implements Plugin<Project> {
     }
 
 
-    private static void setArtifacts(Project project, BintrayExtension bintray) {
-        if (noArtifactsDefined(bintray)) {
+    private static void setArtifacts(Project project, Object bintrayExt) {
+        if (noArtifactsDefined(bintrayExt)) {
             MavenPublishPublications.mainPublication(project);
-            bintray.setPublications(MavenPublishPublications.PUBLICATION_NAME);
+            setProperty(bintrayExt, "publications", new String[]{MavenPublishPublications.PUBLICATION_NAME});
         }
     }
 
 
-    private static boolean noArtifactsDefined(BintrayExtension bintray) {
-        return bintray.getPublications() == null && bintray.getConfigurations() == null && bintray.getFilesSpec() == null;
-    }
-
-
-    private static @Nullable ReadableDefaultsExtension readableDefaultsExtension(Future<@Nullable ReadableDefaultsExtension> readExtensionFuture) {
-        try {
-            return (ReadableDefaultsExtension)readExtensionFuture.get(50L, TimeUnit.MILLISECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOG.info("ReadableDefaultsExtension has not been set");
-            return null;
-        }
+    private static boolean noArtifactsDefined(Object bintrayExt) {
+        return getProperty(bintrayExt, "publications") == null &&
+            getProperty(bintrayExt, "configurations") == null &&
+            getProperty(bintrayExt, "filesSpec") == null;
     }
 
 
@@ -276,8 +342,8 @@ public class ExtBintrayPlugin implements Plugin<Project> {
     }
 
 
-    public static @Nullable BintrayExtension bintrayExtension(Project project) {
-        return project.getConvention().findByType(BintrayExtension.class);
+    public static @Nullable Object bintrayExtension(Project project) {
+        return project.getConvention().findByName("bintray");
     }
 
 }

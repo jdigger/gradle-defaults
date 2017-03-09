@@ -23,7 +23,7 @@ import org.gradle.api.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.mooregreatsoftware.gradle.GrGitUtils.grgit;
+import static com.mooregreatsoftware.gradle.util.GrGitUtils.grgit;
 
 /**
  * Applies Andrew Oberstar's "Opinionated Release" plugin

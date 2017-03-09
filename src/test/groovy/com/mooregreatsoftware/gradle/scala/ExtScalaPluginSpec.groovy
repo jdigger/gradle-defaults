@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.scala
 
 import com.mooregreatsoftware.gradle.Projects
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import nebula.test.PluginProjectSpec
 import spock.lang.Subject
@@ -32,14 +31,10 @@ class ExtScalaPluginSpec extends PluginProjectSpec {
     }
 
 
-    def setup() {
-        project.group = "com.mooregreatsoftware.gradle.defaults"
-        plugin = project.plugins.apply(pluginName) as ExtScalaPlugin
-    }
-
-
     def "by itself"() {
         when:
+        plugin = project.plugins.apply(pluginName) as ExtScalaPlugin
+        project.group = "com.mooregreatsoftware.defaults"
         Projects.evaluate(project)
 
         then:
@@ -49,30 +44,6 @@ class ExtScalaPluginSpec extends PluginProjectSpec {
         def artifacts = project.configurations.getByName("archives").allArtifacts
         artifacts.every { it.type == "jar" }
         artifacts.collect { it.classifier } as Set == ["", "sources", "scaladoc"] as Set
-
-        when:
-        def jarTask = ExtJavaPlugin.jarTask(project)
-        jarTask.execute()
-
-        then:
-        jarTask.manifest.attributes.get("Built-By") == "unknown@unknown"
-    }
-
-
-    def "with defaults"() {
-        given:
-        project.plugins.apply(DefaultsPlugin.PLUGIN_ID)
-
-        when:
-        Projects.evaluate(project)
-
-        then:
-        plugin.docJarTask(project).name == "scaladocJar"
-
-        and:
-        def artifacts = project.configurations.getByName("archives").allArtifacts
-        artifacts.every { it.type == "jar" }
-        artifacts.collect { it.classifier } as Set == ["", "sources", "javadoc", "scaladoc"] as Set
 
         when:
         def jarTask = ExtJavaPlugin.jarTask(project)

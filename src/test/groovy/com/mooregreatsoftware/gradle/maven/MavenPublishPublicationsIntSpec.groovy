@@ -20,14 +20,14 @@ import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 import nebula.test.functional.ExecutionResult
 
 @SuppressWarnings("GroovyPointlessBoolean")
-class MavenPublishPluginIntSpec extends AbstractIntSpec {
+class MavenPublishPublicationsIntSpec extends AbstractIntSpec {
 
     @SuppressWarnings("GroovyAssignabilityCheck")
     void "good POM generation"() {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'java'
 
             // these are after applying plugin to verify they get picked up for POM
@@ -78,11 +78,11 @@ class MavenPublishPluginIntSpec extends AbstractIntSpec {
     }
 
 
-    def "bad POM generation - no group"() {
+    def "good POM generation - auto group discovery"() {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults.test')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'java'
 
             defaults {
@@ -126,7 +126,7 @@ class MavenPublishPluginIntSpec extends AbstractIntSpec {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'java'
 
             group = 'com.mooregreatsoftware.gradle.defaults'

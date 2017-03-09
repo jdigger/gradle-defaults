@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mooregreatsoftware.gradle.defaults.xml
+package com.mooregreatsoftware.gradle.util.xml
 
-import com.mooregreatsoftware.gradle.defaults.compareMaps
+import com.mooregreatsoftware.gradle.util.compareMaps
 import java.util.Comparator.nullsFirst
 import java.util.Objects.compare
 

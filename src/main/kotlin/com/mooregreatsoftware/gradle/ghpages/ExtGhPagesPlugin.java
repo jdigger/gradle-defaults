@@ -34,9 +34,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static com.mooregreatsoftware.LangUtils.tryGet;
-import static com.mooregreatsoftware.LangUtils.tryRun;
-import static com.mooregreatsoftware.gradle.GrGitUtils.grgit;
+import static com.mooregreatsoftware.gradle.util.LangUtils.tryGet;
+import static com.mooregreatsoftware.gradle.util.LangUtils.tryRun;
+import static com.mooregreatsoftware.gradle.util.GrGitUtils.grgit;
 
 /**
  * Applies Andrew Oberstar's "GH-Pages" plugin

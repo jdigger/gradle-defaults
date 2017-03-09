@@ -16,7 +16,6 @@
 package com.mooregreatsoftware.gradle.groovy
 
 import com.mooregreatsoftware.gradle.Projects
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
 import com.mooregreatsoftware.gradle.java.ExtJavaPlugin
 import nebula.test.PluginProjectSpec
 import spock.lang.Subject
@@ -49,30 +48,6 @@ class ExtGroovyPluginSpec extends PluginProjectSpec {
         def artifacts = project.configurations.getByName("archives").allArtifacts
         artifacts.every { it.type == "jar" }
         artifacts.collect { it.classifier } as Set == ["", "sources", "groovydoc"] as Set
-
-        when:
-        def jarTask = ExtJavaPlugin.jarTask(project)
-        jarTask.execute()
-
-        then:
-        jarTask.manifest.attributes.get("Built-By") == "unknown@unknown"
-    }
-
-
-    def "with defaults"() {
-        given:
-        project.plugins.apply(DefaultsPlugin.PLUGIN_ID)
-
-        when:
-        Projects.evaluate(project)
-
-        then:
-        plugin.docJarTask(project).name == "groovydocJar"
-
-        and:
-        def artifacts = project.configurations.getByName("archives").allArtifacts
-        artifacts.every { it.type == "jar" }
-        artifacts.collect { it.classifier } as Set == ["", "sources", "javadoc", "groovydoc"] as Set
 
         when:
         def jarTask = ExtJavaPlugin.jarTask(project)

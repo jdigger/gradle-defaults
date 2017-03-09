@@ -181,4 +181,24 @@ abstract class AbstractIntSpec extends IntegrationSpec {
         config.save()
     }
 
+
+    @CompileStatic
+    protected File writeCheckerHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
+        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/CheckerHelloWorld.java'
+        def javaFile = createFile(path, baseDir)
+        javaFile << """
+        package ${packageDotted};
+
+        public class CheckerHelloWorld {
+            @org.checkerframework.checker.nullness.qual.Nullable String aVal;
+
+            public static void main(String[] args) {
+                CheckerHelloWorld world = new CheckerHelloWorld();
+                world.aVal = "Hello, Checker Framework test";
+            }
+        }
+        """.stripIndent()
+        return javaFile
+    }
+
 }

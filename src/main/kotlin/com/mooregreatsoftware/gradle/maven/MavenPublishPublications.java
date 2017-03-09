@@ -16,8 +16,8 @@
 package com.mooregreatsoftware.gradle.maven;
 
 import com.mooregreatsoftware.gradle.defaults.DefaultsExtension;
-import com.mooregreatsoftware.gradle.defaults.ProjectUtilsKt;
-import com.mooregreatsoftware.gradle.defaults.xml.NodeBuilder;
+import com.mooregreatsoftware.gradle.util.xml.NodeBuilder;
+import com.mooregreatsoftware.gradle.util.ProjectUtilsKt;
 import groovy.util.Node;
 import javaslang.collection.HashSet;
 import javaslang.collection.List;
@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.mooregreatsoftware.gradle.defaults.DefaultsExtensionKt.defaultsExtension;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.appendChild;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.appendChildren;
-import static com.mooregreatsoftware.gradle.defaults.xml.XmlUtilsKt.n;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.appendChild;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.appendChildren;
+import static com.mooregreatsoftware.gradle.util.xml.XmlUtilsKt.n;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 public class MavenPublishPublications {

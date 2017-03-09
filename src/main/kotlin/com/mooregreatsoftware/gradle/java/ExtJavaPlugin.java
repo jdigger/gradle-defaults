@@ -15,7 +15,7 @@
  */
 package com.mooregreatsoftware.gradle.java;
 
-import com.mooregreatsoftware.gradle.JavacUtils;
+import com.mooregreatsoftware.gradle.util.JavacUtils;
 import com.mooregreatsoftware.gradle.lang.AbstractLanguagePlugin;
 import lombok.val;
 import org.gradle.api.Action;

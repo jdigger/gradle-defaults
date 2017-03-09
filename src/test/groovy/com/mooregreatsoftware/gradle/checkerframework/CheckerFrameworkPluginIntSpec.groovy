@@ -16,8 +16,6 @@
 package com.mooregreatsoftware.gradle.checkerframework
 
 import com.mooregreatsoftware.gradle.defaults.AbstractIntSpec
-import com.mooregreatsoftware.gradle.defaults.DefaultsPlugin
-import groovy.transform.CompileStatic
 
 class CheckerFrameworkPluginIntSpec extends AbstractIntSpec {
 
@@ -29,6 +27,7 @@ class CheckerFrameworkPluginIntSpec extends AbstractIntSpec {
         """.stripIndent()
 
         when:
+        // the 'java' plugin is applied automatically
         def result = runTasks('classes')
 
         then:
@@ -38,54 +37,6 @@ class CheckerFrameworkPluginIntSpec extends AbstractIntSpec {
         cleanup:
         println result?.standardOutput
         println result?.standardError
-    }
-
-
-    def "with defaults"() {
-        writeCheckerHelloWorld('com.mooregreatsoftware.gradle.defaults')
-
-        buildFile << """
-            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
-            apply plugin: '${CheckerFrameworkPlugin.PLUGIN_ID}'
-
-            group = "com.mooregreatsoftware.gradle.defaults"
-
-            defaults {
-                orgId = "tester"
-                compatibilityVersion = 1.8
-            }
-        """.stripIndent()
-
-        when:
-        def result = runTasks('classes')
-
-        then:
-        result.success
-        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/CheckerHelloWorld.class')
-
-        cleanup:
-        println result?.standardOutput
-        println result?.standardError
-    }
-
-
-    @CompileStatic
-    protected File writeCheckerHelloWorld(String packageDotted, File baseDir = getProjectDir()) {
-        def path = 'src/main/java/' + packageDotted.replace('.', '/') + '/CheckerHelloWorld.java'
-        def javaFile = createFile(path, baseDir)
-        javaFile << """
-        package ${packageDotted};
-
-        public class CheckerHelloWorld {
-            @org.checkerframework.checker.nullness.qual.Nullable String aVal;
-
-            public static void main(String[] args) {
-                CheckerHelloWorld world = new CheckerHelloWorld();
-                world.aVal = "Hello, Checker Framework test";
-            }
-        }
-        """.stripIndent()
-        return javaFile
     }
 
 }

@@ -1,3 +1,4 @@
+import com.mooregreatsoftware.gradle.JavacUtils
 
 // tag::buildfile1[]
 buildscript {
@@ -107,6 +108,9 @@ tasks.withType(Test) {
 }
 
 classes.mustRunAfter "copyMainKotlinClasses"
+
+JavacUtils.registerAnnotationProcessorOptions(project,
+    [new JavacUtils.Option("stubs", "${rootProject.projectDir}/gradle/stubs")])
 
 repositories {
     maven {
