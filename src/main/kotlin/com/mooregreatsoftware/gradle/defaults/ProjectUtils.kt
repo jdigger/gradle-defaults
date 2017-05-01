@@ -124,6 +124,7 @@ private fun hasJavaSourceWithJavaPlugin(projectConvention: Convention): Boolean 
 
 private fun hasJavaSource(ss: SourceSet): Boolean = !ss.allJava.isEmpty
 
+@Suppress("FoldInitializerAndIfToElvis")
 fun detectTopPackageName(projectConvention: Convention): String? {
     val sourceSets = sourceSets(projectConvention)
     if (sourceSets != null) {
@@ -138,8 +139,16 @@ fun detectTopPackageName(projectConvention: Convention): String? {
             }.
             filter { it.isPresent }.
             map { it.get() }
-        val topLevelPackage = paths.sortedBy { it.nameCount }.map { it.toString().replace(it.fileSystem.separator, ".") }.firstOrNull()
-        return topLevelPackage
+
+        val firstPath = paths.first()
+        tailrec fun findTLP(cur: Path): Path? {
+            if (paths.any { path -> !path.startsWith(cur) }) return cur.parent
+            if (cur.nameCount == firstPath.nameCount) return cur
+            return findTLP(firstPath.subpath(0, cur.nameCount+1))
+        }
+        val tlp = findTLP(firstPath.getName(0))
+        if (tlp == null || tlp.nameCount == 0) return null
+        return tlp.toString().replace(tlp.fileSystem.separator, ".")
     }
     else {
         return null

@@ -170,7 +170,7 @@ class ProjectUtilsSpec extends ProjectSpec {
     }
 
 
-    def "detectTopPackageName"() {
+    def "detectTopPackageName - simple"() {
         project.plugins.apply(JavaPlugin)
         project.plugins.apply(GroovyPlugin)
 
@@ -178,11 +178,43 @@ class ProjectUtilsSpec extends ProjectSpec {
         def javaMain = srcMain.resolve("java")
         def groovyMain = srcMain.resolve("groovy")
 
-        createFile(javaMain.resolve("com/mooregreatsoftware/test/area/AClass.java"))
-        createFile(groovyMain.resolve("com/mooregreatsoftware/test/BClass.groovy"))
+        createFile(javaMain.resolve("com/mooregreatsoftware/test/AClass.java"))
+        createFile(groovyMain.resolve("com/mooregreatsoftware/test/theta/BClass.groovy"))
 
         expect:
         ProjectUtilsKt.detectTopPackageName(project.convention) == "com.mooregreatsoftware.test"
+    }
+
+
+    def "detectTopPackageName - peers"() {
+        project.plugins.apply(JavaPlugin)
+        project.plugins.apply(GroovyPlugin)
+
+        def srcMain = project.projectDir.toPath().resolve("src/main")
+        def javaMain = srcMain.resolve("java")
+        def groovyMain = srcMain.resolve("groovy")
+
+        createFile(javaMain.resolve("com/mooregreatsoftware/test/alpha/AClass.java"))
+        createFile(groovyMain.resolve("com/mooregreatsoftware/test/theta/BClass.groovy"))
+
+        expect:
+        ProjectUtilsKt.detectTopPackageName(project.convention) == "com.mooregreatsoftware.test"
+    }
+
+
+    def "detectTopPackageName - no common"() {
+        project.plugins.apply(JavaPlugin)
+        project.plugins.apply(GroovyPlugin)
+
+        def srcMain = project.projectDir.toPath().resolve("src/main")
+        def javaMain = srcMain.resolve("java")
+        def groovyMain = srcMain.resolve("groovy")
+
+        createFile(javaMain.resolve("com/mooregreatsoftware/test/alpha/AClass.java"))
+        createFile(groovyMain.resolve("org/other/test/theta/BClass.groovy"))
+
+        expect:
+        ProjectUtilsKt.detectTopPackageName(project.convention) == null
     }
 
 }
