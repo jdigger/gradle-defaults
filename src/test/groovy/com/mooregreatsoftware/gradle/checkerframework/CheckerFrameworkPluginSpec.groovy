@@ -55,7 +55,10 @@ class CheckerFrameworkPluginSpec extends AbstractAnnotationProcessorPluginSpec {
     @Override
     @CompileStatic
     CheckerFrameworkPlugin createPlugin() {
-        project.plugins.apply(CheckerFrameworkPlugin.PLUGIN_ID) as CheckerFrameworkPlugin
+        def plugin = project.plugins.apply(CheckerFrameworkPlugin.PLUGIN_ID) as CheckerFrameworkPlugin
+        def extension = project.extensions.findByType(CheckerFrameworkExtension)
+        extension.version = CheckerFrameworkExtension.DEFAULT_CHECKER_VERSION
+        return plugin
     }
 
 

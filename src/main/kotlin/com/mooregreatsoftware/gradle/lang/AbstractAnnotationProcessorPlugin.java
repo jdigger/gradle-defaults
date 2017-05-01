@@ -42,8 +42,10 @@ public abstract class AbstractAnnotationProcessorPlugin implements Plugin<Projec
         val plugins = project.getPlugins();
         plugins.apply("com.mooregreatsoftware.java");
         plugins.withId("org.gradle.idea", plugin -> plugins.apply("com.mooregreatsoftware.idea"));
-        registerWithJavac(project);
-        addCompileOnlyDependencies(project);
+        project.afterEvaluate(proj -> {
+            registerWithJavac(project);
+            addCompileOnlyDependencies(proj);
+        });
     }
 
 

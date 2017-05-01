@@ -46,6 +46,13 @@ public class LombokPlugin extends AbstractAnnotationProcessorPlugin {
 
 
     @Override
+    public void apply(Project project) {
+        super.apply(project);
+        lombokExtension(project);
+    }
+
+
+    @Override
     protected Collection<String> myProcessorClassNames() {
         return Collections.singleton(LOMBOK_LAUNCH_ANNOTATION_PROCESSOR);
     }

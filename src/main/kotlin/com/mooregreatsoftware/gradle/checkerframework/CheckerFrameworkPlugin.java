@@ -58,6 +58,13 @@ public class CheckerFrameworkPlugin extends AbstractAnnotationProcessorPlugin {
 
 
     @Override
+    public void apply(Project project) {
+        super.apply(project);
+        checkerFrameworkExtension(project);
+    }
+
+
+    @Override
     protected void registerWithJavac(Project project) {
         super.registerWithJavac(project);
 
