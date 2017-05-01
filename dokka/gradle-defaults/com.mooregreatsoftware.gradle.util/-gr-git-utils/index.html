@@ -1,0 +1,56 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>GrGitUtils - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.util</a>&nbsp;/&nbsp;<a href=".">GrGitUtils</a><br/>
+<br/>
+<h1>GrGitUtils</h1>
+<code><span class="keyword">class </span><span class="identifier">GrGitUtils</span></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-init-.html">&lt;init&gt;</a></td>
+<td>
+<code><span class="identifier">GrGitUtils</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-d-e-f-a-u-l-t_-u-s-e-r_-e-m-a-i-l.html">DEFAULT_USER_EMAIL</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">DEFAULT_USER_EMAIL</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="grgit.html">grgit</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">grgit</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.GrGitUtils$grgit(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Grgit</span></code>
+<p>Retrieves the Grigit instance for the root project (cached in the "ext" properties). It's created if this is the first request.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="user-email.html">userEmail</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">userEmail</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.GrGitUtils$userEmail(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">String</span></code>
+<p>The user's email from the git repository's configuration. If it can't be retrieved (including if there isn't a git repository) then <code><a href="-d-e-f-a-u-l-t_-u-s-e-r_-e-m-a-i-l.html">#DEFAULT_USER_EMAIL</a></code> is used.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

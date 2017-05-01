@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>getConfiguration - gradle-defaults</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="index.html">com.mooregreatsoftware.gradle.util</a>&nbsp;/&nbsp;<a href=".">getConfiguration</a><br/>
+<br/>
+<h1>getConfiguration</h1>
+<a name="com.mooregreatsoftware.gradle.util$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)"></a>
+<code><span class="keyword">fun </span><span class="identifier">getConfiguration</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/confName">confName</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/dependenciesConsumer">dependenciesConsumer</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="identifier">DependencySet</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">Unit</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/configurations">configurations</span><span class="symbol">:</span>&nbsp;<span class="identifier">ConfigurationContainer</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Configuration</span></code>
+<p>Gets the named <a href="#">Configuration</a> from the <a href="#">Project</a>. If it does not yet exist, it is created and the
+dependencies are configured using the <a href="http://docs.oracle.com/javase/6/docs/api/java/util/function/Consumer.html">Consumer</a>.</p>
+<h3>Parameters</h3>
+
+<p><a name="confName"></a>
+<code>confName</code> - the name of the <a href="#">Configuration</a>
+<p><a name="dependenciesConsumer"></a>
+<code>dependenciesConsumer</code> - used to set up the given <a href="#">DependencySet</a> for the newly created <a href="#">Configuration</a>
+<p><a name="configurations"></a>
+<code>configurations</code> - container of <a href="#">Configuration</a>s
+<p><strong>Return</strong><br/>
+the named <a href="#">Configuration</a></p>
+</BODY>
+</HTML>

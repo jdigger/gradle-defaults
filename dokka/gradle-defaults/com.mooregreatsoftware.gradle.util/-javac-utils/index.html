@@ -1,0 +1,96 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>JavacUtils - gradle-defaults</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">gradle-defaults</a>&nbsp;/&nbsp;<a href="../index.html">com.mooregreatsoftware.gradle.util</a>&nbsp;/&nbsp;<a href=".">JavacUtils</a><br/>
+<br/>
+<h1>JavacUtils</h1>
+<code><span class="keyword">class </span><span class="identifier">JavacUtils</span></code>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-option/index.html">Option</a></td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Option</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Comparable</span><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="-p-a-t-h_-s-e-p-a-r-a-t-o-r.html">PATH_SEPARATOR</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">PATH_SEPARATOR</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<a href="create-javac-args.html">createJavacArgs</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">createJavacArgs</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$createJavacArgs(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">MutableList</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="get-mutable-annotation-processor-class-names.html">getMutableAnnotationProcessorClassNames</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">getMutableAnnotationProcessorClassNames</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$getMutableAnnotationProcessorClassNames(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/util/LinkedHashSet.html"><span class="identifier">LinkedHashSet</span></a><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="get-mutable-annotation-processor-lib-files.html">getMutableAnnotationProcessorLibFiles</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">getMutableAnnotationProcessorLibFiles</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$getMutableAnnotationProcessorLibFiles(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/util/LinkedHashSet.html"><span class="identifier">LinkedHashSet</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="get-mutable-annotation-processor-options.html">getMutableAnnotationProcessorOptions</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">getMutableAnnotationProcessorOptions</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$getMutableAnnotationProcessorOptions(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/util/LinkedHashSet.html"><span class="identifier">LinkedHashSet</span></a><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="get-mutable-boot-classpath.html">getMutableBootClasspath</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">getMutableBootClasspath</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$getMutableBootClasspath(org.gradle.api.Project)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/util/LinkedHashSet.html"><span class="identifier">LinkedHashSet</span></a><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-classnames.html">registerAnnotationProcessorClassnames</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorClassnames</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorClassnames(org.gradle.api.Project, kotlin.collections.MutableCollection((kotlin.String)))/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorClassnames(org.gradle.api.Project, kotlin.collections.MutableCollection((kotlin.String)))/classnames">classnames</span><span class="symbol">:</span>&nbsp;<span class="identifier">MutableCollection</span><span class="symbol">&lt;</span><span class="identifier">String</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-lib-files.html">registerAnnotationProcessorLibFiles</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorLibFiles</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorLibFiles(org.gradle.api.Project, kotlin.collections.MutableCollection((java.io.File)))/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorLibFiles(org.gradle.api.Project, kotlin.collections.MutableCollection((java.io.File)))/files">files</span><span class="symbol">:</span>&nbsp;<span class="identifier">MutableCollection</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+<tr>
+<td>
+<a href="register-annotation-processor-options.html">registerAnnotationProcessorOptions</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">registerAnnotationProcessorOptions</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorOptions(org.gradle.api.Project, kotlin.collections.MutableIterable((com.mooregreatsoftware.gradle.util.JavacUtils.Option)))/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerAnnotationProcessorOptions(org.gradle.api.Project, kotlin.collections.MutableIterable((com.mooregreatsoftware.gradle.util.JavacUtils.Option)))/options">options</span><span class="symbol">:</span>&nbsp;<span class="identifier">MutableIterable</span><span class="symbol">&lt;</span><a href="-option/index.html"><span class="identifier">Option</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code>
+<p>Register annotation processor arguments. Do not include the "-A". (e.g., instead of "-Awarn" use "warn")</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="register-boot-classpath.html">registerBootClasspath</a></td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">fun </span><span class="identifier">registerBootClasspath</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerBootClasspath(org.gradle.api.Project, kotlin.collections.MutableCollection((java.io.File)))/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.util.JavacUtils$registerBootClasspath(org.gradle.api.Project, kotlin.collections.MutableCollection((java.io.File)))/files">files</span><span class="symbol">:</span>&nbsp;<span class="identifier">MutableCollection</span><span class="symbol">&lt;</span><a href="http://docs.oracle.com/javase/6/docs/api/java/io/File.html"><span class="identifier">File</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

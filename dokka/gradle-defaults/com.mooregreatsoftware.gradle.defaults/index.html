@@ -1,5 +1,6 @@
 <HTML>
 <HEAD>
+<meta charset="UTF-8">
 <title>com.mooregreatsoftware.gradle.defaults - gradle-defaults</title>
 <link rel="stylesheet" href="../../style.css">
 </HEAD>
@@ -32,23 +33,11 @@
 </tr>
 <tr>
 <td>
-<a href="-jdk-version/index.html">JdkVersion</a></td>
-<td>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JdkVersion</span></code></td>
-</tr>
-<tr>
-<td>
 <a href="-readable-defaults-extension/index.html">ReadableDefaultsExtension</a></td>
 <td>
 <code><span class="keyword">interface </span><span class="identifier">ReadableDefaultsExtension</span></code>
 <p>A read-only set of values for <a href="-defaults-plugin/index.html">DefaultsPlugin</a>.</p>
 </td>
-</tr>
-<tr>
-<td>
-<a href="-ternary/index.html">Ternary</a></td>
-<td>
-<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">Ternary</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -57,114 +46,9 @@
 <tbody>
 <tr>
 <td>
-<a href="kotlin.-any/index.html">kotlin.Any</a></td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<a href="kotlin.collections.-iterable/index.html">kotlin.collections.Iterable</a></td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
 <a href="org.gradle.api.-project/index.html">org.gradle.api.Project</a></td>
 <td>
 </td>
-</tr>
-</tbody>
-</table>
-<h3>Properties</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<a href="-o-p-e-n-s-o-u-r-c-e_-p-r-o-p-e-r-t-y_-n-a-m-e.html">OPENSOURCE_PROPERTY_NAME</a></td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">OPENSOURCE_PROPERTY_NAME</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
-</tr>
-<tr>
-<td>
-<a href="is-buggy-javac.html">isBuggyJavac</a></td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">isBuggyJavac</span><span class="symbol">: </span><span class="identifier">Boolean</span></code></td>
-</tr>
-<tr>
-<td>
-<a href="max-int-str.html">maxIntStr</a></td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">maxIntStr</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<a href="compare-maps.html">compareMaps</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">K</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Comparable</span><span class="symbol">&lt;</span><span class="identifier">K</span><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier">V</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Comparable</span><span class="symbol">&lt;</span><span class="identifier">V</span><span class="symbol">&gt;</span><span class="symbol">&gt;</span> <span class="identifier">compareMaps</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$compareMaps(kotlin.collections.Map((com.mooregreatsoftware.gradle.defaults.compareMaps.K, com.mooregreatsoftware.gradle.defaults.compareMaps.V)), kotlin.collections.Map((com.mooregreatsoftware.gradle.defaults.compareMaps.K, com.mooregreatsoftware.gradle.defaults.compareMaps.V)))/m1">m1</span><span class="symbol">:</span>&nbsp;<span class="identifier">Map</span><span class="symbol">&lt;</span><span class="identifier">K</span><span class="symbol">,</span>&nbsp;<span class="identifier">V</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$compareMaps(kotlin.collections.Map((com.mooregreatsoftware.gradle.defaults.compareMaps.K, com.mooregreatsoftware.gradle.defaults.compareMaps.V)), kotlin.collections.Map((com.mooregreatsoftware.gradle.defaults.compareMaps.K, com.mooregreatsoftware.gradle.defaults.compareMaps.V)))/m2">m2</span><span class="symbol">:</span>&nbsp;<span class="identifier">Map</span><span class="symbol">&lt;</span><span class="identifier">K</span><span class="symbol">,</span>&nbsp;<span class="identifier">V</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Int</span></code>
-<p>Compares two <a href="#">Map</a>s of <a href="#">Comparable</a> items. If one is null, that sorts lower. If ones size is
-smaller, that sorts lower. Otherwise the keys are compared. (See <a href="#">.compareSets</a>.)
-If the keys are the same, the first difference in the values found when searching the sorted keys is used for
-the comparision.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="compare-sets.html">compareSets</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">U</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Comparable</span><span class="symbol">&lt;</span><span class="identifier">U</span><span class="symbol">&gt;</span><span class="symbol">&gt;</span> <span class="identifier">compareSets</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$compareSets(kotlin.collections.Set((com.mooregreatsoftware.gradle.defaults.compareSets.U)), kotlin.collections.Set((com.mooregreatsoftware.gradle.defaults.compareSets.U)))/s1">s1</span><span class="symbol">:</span>&nbsp;<span class="identifier">Set</span><span class="symbol">&lt;</span><span class="identifier">U</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$compareSets(kotlin.collections.Set((com.mooregreatsoftware.gradle.defaults.compareSets.U)), kotlin.collections.Set((com.mooregreatsoftware.gradle.defaults.compareSets.U)))/s2">s2</span><span class="symbol">:</span>&nbsp;<span class="identifier">Set</span><span class="symbol">&lt;</span><span class="identifier">U</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Int</span></code>
-<p>Compares two <a href="#">Set</a>s of <a href="#">Comparable</a> items. If one is null, that sorts lower. If ones size is
-smaller, that sorts lower. Otherwise the first non-equal value after they are sorted is used for the comparision.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="create-configuration.html">createConfiguration</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">createConfiguration</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$createConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/confName">confName</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$createConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/dependenciesConsumer">dependenciesConsumer</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="identifier">DependencySet</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">Unit</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$createConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/configurations">configurations</span><span class="symbol">:</span>&nbsp;<span class="identifier">ConfigurationContainer</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Configuration</span></code>
-<p>Creates a new <a href="#">Configuration</a> with the given name, configuring the dependencies using the <a href="http://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a>.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="delete-dir.html">deleteDir</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">deleteDir</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$deleteDir(java.nio.file.Path)/path">path</span><span class="symbol">:</span>&nbsp;<a href="http://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html"><span class="identifier">Path</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Unit</span></code>
-<p>Delete a directory, akin to "rm -rf".</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="get-configuration.html">getConfiguration</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">getConfiguration</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/confName">confName</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/dependenciesConsumer">dependenciesConsumer</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="identifier">DependencySet</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">Unit</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$getConfiguration(kotlin.String, kotlin.Function1((org.gradle.api.artifacts.DependencySet, kotlin.Unit)), org.gradle.api.artifacts.ConfigurationContainer)/configurations">configurations</span><span class="symbol">:</span>&nbsp;<span class="identifier">ConfigurationContainer</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Configuration</span></code>
-<p>Gets the named <a href="#">Configuration</a> from the <a href="#">Project</a>. If it does not yet exist, it is created and the
-dependencies are configured using the <a href="http://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a>.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="is-not-empty.html">isNotEmpty</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">isNotEmpty</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$isNotEmpty(kotlin.String)/str">str</span><span class="symbol">:</span>&nbsp;<span class="identifier">String</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Boolean</span></code>
-<p>Returns true if the given string is non-null and has at least one non-whitespace character; false otherwise.</p>
-</td>
-</tr>
-<tr>
-<td>
-<a href="jdk-version.html">jdkVersion</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">jdkVersion</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="-jdk-version/index.html"><span class="identifier">JdkVersion</span></a></code></td>
-</tr>
-<tr>
-<td>
-<a href="source-sets.html">sourceSets</a></td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">sourceSets</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults$sourceSets(org.gradle.api.plugins.Convention)/projectConvention">projectConvention</span><span class="symbol">:</span>&nbsp;<span class="identifier">Convention</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">SourceSetContainer</span><span class="symbol">?</span></code></td>
 </tr>
 </tbody>
 </table>

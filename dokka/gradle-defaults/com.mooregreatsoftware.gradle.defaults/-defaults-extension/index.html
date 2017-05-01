@@ -1,5 +1,6 @@
 <HTML>
 <HEAD>
+<meta charset="UTF-8">
 <title>DefaultsExtension - gradle-defaults</title>
 <link rel="stylesheet" href="../../../style.css">
 </HEAD>
@@ -19,7 +20,7 @@
 <td>
 <a href="-init-.html">&lt;init&gt;</a></td>
 <td>
-<code><span class="identifier">DefaultsExtension</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.defaults.config.LombokExtension, com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.defaults.config.LombokExtension, com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension)/lombok">lombok</span><span class="symbol">:</span>&nbsp;<a href="../../com.mooregreatsoftware.gradle.defaults.config/-lombok-extension/index.html"><span class="identifier">LombokExtension</span></a><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.defaults.config.LombokExtension, com.mooregreatsoftware.gradle.defaults.config.CheckerFrameworkExtension)/checkerFramework">checkerFramework</span><span class="symbol">:</span>&nbsp;<a href="../../com.mooregreatsoftware.gradle.defaults.config/-checker-framework-extension/index.html"><span class="identifier">CheckerFrameworkExtension</span></a><span class="symbol">)</span></code>
+<code><span class="identifier">DefaultsExtension</span><span class="symbol">(</span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.license.ExtLicenseExtension, com.mooregreatsoftware.gradle.lombok.LombokExtension, com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension)/project">project</span><span class="symbol">:</span>&nbsp;<span class="identifier">Project</span><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.license.ExtLicenseExtension, com.mooregreatsoftware.gradle.lombok.LombokExtension, com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension)/license">license</span><span class="symbol">:</span>&nbsp;<a href="../../com.mooregreatsoftware.gradle.license/-ext-license-extension/index.html"><span class="identifier">ExtLicenseExtension</span></a><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.license.ExtLicenseExtension, com.mooregreatsoftware.gradle.lombok.LombokExtension, com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension)/lombok">lombok</span><span class="symbol">:</span>&nbsp;<a href="../../com.mooregreatsoftware.gradle.lombok/-lombok-extension/index.html"><span class="identifier">LombokExtension</span></a><span class="symbol">, </span><span class="identifier" id="com.mooregreatsoftware.gradle.defaults.DefaultsExtension$<init>(org.gradle.api.Project, com.mooregreatsoftware.gradle.license.ExtLicenseExtension, com.mooregreatsoftware.gradle.lombok.LombokExtension, com.mooregreatsoftware.gradle.checkerframework.CheckerFrameworkExtension)/checkerFramework">checkerFramework</span><span class="symbol">:</span>&nbsp;<a href="../../com.mooregreatsoftware.gradle.checkerframework/-checker-framework-extension/index.html"><span class="identifier">CheckerFrameworkExtension</span></a><span class="symbol">)</span></code>
 <p>Configuration for <a href="../-defaults-plugin/index.html">DefaultsPlugin</a>.</p>
 </td>
 </tr>
@@ -56,7 +57,7 @@
 <td>
 <a href="checker-framework.html">checkerFramework</a></td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">checkerFramework</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.defaults.config/-checker-framework-extension/index.html"><span class="identifier">CheckerFrameworkExtension</span></a></code>
+<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">checkerFramework</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.checkerframework/-checker-framework-extension/index.html"><span class="identifier">CheckerFrameworkExtension</span></a></code>
 <p>Configuration for <a href="types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Checker Framework</a></p>
 </td>
 </tr>
@@ -112,6 +113,14 @@ Defaults to the current year.</p>
 </tr>
 <tr>
 <td>
+<a href="license.html">license</a></td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">license</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.license/-ext-license-extension/index.html"><span class="identifier">ExtLicenseExtension</span></a></code>
+<p>Configuration for the license plugin</p>
+</td>
+</tr>
+<tr>
+<td>
 <a href="license-key.html">licenseKey</a></td>
 <td>
 <code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">licenseKey</span><span class="symbol">: </span><span class="identifier">String</span></code>
@@ -138,7 +147,7 @@ Defaults to the current year.</p>
 <td>
 <a href="lombok.html">lombok</a></td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">lombok</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.defaults.config/-lombok-extension/index.html"><span class="identifier">LombokExtension</span></a></code>
+<code><span class="keyword">open</span> <span class="keyword">val </span><span class="identifier">lombok</span><span class="symbol">: </span><a href="../../com.mooregreatsoftware.gradle.lombok/-lombok-extension/index.html"><span class="identifier">LombokExtension</span></a></code>
 <p>Configuration for <a href="https://projectlombok.org/features/index.html">Lombok</a></p>
 </td>
 </tr>
@@ -173,7 +182,7 @@ computing the default values of <a href="site-url.html">siteUrl</a>, <a href="vc
 <a href="org-url.html">orgUrl</a></td>
 <td>
 <code><span class="keyword">open</span> <span class="keyword">var </span><span class="identifier">orgUrl</span><span class="symbol">: </span><span class="identifier">String</span><span class="symbol">?</span></code>
-<p>If theres an <a href="org-name.html">orgName</a> then this is used as part of the "organization" section of the Maven pom.xml</p>
+<p>If there's an <a href="org-name.html">orgName</a> then this is used as part of the "organization" section of the Maven pom.xml</p>
 </td>
 </tr>
 <tr>
@@ -250,22 +259,23 @@ computing the default values of <a href="site-url.html">siteUrl</a>, <a href="vc
 <tbody>
 <tr>
 <td>
+<a href="-l-o-g.html">LOG</a></td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">LOG</span><span class="symbol">: </span><span class="identifier">Logger</span></code></td>
+</tr>
+<tr>
+<td>
 <a href="-n-a-m-e.html">NAME</a></td>
 <td>
 <code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">NAME</span><span class="symbol">: </span><span class="identifier">String</span></code>
 <p>The name to register this under as a Gradle extension.</p>
 </td>
 </tr>
-</tbody>
-</table>
-<h3>Extension Functions</h3>
-<table>
-<tbody>
 <tr>
 <td>
-<a href="../kotlin.-any/as-ternary.html">asTernary</a></td>
+<a href="-v-c-s_-w-r-i-t-e_-u-r-l_-k-e-y.html">VCS_WRITE_URL_KEY</a></td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">Any</span><span class="symbol">?</span><span class="symbol">.</span><span class="identifier">asTernary</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-ternary/index.html"><span class="identifier">Ternary</span></a></code></td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">VCS_WRITE_URL_KEY</span><span class="symbol">: </span><span class="identifier">String</span></code></td>
 </tr>
 </tbody>
 </table>
