@@ -3,7 +3,7 @@
 Plugin providing opinionated defaults for Gradle builds, making it easier to use some useful plugins, and
 coordinating between plugins.
 
-*Requires Gradle 2.14+*
+Tested against Gradle 2.14, 3.5 and 4.0.
 
 image:https://travis-ci.org/jdigger/gradle-defaults.png?branch=master[Build Status,link=https://travis-ci.org/jdigger/gradle-defaults]
 image:https://api.bintray.com/packages/jmoore/java-lib/gradle-defaults/images/download.svg[link="https://bintray.com/jmoore/java-lib/gradle-defaults/_latestVersion"]

@@ -27,7 +27,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
         writeJavaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'java'
 
             group = "com.mooregreatsoftware.gradle.defaults"
@@ -41,12 +41,33 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
 
         createLicenseHeader()
 
+        def result
+
         when:
-        def result = runTasks('licenseFormat', 'build', 'idea')
+        gradleVersion = "2.14"
+        result = runTasks('clean', 'licenseFormat', 'build', 'idea')
 
         then:
         result.rethrowFailure()
         fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
+        result.wasExecuted(':classes')
+
+        when:
+        gradleVersion = "3.5"
+        result = runTasks('clean', 'licenseFormat', 'build', 'idea')
+
+        then:
+        result.rethrowFailure()
+        fileExists('build/classes/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
+        result.wasExecuted(':classes')
+
+        when:
+        gradleVersion = "4.0"
+        result = runTasks('clean', 'licenseFormat', 'build', 'idea')
+
+        then:
+        result.rethrowFailure()
+        fileExists('build/classes/java/main/com/mooregreatsoftware/gradle/defaults/HelloWorldJava.class')
         result.wasExecuted(':classes')
 
         cleanup:
@@ -138,7 +159,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
                     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:\$kotlin_version"
                 }
             }
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'kotlin'
 
             group = "com.mooregreatsoftware.gradle.defaults"
@@ -176,7 +197,7 @@ class DefaultsPluginIntSpec extends AbstractIntSpec {
         writeScalaHelloWorld('com.mooregreatsoftware.gradle.defaults')
 
         buildFile << """
-            ${applyPlugin(DefaultsPlugin)}
+            apply plugin: '${DefaultsPlugin.PLUGIN_ID}'
             apply plugin: 'scala'
 
             group = "com.mooregreatsoftware.gradle.defaults"
